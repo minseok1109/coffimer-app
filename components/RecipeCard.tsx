@@ -12,8 +12,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   const router = useRouter();
 
   const handlePress = () => {
-    // TODO: 나중에 레시피 상세 페이지로 이동하도록 구현
-    console.log("Recipe clicked:", recipe.id);
+    router.push(`/recipes/${recipe.id}`);
   };
 
   const formatTime = (totalTime: number) => {
