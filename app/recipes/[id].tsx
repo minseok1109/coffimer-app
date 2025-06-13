@@ -2,6 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
+  Alert,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -46,8 +48,22 @@ export default function RecipeDetail() {
   };
 
   const handleStartRecipe = () => {
-    // TODO: 타이머 페이지로 이동
-    console.log("Starting recipe:", recipe.id);
+    router.push(`/recipes/timer/${recipe.id}`);
+  };
+
+  const handleYouTubePress = async () => {
+    if (!recipe.youtubeUrl) return;
+
+    try {
+      const supported = await Linking.canOpenURL(recipe.youtubeUrl);
+      if (supported) {
+        await Linking.openURL(recipe.youtubeUrl);
+      } else {
+        Alert.alert("오류", "YouTube 앱을 열 수 없습니다.");
+      }
+    } catch (error) {
+      Alert.alert("오류", "YouTube 영상을 열 수 없습니다.");
+    }
   };
 
   return (
@@ -127,7 +143,10 @@ export default function RecipeDetail() {
         )}
 
         {recipe.youtubeUrl && (
-          <TouchableOpacity style={styles.youtubeButton}>
+          <TouchableOpacity
+            style={styles.youtubeButton}
+            onPress={handleYouTubePress}
+          >
             <Ionicons name="logo-youtube" size={20} color="#FF0000" />
             <Text style={styles.youtubeButtonText}>YouTube 영상 보기</Text>
           </TouchableOpacity>
