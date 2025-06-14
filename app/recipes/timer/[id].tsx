@@ -6,7 +6,6 @@ import {
   ErrorState,
   NextStepCard,
   ProgressBars,
-  StepTitle,
   TimerControls,
   TimerDisplay,
   TimerHeader,
@@ -45,31 +44,26 @@ export default function RecipeTimer() {
   return (
     <View style={styles.container}>
       <TimerHeader title={recipe.name} onBack={() => router.back()} />
-
       <ScrollView
         style={styles.scrollContainer}
         showsVerticalScrollIndicator={false}
       >
-        {currentStepInfo && <StepTitle currentStepInfo={currentStepInfo} />}
-
+        {/* {currentStepInfo && <StepTitle currentStepInfo={currentStepInfo} />} */}
         <TimerDisplay
           timerDisplay={timerDisplay}
           currentStepInfo={currentStepInfo}
           currentTime={currentTime}
           totalTime={recipe.totalTime}
         />
-
         {currentStepInfo && <ProgressBars currentStepInfo={currentStepInfo} />}
-
         {currentStepInfo && (
           <CurrentStepCard
             currentStepInfo={currentStepInfo}
             waterInfo={waterInfo}
+            recipe={recipe}
           />
         )}
-
         {nextStepInfo && <NextStepCard nextStepInfo={nextStepInfo} />}
-
         <TimerControls
           isRunning={isRunning}
           onToggleTimer={toggleTimer}

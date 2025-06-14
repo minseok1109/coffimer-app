@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { TimerDisplayData, StepInfo } from '../../lib/timer/types';
-import { formatTime } from '../../lib/timer/formatters';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { formatTime } from "../../lib/timer/formatters";
+import { StepInfo, TimerDisplayData } from "../../lib/timer/types";
 
 interface TimerDisplayProps {
   timerDisplay: TimerDisplayData;
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   timerContainer: {
     alignItems: "center",
     paddingHorizontal: 20,
-    marginBottom: 40,
+    marginVertical: 40,
   },
   timerDisplay: {
     flexDirection: "row",

@@ -7,86 +7,120 @@ interface ProgressBarsProps {
 }
 
 export const ProgressBars: React.FC<ProgressBarsProps> = ({ currentStepInfo }) => {
+  const progressValue = Math.round(currentStepInfo.progress);
+  
   return (
     <View style={styles.progressContainer}>
-      {/* Current Step Progress */}
-      <View style={styles.progressSection}>
+      <View style={styles.progressCard}>
         <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>현재 단계 진행률</Text>
-          <Text style={styles.progressPercentage}>
-            {Math.round(currentStepInfo.progress)}%
-          </Text>
+          <Text style={styles.progressTitle}>{currentStepInfo.step.title}</Text>
+          <View style={styles.percentageContainer}>
+            <Text style={styles.progressPercentage}>{progressValue}%</Text>
+          </View>
         </View>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.progressBarFill,
-              { width: `${currentStepInfo.progress}%` },
-            ]}
-          />
+        
+        <View style={styles.progressBarContainer}>
+          <View style={styles.progressBarBackground}>
+            <View
+              style={[
+                styles.progressBarFill,
+                { 
+                  width: `${currentStepInfo.progress}%`,
+                  backgroundColor: getProgressColor(progressValue)
+                },
+              ]}
+            />
+          </View>
         </View>
-      </View>
-
-      {/* Total Progress */}
-      <View style={styles.progressSection}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>전체 진행률</Text>
-          <Text style={styles.progressPercentage}>
-            {Math.round(currentStepInfo.totalProgress)}%
-          </Text>
-        </View>
-        <View style={styles.progressBarBackground}>
-          <View
-            style={[
-              styles.totalProgressBarFill,
-              { width: `${currentStepInfo.totalProgress}%` },
-            ]}
-          />
-        </View>
+        
+        {currentStepInfo.step.description && (
+          <View style={styles.progressFooter}>
+            <Text style={styles.progressDescription}>
+              {currentStepInfo.step.description}
+            </Text>
+          </View>
+        )}
       </View>
     </View>
   );
 };
 
+const getProgressColor = (progress: number) => {
+  if (progress < 30) return '#FF6B35'; // 오렌지
+  if (progress < 70) return '#FFA726'; // 밝은 오렌지
+  return '#4CAF50'; // 초록
+};
+
 const styles = StyleSheet.create({
   progressContainer: {
-    width: "100%",
-    gap: 16,
+    marginHorizontal: 20,
+    marginBottom: 20,
   },
-  progressSection: {
-    width: "100%",
+  progressCard: {
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
   progressHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  progressLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#6c757d",
+  progressTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2c3e50",
+    flex: 1,
+  },
+  percentageContainer: {
+    backgroundColor: "#f8f9fa",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    minWidth: 60,
+    alignItems: "center",
   },
   progressPercentage: {
-    fontSize: 14,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "800",
     color: "#FF6B35",
+  },
+  progressBarContainer: {
+    marginBottom: 16,
   },
   progressBarBackground: {
     width: "100%",
-    height: 8,
-    backgroundColor: "#e9ecef",
-    borderRadius: 4,
+    height: 12,
+    backgroundColor: "#f1f3f4",
+    borderRadius: 6,
     overflow: "hidden",
+    position: "relative",
   },
   progressBarFill: {
     height: "100%",
-    backgroundColor: "#FF6B35",
-    borderRadius: 4,
+    borderRadius: 6,
+    position: "relative",
   },
-  totalProgressBarFill: {
-    height: "100%",
-    backgroundColor: "#8B4513",
-    borderRadius: 4,
+  progressFooter: {
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  progressDescription: {
+    fontSize: 14,
+    color: "#6c757d",
+    lineHeight: 20,
+    fontStyle: "italic",
   },
 });

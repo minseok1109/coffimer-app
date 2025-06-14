@@ -2,29 +2,30 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { StepInfo, WaterInfo } from '../../lib/timer/types';
-import { formatTime } from '../../lib/timer/formatters';
-import { WaterInfoGrid } from './WaterInfoGrid';
+import { WaterProgressBar } from './WaterProgressBar';
+import { Recipe } from '../../lib/recipes';
 
 interface CurrentStepCardProps {
   currentStepInfo: StepInfo;
   waterInfo: WaterInfo;
+  recipe?: Recipe | null;
 }
 
 export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
   currentStepInfo,
   waterInfo,
+  recipe,
 }) => {
   return (
     <View style={styles.currentStepCard}>
       <View style={styles.currentStepHeader}>
         <Text style={styles.currentStepLabel}>현재 단계 정보</Text>
-        <Text style={styles.targetTime}>
-          {formatTime(currentStepInfo.stepStartTime)} -{" "}
-          {formatTime(currentStepInfo.stepEndTime)}
+        <Text style={styles.stepCounter}>
+          단계 {currentStepInfo.stepNumber}/{currentStepInfo.totalSteps}
         </Text>
       </View>
 
-      <WaterInfoGrid currentStepInfo={currentStepInfo} waterInfo={waterInfo} />
+      <WaterProgressBar currentStepInfo={currentStepInfo} waterInfo={waterInfo} recipe={recipe} />
 
       {currentStepInfo.step.description && (
         <View style={styles.descriptionContainer}>
@@ -69,7 +70,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1,
   },
-  targetTime: {
+  stepCounter: {
     fontSize: 14,
     color: "#6c757d",
     fontWeight: "600",
