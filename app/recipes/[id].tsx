@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { getRecipeById } from "../../lib/recipes";
+import { formatTime, formatTimeKorean } from "../../lib/timer/formatters";
 
 export default function RecipeDetail() {
   const { id } = useLocalSearchParams();
@@ -32,20 +33,6 @@ export default function RecipeDetail() {
       </View>
     );
   }
-
-  const formatTime = (totalTime: number) => {
-    const minutes = Math.floor(totalTime / 60);
-    const seconds = totalTime % 60;
-    return `${minutes}분${seconds > 0 ? ` ${seconds}초` : ""}`;
-  };
-
-  const formatStepTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = time % 60;
-    return `${minutes > 0 ? `${minutes}:` : ""}${seconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
 
   const handleStartRecipe = () => {
     router.push(`/recipes/timer/${recipe.id}`);
@@ -93,7 +80,9 @@ export default function RecipeDetail() {
           <View style={styles.infoCard}>
             <Ionicons name="time-outline" size={20} color="#666" />
             <Text style={styles.infoLabel}>소요시간</Text>
-            <Text style={styles.infoValue}>{formatTime(recipe.totalTime)}</Text>
+            <Text style={styles.infoValue}>
+              {formatTimeKorean(recipe.totalTime)}
+            </Text>
           </View>
           <View style={styles.infoCard}>
             <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
@@ -123,9 +112,7 @@ export default function RecipeDetail() {
                   </View>
                   <View style={styles.stepInfo}>
                     <Text style={styles.stepTitle}>{step.title}</Text>
-                    <Text style={styles.stepTime}>
-                      {formatStepTime(step.time)}
-                    </Text>
+                    <Text style={styles.stepTime}>{formatTime(step.time)}</Text>
                   </View>
                   <View style={styles.stepWater}>
                     <Text style={styles.stepWaterText}>{step.water}</Text>

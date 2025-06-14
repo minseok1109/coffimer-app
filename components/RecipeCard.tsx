@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Recipe } from "../lib/recipes";
+import { formatTimeKorean } from "../lib/timer/formatters";
 
 interface RecipeCardProps {
   recipe: Recipe;
@@ -13,12 +14,6 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
 
   const handlePress = () => {
     router.push(`/recipes/${recipe.id}`);
-  };
-
-  const formatTime = (totalTime: number) => {
-    const minutes = Math.floor(totalTime / 60);
-    const seconds = totalTime % 60;
-    return `${minutes}분${seconds > 0 ? ` ${seconds}초` : ""}`;
   };
 
   return (
@@ -34,7 +29,9 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </View>
         <View style={styles.infoItem}>
           <Ionicons name="time-outline" size={16} color="#666" />
-          <Text style={styles.infoText}>{formatTime(recipe.totalTime)}</Text>
+          <Text style={styles.infoText}>
+            {formatTimeKorean(recipe.totalTime)}
+          </Text>
         </View>
       </View>
 
