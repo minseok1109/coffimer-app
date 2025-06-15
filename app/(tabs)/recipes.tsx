@@ -1,11 +1,13 @@
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -22,32 +24,8 @@ interface Recipe {
 
 export default function RecipesScreen() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [recipes] = useState<Recipe[]>([
-    {
-      id: "1",
-      title: "아메리카노",
-      description: "깔끔하고 진한 에스프레소의 맛을 물과 함께 즐기는 기본 커피",
-      ingredients: ["에스프레소 샷 2개", "뜨거운 물 120ml"],
-      difficulty: "Easy",
-      time: "3분",
-    },
-    {
-      id: "2",
-      title: "카페라떼",
-      description: "부드러운 우유거품과 에스프레소의 완벽한 조화",
-      ingredients: ["에스프레소 샷 2개", "우유 150ml"],
-      difficulty: "Medium",
-      time: "5분",
-    },
-    {
-      id: "3",
-      title: "카푸치노",
-      description: "진한 에스프레소와 풍성한 우유거품의 클래식한 조합",
-      ingredients: ["에스프레소 샷 1개", "우유 100ml", "우유거품"],
-      difficulty: "Medium",
-      time: "7분",
-    },
-  ]);
+  const [recipes] = useState<Recipe[]>([]);
+  const { user, signOut } = useAuthContext();
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,18 +44,41 @@ export default function RecipesScreen() {
     }
   };
 
+  const handleLogout = async () => {
+    Alert.alert("로그아웃", "정말 로그아웃하시겠습니까?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "로그아웃",
+        style: "destructive",
+        onPress: async () => {
+          const { error } = await signOut();
+          if (error) {
+            Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.");
+          } else {
+            router.replace("/auth/login");
+          }
+        },
+      },
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="auto" />
 
       <View style={styles.header}>
         <Text style={styles.title}>내 레시피</Text>
-        <TouchableOpacity style={styles.addButton}>
-          <Ionicons name="add" size={24} color="white" />
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Ionicons name="log-out-outline" size={20} color="#666" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addButton}>
+            <Ionicons name="add" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={styles.searchContainer}>
+      {/* <View style={styles.searchContainer}>
         <Ionicons
           name="search"
           size={20}
@@ -90,7 +91,7 @@ export default function RecipesScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-      </View>
+      </View> */}
 
       <ScrollView contentContainerStyle={styles.scrollView}>
         {filteredRecipes.map((recipe) => (
@@ -163,6 +164,19 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: "bold",
     color: "#333",
+  },
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  logoutButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   addButton: {
     backgroundColor: "#8B4513",
