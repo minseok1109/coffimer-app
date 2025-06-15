@@ -17,7 +17,7 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
   };
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <View style={styles.container}>
       <Text style={styles.title}>{recipe.name}</Text>
 
       <Text style={styles.description}>{recipe.description}</Text>
@@ -35,10 +35,10 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.startButton}>
+      <TouchableOpacity style={styles.startButton} onPress={handlePress}>
         <Text style={styles.startButtonText}>레시피 시작하기</Text>
       </TouchableOpacity>
-    </TouchableOpacity>
+    </View>
   );
 }
 

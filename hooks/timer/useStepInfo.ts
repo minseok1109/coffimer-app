@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { StepInfo, NextStepInfo } from '../../lib/timer/types';
+import { useMemo } from "react";
+import { NextStepInfo, StepInfo } from "../../lib/timer/types";
 
 interface Recipe {
   steps?: {
@@ -16,28 +16,30 @@ export const useStepInfo = (
   currentStep: number,
   currentTime: number
 ): { currentStepInfo: StepInfo | null; nextStepInfo: NextStepInfo | null } => {
+  console.log("🚀 ~ recipe:", recipe);
   const currentStepInfo = useMemo((): StepInfo | null => {
     if (!recipe?.steps || recipe.steps.length === 0) {
       return null;
     }
 
     const step = recipe.steps[currentStep];
+    console.log("🚀 ~ currentStepInfo ~ step:", step);
 
-    // 현재 단계의 시작 시간 계산
+    // 현재 단계의 시작 시간 계산 (누적시간 방식)
     const stepStartTime =
-      currentStep === 0
-        ? 0
-        : recipe.steps
-            .slice(0, currentStep)
-            .reduce((acc, s) => acc + s.time, 0);
+      currentStep === 0 ? 0 : recipe.steps[currentStep - 1].time;
+    console.log("🚀 ~ currentStepInfo ~ stepStartTime:", stepStartTime);
 
-    // 현재 단계의 끝 시간 계산
-    const stepEndTime = stepStartTime + step.time;
+    // 현재 단계의 끝 시간 계산 (누적시간)
+    const stepEndTime = step.time;
+
+    // 현재 단계의 지속시간
+    const stepDuration = stepEndTime - stepStartTime;
 
     // 현재 단계 내에서의 진행 시간 (전체 시간 기준)
     const stepCurrentTime = Math.max(0, currentTime - stepStartTime);
     const progress =
-      step.time > 0 ? Math.min((stepCurrentTime / step.time) * 100, 100) : 0;
+      stepDuration > 0 ? Math.min((stepCurrentTime / stepDuration) * 100, 100) : 0;
 
     // 전체 진행률 계산
     const totalProgress =

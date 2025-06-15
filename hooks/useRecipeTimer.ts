@@ -10,6 +10,8 @@ interface UseRecipeTimerReturn {
   currentStep: number;
   toggleTimer: () => void;
   resetTimer: () => void;
+  goToPreviousStep: () => void;
+  goToNextStep: () => void;
 }
 
 export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
@@ -82,11 +84,31 @@ export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
     setCurrentStep(INITIAL_STEP);
   }, []);
 
+  const goToPreviousStep = useCallback(() => {
+    if (currentStep > 0 && recipe.steps) {
+      const previousStep = currentStep - 1;
+      const previousStepTime = previousStep === 0 ? 0 : recipe.steps[previousStep - 1].time;
+      setCurrentStep(previousStep);
+      setCurrentTime(previousStepTime);
+    }
+  }, [currentStep, recipe.steps]);
+
+  const goToNextStep = useCallback(() => {
+    if (recipe.steps && currentStep < recipe.steps.length - 1) {
+      const nextStep = currentStep + 1;
+      const nextStepTime = recipe.steps[nextStep - 1].time;
+      setCurrentStep(nextStep);
+      setCurrentTime(nextStepTime);
+    }
+  }, [currentStep, recipe.steps]);
+
   return {
     currentTime,
     isRunning,
     currentStep,
     toggleTimer,
     resetTimer,
+    goToPreviousStep,
+    goToNextStep,
   };
 };

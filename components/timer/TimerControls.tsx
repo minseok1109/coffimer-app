@@ -15,36 +15,40 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
 }) => {
   return (
     <View style={styles.controlsContainer}>
-      <TouchableOpacity
-        style={[
-          styles.timerButton,
-          isRunning ? styles.timerButtonRunning : styles.timerButtonPaused,
-        ]}
-        onPress={onToggleTimer}
-      >
-        <Ionicons
-          name={isRunning ? "pause" : "play"}
-          size={32}
-          color="white"
-        />
-        <Text style={styles.timerButtonText}>
-          {isRunning ? "일시정지" : "시작"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.resetButton} onPress={onReset}>
-        <Ionicons name="refresh" size={24} color="#666" />
-        <Text style={styles.resetButtonText}>리셋</Text>
-      </TouchableOpacity>
+      <View style={styles.mainControls}>
+        <TouchableOpacity
+          style={[
+            styles.timerButton,
+            isRunning ? styles.timerButtonRunning : styles.timerButtonPaused,
+          ]}
+          onPress={onToggleTimer}
+        >
+          <Ionicons
+            name={isRunning ? "pause" : "play"}
+            size={32}
+            color="white"
+          />
+          <Text style={styles.timerButtonText}>
+            {isRunning ? "일시정지" : "시작"}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.resetButton} onPress={onReset}>
+          <Ionicons name="refresh" size={24} color="#666" />
+          <Text style={styles.resetButtonText}>리셋</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   controlsContainer: {
-    flexDirection: "row",
     paddingHorizontal: 20,
-    gap: 16,
     marginBottom: 32,
+  },
+  mainControls: {
+    flexDirection: "row",
+    gap: 16,
   },
   resetButton: {
     flex: 1,

@@ -1,9 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { StepInfo, WaterInfo } from '../../lib/timer/types';
-import { WaterProgressBar } from './WaterProgressBar';
-import { Recipe } from '../../lib/recipes';
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { Recipe } from "../../lib/recipes";
+import { StepInfo, WaterInfo } from "../../lib/timer/types";
+import { WaterProgressBar } from "./WaterProgressBar";
 
 interface CurrentStepCardProps {
   currentStepInfo: StepInfo;
@@ -25,16 +24,11 @@ export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
         </Text>
       </View>
 
-      <WaterProgressBar currentStepInfo={currentStepInfo} waterInfo={waterInfo} recipe={recipe} />
-
-      {currentStepInfo.step.description && (
-        <View style={styles.descriptionContainer}>
-          <Ionicons name="information-circle" size={20} color="#6c757d" />
-          <Text style={styles.descriptionText}>
-            {currentStepInfo.step.description}
-          </Text>
-        </View>
-      )}
+      <WaterProgressBar
+        currentStepInfo={currentStepInfo}
+        waterInfo={waterInfo}
+        recipe={recipe}
+      />
     </View>
   );
 };
