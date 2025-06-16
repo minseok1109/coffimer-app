@@ -1,10 +1,9 @@
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,40 +25,14 @@ export default function RecipesScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [recipes] = useState<Recipe[]>([]);
   const { user, signOut } = useAuthContext();
+  const router = useRouter();
 
   const filteredRecipes = recipes.filter((recipe) =>
     recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getDifficultyColor = (difficulty: Recipe["difficulty"]) => {
-    switch (difficulty) {
-      case "Easy":
-        return "#4CAF50";
-      case "Medium":
-        return "#FF9800";
-      case "Hard":
-        return "#F44336";
-      default:
-        return "#757575";
-    }
-  };
-
-  const handleLogout = async () => {
-    Alert.alert("로그아웃", "정말 로그아웃하시겠습니까?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "로그아웃",
-        style: "destructive",
-        onPress: async () => {
-          const { error } = await signOut();
-          if (error) {
-            Alert.alert("오류", "로그아웃 중 오류가 발생했습니다.");
-          } else {
-            router.replace("/auth/login");
-          }
-        },
-      },
-    ]);
+  const handleAddRecipe = () => {
+    router.push("/create-recipe");
   };
 
   return (
@@ -69,10 +42,7 @@ export default function RecipesScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>내 레시피</Text>
         <View style={styles.headerButtons}>
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={20} color="#666" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.addButton}>
+          <TouchableOpacity style={styles.addButton} onPress={handleAddRecipe}>
             <Ionicons name="add" size={24} color="white" />
           </TouchableOpacity>
         </View>
@@ -94,40 +64,6 @@ export default function RecipesScreen() {
       </View> */}
 
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {filteredRecipes.map((recipe) => (
-          <TouchableOpacity key={recipe.id} style={styles.recipeCard}>
-            <View style={styles.recipeHeader}>
-              <Text style={styles.recipeTitle}>{recipe.title}</Text>
-              <View
-                style={[
-                  styles.difficultyBadge,
-                  { backgroundColor: getDifficultyColor(recipe.difficulty) },
-                ]}
-              >
-                <Text style={styles.difficultyText}>{recipe.difficulty}</Text>
-              </View>
-            </View>
-
-            <Text style={styles.recipeDescription}>{recipe.description}</Text>
-
-            <View style={styles.recipeInfo}>
-              <View style={styles.timeContainer}>
-                <Ionicons name="time-outline" size={16} color="#666" />
-                <Text style={styles.timeText}>{recipe.time}</Text>
-              </View>
-            </View>
-
-            <View style={styles.ingredientsContainer}>
-              <Text style={styles.ingredientsTitle}>재료:</Text>
-              {recipe.ingredients.map((ingredient, index) => (
-                <Text key={index} style={styles.ingredient}>
-                  • {ingredient}
-                </Text>
-              ))}
-            </View>
-          </TouchableOpacity>
-        ))}
-
         {filteredRecipes.length === 0 && (
           <View style={styles.emptyState}>
             <Ionicons name="document-outline" size={64} color="#ccc" />

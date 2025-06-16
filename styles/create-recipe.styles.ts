@@ -1,0 +1,297 @@
+import { StyleSheet } from "react-native";
+
+export const createRecipeStyles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  header: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  backButton: {
+    padding: 8,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  placeholder: {
+    width: 40,
+  },
+  stepIndicatorContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    backgroundColor: "white",
+    justifyContent: "space-between",
+  },
+  stepItem: {
+    alignItems: "center",
+    flex: 1,
+  },
+  stepCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#e0e0e0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  activeStep: {
+    backgroundColor: "#8B4513",
+  },
+  completedStep: {
+    backgroundColor: "#8B4513",
+  },
+  stepNumber: {
+    fontSize: 14,
+    fontWeight: "bold",
+    color: "#666",
+  },
+  activeStepText: {
+    color: "white",
+  },
+  stepLabel: {
+    fontSize: 12,
+    color: "#666",
+  },
+  activeStepLabel: {
+    color: "#8B4513",
+    fontWeight: "600",
+  },
+  content: {
+    flex: 1,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  stepsContainer: {
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+  },
+  stepContent: {
+    flex: 1,
+  },
+  inputGroup: {
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#333",
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  textArea: {
+    minHeight: 100,
+    textAlignVertical: "top",
+  },
+  switchGroup: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+  },
+  inputWithSuffix: {
+    flexDirection: "row",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  numberInput: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+  },
+  suffix: {
+    paddingRight: 16,
+    fontSize: 16,
+    color: "#666",
+  },
+  ratioDescription: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  ratioInfo: {
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 8,
+  },
+  stepHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  addButtonText: {
+    color: "#8B4513",
+    fontSize: 14,
+    fontWeight: "600",
+  },
+  helperText: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 16,
+  },
+  stepsList: {
+    maxHeight: 300,
+  },
+  brewStep: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+  },
+  stepTitleRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  stepTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#8B4513",
+  },
+  timeRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  timeInput: {
+    flex: 1,
+  },
+  waterInput: {
+    flex: 1,
+  },
+  subLabel: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 4,
+  },
+  smallInput: {
+    backgroundColor: "#f5f5f5",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    fontSize: 14,
+    textAlign: "center",
+  },
+  timeSeparator: {
+    fontSize: 16,
+    color: "#666",
+    paddingBottom: 8,
+  },
+  description: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: "#fff3cd",
+    borderRadius: 8,
+    fontSize: 12,
+    color: "#856404",
+    lineHeight: 18,
+  },
+  reviewTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 24,
+    textAlign: "center",
+  },
+  reviewSection: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 12,
+  },
+  reviewLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 4,
+  },
+  reviewValue: {
+    fontSize: 16,
+    color: "#333",
+    lineHeight: 22,
+  },
+  confirmText: {
+    marginTop: 24,
+    textAlign: "center",
+    fontSize: 14,
+    color: "#666",
+    lineHeight: 20,
+  },
+  navigationButtons: {
+    flexDirection: "row",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    gap: 12,
+    backgroundColor: "white",
+    borderTopWidth: 1,
+    borderTopColor: "#eee",
+  },
+  navButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  previousButton: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#8B4513",
+  },
+  nextButton: {
+    backgroundColor: "#8B4513",
+  },
+  fullWidthButton: {
+    flex: 2,
+  },
+  previousButtonText: {
+    color: "#8B4513",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  nextButtonText: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+});
