@@ -1,9 +1,9 @@
 import { secureStorage } from "@/lib/secureStorage";
 import { supabase } from "@/lib/supabaseClient";
-// import {
-//   GoogleSignin,
-//   statusCodes,
-// } from "@react-native-google-signin/google-signin";
+import {
+  GoogleSignin,
+  statusCodes,
+} from "@react-native-google-signin/google-signin";
 import type { Session, User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
@@ -13,11 +13,11 @@ interface AuthState {
   loading: boolean;
 }
 
-// GoogleSignin.configure({
-//   scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-//   webClientId:
-//     "1023947480817-urtfbee0pjqbr39dd5qqm1ne6dcei1c7.apps.googleusercontent.com",
-// });
+GoogleSignin.configure({
+  scopes: ["https://www.googleapis.com/auth/drive.readonly"],
+  webClientId:
+    "1023947480817-req4un46k8h50hhpt8ij1i75bte405cm.apps.googleusercontent.com",
+});
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({

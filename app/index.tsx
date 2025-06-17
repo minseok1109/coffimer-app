@@ -13,12 +13,12 @@ export default function Index() {
     );
   }
 
-  // if (user) {
-  //   return <Redirect href="/(tabs)" />;
-  // }
+  if (user) {
+    return <Redirect href="/(tabs)" />;
+  }
 
-  // return <Redirect href="/auth/login" />;
-  return <Redirect href="/(tabs)" />;
+  return <Redirect href="/auth/login" />;
+  // return <Redirect href="/(tabs)" />;
 }
 
 const styles = StyleSheet.create({

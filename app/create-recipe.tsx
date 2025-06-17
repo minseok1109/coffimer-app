@@ -38,6 +38,7 @@ export default function CreateRecipeScreen() {
     router,
     hasAttemptedNext,
     isTransitioning,
+    isSaving,
   } = useCreateRecipe();
 
   const bottomSheetRef = useRef<BottomSheetRef>(null);
@@ -138,13 +139,17 @@ export default function CreateRecipeScreen() {
                     createRecipeStyles.navButton,
                     createRecipeStyles.nextButton,
                     currentStep === 1 && createRecipeStyles.fullWidthButton,
-                    isTransitioning && { opacity: 0.7 },
+                    (isTransitioning || isSaving) && { opacity: 0.7 },
                   ]}
                   onPress={handleNext}
-                  disabled={isTransitioning}
+                  disabled={isTransitioning || isSaving}
                 >
                   <Text style={createRecipeStyles.nextButtonText}>
-                    {currentStep === 4 ? "완료" : "다음 버튼"}
+                    {isSaving
+                      ? "저장 중..."
+                      : currentStep === 4
+                      ? "완료"
+                      : "다음 버튼"}
                   </Text>
                 </TouchableOpacity>
               </View>

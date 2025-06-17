@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "coffimer-app",
-    "slug": "coffimer-app",
+    "name": "coffimer",
+    "slug": "coffimer",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

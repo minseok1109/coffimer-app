@@ -1,8 +1,11 @@
+import { useAuth } from "@/hooks/useAuth";
+import { createRecipe } from "@/lib/recipeApi";
 import { RecipeFormData, recipeFormSchema } from "@/types/recipe-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { Alert } from "react-native";
 import {
   useAnimatedStyle,
   useSharedValue,
@@ -11,9 +14,11 @@ import {
 
 export const useCreateRecipe = () => {
   const router = useRouter();
+  const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [hasAttemptedNext, setHasAttemptedNext] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const opacity = useSharedValue(1);
   const translateX = useSharedValue(0);
 
@@ -84,7 +89,7 @@ export const useCreateRecipe = () => {
       await animateStepTransition("next");
       setCurrentStep(currentStep + 1);
     } else if (currentStep === 4) {
-      onSubmit(methods.getValues());
+      await onSubmit(methods.getValues());
     }
   };
 
@@ -96,9 +101,35 @@ export const useCreateRecipe = () => {
     }
   };
 
-  const onSubmit = (data: RecipeFormData) => {
-    console.log("레시피 저장:", data);
-    router.back();
+  const onSubmit = async (data: RecipeFormData) => {
+    // if (!user) {
+    //   Alert.alert("오류", "로그인이 필요합니다.");
+    //   return;
+    // }
+
+    try {
+      setIsSaving(true);
+
+      const result = await createRecipe(data, "c8482dd6-f094-4a07-b66a-3d4f8acc4c58");
+
+      if (result.success) {
+        Alert.alert("성공", "레시피가 성공적으로 저장되었습니다!", [
+          {
+            text: "확인",
+            onPress: () => {
+              router.back();
+            },
+          },
+        ]);
+      } else {
+        Alert.alert("오류", result.error || "레시피 저장에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("레시피 저장 오류:", error);
+      Alert.alert("오류", "레시피 저장 중 예상치 못한 오류가 발생했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getCurrentStepComponent = () => {
@@ -128,5 +159,8 @@ export const useCreateRecipe = () => {
 
     // Submit handler
     onSubmit,
+
+    // Saving state
+    isSaving,
   };
 };
