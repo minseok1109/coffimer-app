@@ -26,9 +26,9 @@ export const recipeFormSchema = z.object({
   steps: z
     .array(
       z.object({
-        startTime: z.string().min(1, "시작 시간을 입력해주세요"),
-        endTime: z.string().min(1, "종료 시간을 입력해주세요"),
+        time: z.string().min(1, "시간을 입력해주세요"),
         waterAmount: z.string().min(1, "물의 양을 입력해주세요"),
+        description: z.string().optional(),
       })
     )
     .min(1, "최소 한 개의 단계를 추가해주세요"),

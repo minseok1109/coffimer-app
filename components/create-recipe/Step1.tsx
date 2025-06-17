@@ -1,11 +1,18 @@
-import React from "react";
-import { View, Text, TextInput, Switch } from "react-native";
-import { Controller, useFormContext } from "react-hook-form";
-import { RecipeFormData } from "@/types/recipe-form";
 import { createRecipeStyles } from "@/styles/create-recipe.styles";
+import { RecipeFormData } from "@/types/recipe-form";
+import React from "react";
+import { Controller, useFormContext } from "react-hook-form";
+import { Switch, Text, TextInput, View } from "react-native";
 
-export const Step1: React.FC = () => {
-  const { control } = useFormContext<RecipeFormData>();
+interface Step1Props {
+  hasAttemptedNext?: boolean;
+}
+
+export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
+  const {
+    control,
+    formState: { errors },
+  } = useFormContext<RecipeFormData>();
 
   return (
     <View style={createRecipeStyles.stepContent}>
@@ -15,13 +22,25 @@ export const Step1: React.FC = () => {
           control={control}
           name="title"
           render={({ field: { onChange, onBlur, value } }) => (
-            <TextInput
-              style={createRecipeStyles.input}
-              placeholder="예) 케냐 AA 핸드드립"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
-            />
+            <>
+              <TextInput
+                style={[
+                  createRecipeStyles.input,
+                  hasAttemptedNext &&
+                    errors.title &&
+                    createRecipeStyles.inputError,
+                ]}
+                placeholder="예) 케냐 AA 핸드드립"
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+              />
+              {hasAttemptedNext && errors.title && (
+                <Text style={createRecipeStyles.errorText}>
+                  {errors.title.message}
+                </Text>
+              )}
+            </>
           )}
         />
       </View>

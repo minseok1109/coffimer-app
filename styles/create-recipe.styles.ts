@@ -76,7 +76,7 @@ export const createRecipeStyles = StyleSheet.create({
   },
   stepsContainer: {
     paddingHorizontal: 20,
-    paddingVertical: 24,
+    paddingVertical: 12,
   },
   stepContent: {
     flex: 1,
@@ -165,7 +165,7 @@ export const createRecipeStyles = StyleSheet.create({
     marginBottom: 16,
   },
   stepsList: {
-    maxHeight: 300,
+    flex: 1,
   },
   brewStep: {
     backgroundColor: "white",
@@ -218,11 +218,11 @@ export const createRecipeStyles = StyleSheet.create({
     paddingBottom: 8,
   },
   description: {
-    marginTop: 16,
+    marginTop: 8,
     padding: 12,
     backgroundColor: "#fff3cd",
     borderRadius: 8,
-    fontSize: 12,
+    fontSize: 16,
     color: "#856404",
     lineHeight: 18,
   },
@@ -293,5 +293,137 @@ export const createRecipeStyles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+  },
+  errorText: {
+    color: "#ff4444",
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4,
+  },
+  inputError: {
+    borderColor: "#ff4444",
+    borderWidth: 2,
+  },
+  errorIcon: {
+    marginRight: 4,
+  },
+  // Dropdown styles
+  dropdownContainer: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  dropdownStyle: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    minHeight: 50,
+  },
+  dropdownContainerStyle: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 8,
+    marginTop: 4,
+  },
+  dropdownTextStyle: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+  },
+  dropdownPlaceholderStyle: {
+    fontSize: 16,
+    color: "#999",
+    fontWeight: "400",
+  },
+  dropdownSelectedTextStyle: {
+    fontSize: 16,
+    color: "#8B4513",
+    fontWeight: "600",
+  },
+  dropdownItemSeparatorStyle: {
+    backgroundColor: "#f0f0f0",
+    height: 1,
+    marginHorizontal: 16,
+  },
+  dropdownListItemStyle: {
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    backgroundColor: "white",
+  },
+  dropdownListItemTextStyle: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "500",
+  },
+  dropdownSelectedItemStyle: {
+    backgroundColor: "#f8f4f0",
+    borderLeftWidth: 3,
+    borderLeftColor: "#8B4513",
+  },
+  dropdownSelectedItemTextStyle: {
+    color: "#8B4513",
+    fontWeight: "600",
+  },
+  dropdownArrowIconStyle: {
+    width: 20,
+    height: 20,
+    tintColor: "#8B4513",
+  },
+  dropdownTickIconStyle: {
+    width: 20,
+    height: 20,
+    tintColor: "#8B4513",
+  },
+  // Dripper Selector styles
+  dripperSelector: {
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    minHeight: 50,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  dripperSelectorText: {
+    fontSize: 16,
+    color: "#333",
+    fontWeight: "600",
+    flex: 1,
+  },
+  dripperPlaceholderText: {
+    color: "#999",
+    fontWeight: "400",
   },
 });
