@@ -1,9 +1,6 @@
 import { secureStorage } from "@/lib/secureStorage";
 import { supabase } from "@/lib/supabaseClient";
-import {
-  GoogleSignin,
-  statusCodes,
-} from "@react-native-google-signin/google-signin";
+
 import type { Session, User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
 
@@ -12,12 +9,6 @@ interface AuthState {
   session: Session | null;
   loading: boolean;
 }
-
-GoogleSignin.configure({
-  scopes: ["https://www.googleapis.com/auth/drive.readonly"],
-  webClientId:
-    "1023947480817-req4un46k8h50hhpt8ij1i75bte405cm.apps.googleusercontent.com",
-});
 
 export function useAuth() {
   const [authState, setAuthState] = useState<AuthState>({
@@ -158,86 +149,6 @@ export function useAuth() {
     return { data, error };
   };
 
-  const signInWithGoogle = async () => {
-    console.log("🔍 구글 로그인 시작...");
-    try {
-      // Google Sign-in 설정 확인
-      await GoogleSignin.hasPlayServices({
-        showPlayServicesUpdateDialog: true,
-      });
-
-      // Google 로그인 수행
-      const userInfo = await GoogleSignin.signIn();
-      console.log("📊 Google 사용자 정보:", userInfo);
-
-      if (userInfo.data?.idToken) {
-        // Supabase에 ID 토큰으로 로그인
-        const { data, error } = await supabase.auth.signInWithIdToken({
-          provider: "google",
-          token: userInfo.data.idToken,
-        });
-
-        console.log("📊 Supabase 로그인 응답:", { data, error });
-
-        if (error) {
-          console.error("❌ Supabase 로그인 에러:", error);
-          return { data, error };
-        }
-
-        // 로그인 성공 시 자동 로그인 활성화
-        if (data.session) {
-          await secureStorage.setAutoLoginEnabled(true);
-        }
-
-        console.log("✅ 구글 로그인 성공!");
-        return { data, error };
-      } else {
-        const error = new Error("Google ID 토큰을 받지 못했습니다.");
-        return { data: null, error };
-      }
-    } catch (error: unknown) {
-      console.error("🚨 구글 로그인 실패:", error);
-
-      // Google Sign-in 에러 처리
-      if (error && typeof error === "object" && "code" in error) {
-        const googleError = error as { code: string; message?: string };
-        switch (googleError.code) {
-          case statusCodes.SIGN_IN_CANCELLED:
-            console.log("사용자가 로그인을 취소했습니다.");
-            return { data: null, error: null }; // 취소는 에러가 아님
-          case statusCodes.IN_PROGRESS:
-            return {
-              data: null,
-              error: new Error("이미 로그인이 진행 중입니다."),
-            };
-          case statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            return {
-              data: null,
-              error: new Error("Google Play Services를 사용할 수 없습니다."),
-            };
-          default:
-            console.error("Google Sign-in 에러:", googleError);
-        }
-      }
-
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.";
-      return { data: null, error: new Error(errorMessage) };
-    }
-  };
-
-  const signInWithApple = async () => {
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: "apple",
-      options: {
-        redirectTo: "coffimerapp://auth/callback",
-      },
-    });
-    return { data, error };
-  };
-
   const signOut = async () => {
     // 로그아웃 시 보안 데이터 정리
     await secureStorage.clearSessionData();
@@ -251,8 +162,6 @@ export function useAuth() {
     ...authState,
     signInWithEmail,
     signUpWithEmail,
-    signInWithGoogle,
-    signInWithApple,
     signOut,
   };
 }

@@ -58,7 +58,7 @@ export default function LoginScreen() {
             "회원가입이 완료되었습니다. 이메일을 확인해주세요."
           );
         } else {
-          router.replace("/(tabs)/recipes");
+          router.replace("/(tabs)");
         }
       }
     } catch (error) {
@@ -217,52 +217,7 @@ export default function LoginScreen() {
                 )}
               </TouchableOpacity>
             </View>
-
-            {/* 구분선 */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>또는</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* 소셜 로그인 */}
-            <View style={styles.socialContainer}>
-              <TouchableOpacity
-                style={[styles.socialButton, styles.googleButton]}
-                onPress={handleGoogleLogin}
-                disabled={loading}
-              >
-                <Ionicons name="logo-google" size={20} color="#DB4437" />
-                <Text
-                  style={[styles.socialButtonText, styles.googleButtonText]}
-                >
-                  Google로 {isSignUp ? "회원가입" : "로그인"}
-                </Text>
-              </TouchableOpacity>
-
-              {Platform.OS === "ios" && (
-                <TouchableOpacity
-                  style={[styles.socialButton, styles.appleButton]}
-                  onPress={handleAppleLogin}
-                  disabled={loading}
-                >
-                  <Ionicons name="logo-apple" size={20} color="white" />
-                  <Text
-                    style={[styles.socialButtonText, styles.appleButtonText]}
-                  >
-                    Apple로 {isSignUp ? "회원가입" : "로그인"}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
           </View>
-
-          {/* 추가 링크 */}
-          {!isSignUp && (
-            <TouchableOpacity style={styles.forgotPassword}>
-              <Text style={styles.linkText}>비밀번호를 잊으셨나요?</Text>
-            </TouchableOpacity>
-          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

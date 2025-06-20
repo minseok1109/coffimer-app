@@ -1,4 +1,3 @@
-import { useAuthContext } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -24,7 +23,6 @@ interface Recipe {
 export default function RecipesScreen() {
   const [searchQuery, setSearchQuery] = useState("");
   const [recipes] = useState<Recipe[]>([]);
-  const { user, signOut } = useAuthContext();
   const router = useRouter();
 
   const filteredRecipes = recipes.filter((recipe) =>

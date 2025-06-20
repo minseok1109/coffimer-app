@@ -1,6 +1,8 @@
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React from "react";
 import {
   Image,
   ScrollView,
@@ -21,68 +23,14 @@ interface ProfileSetting {
 }
 
 export default function ProfileScreen() {
-  const [notifications, setNotifications] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
-
-  const profileSettings: ProfileSetting[] = [
-    {
-      id: "favorites",
-      title: "즐겨찾기 레시피",
-      icon: "heart-outline",
-      hasArrow: true,
-    },
-    {
-      id: "history",
-      title: "최근 본 레시피",
-      icon: "time-outline",
-      hasArrow: true,
-    },
-    {
-      id: "share",
-      title: "앱 공유하기",
-      icon: "share-outline",
-      hasArrow: true,
-    },
-  ];
-
-  const appSettings: ProfileSetting[] = [
-    {
-      id: "notifications",
-      title: "알림 설정",
-      icon: "notifications-outline",
-      hasToggle: true,
-    },
-    {
-      id: "darkmode",
-      title: "다크 모드",
-      icon: "moon-outline",
-      hasToggle: true,
-    },
-    {
-      id: "language",
-      title: "언어 설정",
-      icon: "language-outline",
-      hasArrow: true,
-    },
-  ];
+  const { signOut } = useAuth();
+  const router = useRouter();
 
   const supportSettings: ProfileSetting[] = [
-    {
-      id: "help",
-      title: "도움말",
-      icon: "help-circle-outline",
-      hasArrow: true,
-    },
     { id: "contact", title: "문의하기", icon: "mail-outline", hasArrow: true },
     {
-      id: "review",
-      title: "앱 평가하기",
-      icon: "star-outline",
-      hasArrow: true,
-    },
-    {
       id: "version",
-      title: "버전 정보",
+      title: "앱 정보",
       icon: "information-circle-outline",
       hasArrow: true,
     },
@@ -140,7 +88,7 @@ export default function ProfileScreen() {
         </View>
 
         {/* Statistics */}
-        <View style={styles.statsContainer}>
+        {/* <View style={styles.statsContainer}>
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>12</Text>
             <Text style={styles.statLabel}>저장된 레시피</Text>
@@ -155,18 +103,18 @@ export default function ProfileScreen() {
             <Text style={styles.statNumber}>7</Text>
             <Text style={styles.statLabel}>즐겨찾기</Text>
           </View>
-        </View>
+        </View> */}
 
         {/* Profile Settings */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>내 정보</Text>
           <View style={styles.settingsContainer}>
             {profileSettings.map((item) => renderSettingItem(item))}
           </View>
-        </View>
+        </View> */}
 
         {/* App Settings */}
-        <View style={styles.section}>
+        {/* <View style={styles.section}>
           <Text style={styles.sectionTitle}>앱 설정</Text>
           <View style={styles.settingsContainer}>
             {appSettings.map((item) => {
@@ -179,7 +127,7 @@ export default function ProfileScreen() {
               return renderSettingItem(item);
             })}
           </View>
-        </View>
+        </View> */}
 
         {/* Support Settings */}
         <View style={styles.section}>
@@ -190,7 +138,13 @@ export default function ProfileScreen() {
         </View>
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton}>
+        <TouchableOpacity
+          style={styles.logoutButton}
+          onPress={() => {
+            signOut();
+            router.replace("/auth/login");
+          }}
+        >
           <Ionicons name="log-out-outline" size={20} color="#F44336" />
           <Text style={styles.logoutText}>로그아웃</Text>
         </TouchableOpacity>
