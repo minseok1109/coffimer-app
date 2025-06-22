@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
   ActivityIndicator,
+  Image,
   ScrollView,
   StyleSheet,
   Text,
@@ -43,7 +44,8 @@ export default function HomeScreen() {
       <StatusBar style="auto" />
 
       <View style={styles.header}>
-        <Text style={styles.title}>☕ Coffimer</Text>
+        <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
+        <Text style={styles.title}>Coffimer</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -72,6 +74,13 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  logo: {
+    width: 24,
+    height: 24,
+    marginRight: 8,
   },
   title: {
     fontSize: 20,
