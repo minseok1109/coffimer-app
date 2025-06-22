@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
-  Image,
   ScrollView,
   StyleSheet,
   Switch,
@@ -23,7 +22,7 @@ interface ProfileSetting {
 }
 
 export default function ProfileScreen() {
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
   const router = useRouter();
 
   const supportSettings: ProfileSetting[] = [
@@ -70,21 +69,21 @@ export default function ProfileScreen() {
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Image
+            {/* <Image
               source={{
                 uri: "https://via.placeholder.com/100x100/8B4513/FFFFFF?text=☕",
               }}
               style={styles.avatar}
-            />
-            <TouchableOpacity style={styles.editAvatarButton}>
+            /> */}
+            {/* <TouchableOpacity style={styles.editAvatarButton}>
               <Ionicons name="camera" size={16} color="white" />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
           <Text style={styles.userName}>커피 애호가</Text>
           <Text style={styles.userEmail}>coffee.lover@example.com</Text>
-          <TouchableOpacity style={styles.editProfileButton}>
+          {/* <TouchableOpacity style={styles.editProfileButton}>
             <Text style={styles.editProfileText}>프로필 편집</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
         {/* Statistics */}
