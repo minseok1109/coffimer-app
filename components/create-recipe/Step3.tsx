@@ -36,16 +36,9 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
           ex) 30 → 60 → 90
         </Text>
 
-        {/* Sticky Header - ScrollView 밖으로 이동 */}
+        {/* Header */}
         <View style={createRecipeStyles.stepHeader}>
           <Text style={createRecipeStyles.label}>단계별 추출 가이드</Text>
-          <TouchableOpacity
-            style={createRecipeStyles.addButton}
-            onPress={addStep}
-          >
-            <Ionicons name="add-circle-outline" size={24} color="#8B4513" />
-            <Text style={createRecipeStyles.addButtonText}>단계 추가</Text>
-          </TouchableOpacity>
         </View>
       </View>
 
@@ -72,50 +65,103 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                 <View style={createRecipeStyles.timeRow}>
                   <View style={createRecipeStyles.timeInput}>
                     <Text style={createRecipeStyles.subLabel}>시간</Text>
-                    <Controller
-                      control={control}
-                      name={`steps.${index}.time`}
-                      render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                          style={createRecipeStyles.smallInput}
-                          placeholder="00"
-                          onBlur={onBlur}
-                          onChangeText={onChange}
-                          value={value}
-                          keyboardType="numeric"
-                        />
-                      )}
-                    />
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: '#e0e0e0',
+                    }}>
+                      <Controller
+                        control={control}
+                        name={`steps.${index}.time`}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                          <TextInput
+                            style={[
+                              createRecipeStyles.smallInput,
+                              {
+                                backgroundColor: 'transparent',
+                                borderWidth: 0,
+                                flex: 1,
+                              }
+                            ]}
+                            placeholder="00"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            value={value}
+                            keyboardType="numeric"
+                          />
+                        )}
+                      />
+                      <Text style={{
+                        fontSize: 14,
+                        color: '#666',
+                        paddingRight: 12,
+                        fontWeight: '500',
+                      }}>초</Text>
+                    </View>
                   </View>
                   <View style={createRecipeStyles.waterInput}>
                     <Text style={createRecipeStyles.subLabel}>물양</Text>
-                    <Controller
-                      control={control}
-                      name={`steps.${index}.waterAmount`}
-                      render={({ field: { onChange, onBlur, value } }) => (
-                        <TextInput
-                          style={createRecipeStyles.smallInput}
-                          placeholder="0"
-                          onBlur={onBlur}
-                          onChangeText={onChange}
-                          value={value}
-                          keyboardType="numeric"
-                        />
-                      )}
-                    />
+                    <View style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      backgroundColor: 'white',
+                      borderRadius: 8,
+                      borderWidth: 1,
+                      borderColor: '#e0e0e0',
+                    }}>
+                      <Controller
+                        control={control}
+                        name={`steps.${index}.waterAmount`}
+                        render={({ field: { onChange, onBlur, value } }) => (
+                          <TextInput
+                            style={[
+                              createRecipeStyles.smallInput,
+                              {
+                                backgroundColor: 'transparent',
+                                borderWidth: 0,
+                                flex: 1,
+                              }
+                            ]}
+                            placeholder="0"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            value={value}
+                            keyboardType="numeric"
+                          />
+                        )}
+                      />
+                      <Text style={{
+                        fontSize: 14,
+                        color: '#666',
+                        paddingRight: 12,
+                        fontWeight: '500',
+                      }}>ml</Text>
+                    </View>
                   </View>
                 </View>
                 <View>
+                  <Text style={createRecipeStyles.subLabel}>설명</Text>
                   <Controller
                     control={control}
                     name={`steps.${index}.description`}
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
-                        style={[
-                          createRecipeStyles.input,
-                          createRecipeStyles.textArea,
-                        ]}
-                        placeholder="설명"
+                        style={{
+                          backgroundColor: 'white',
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: '#e0e0e0',
+                          paddingHorizontal: 12,
+                          paddingVertical: 12,
+                          fontSize: 16,
+                          color: '#333',
+                          textAlignVertical: 'top',
+                          height: 80,
+                        }}
+                        placeholder="단계에 대한 설명을 입력하세요"
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -129,6 +175,29 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
             </View>
           ))}
         </View>
+
+        {/* Add Step Button - moved to bottom */}
+        <TouchableOpacity
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginTop: 16,
+            marginBottom: 20,
+            paddingVertical: 12,
+            paddingHorizontal: 16,
+          }}
+          onPress={addStep}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="add-circle-outline" size={20} color="#8B4513" />
+          <Text style={{
+            fontSize: 14,
+            fontWeight: '500',
+            color: '#8B4513',
+            marginLeft: 6,
+          }}>단계 추가</Text>
+        </TouchableOpacity>
 
         {hasAttemptedNext && errors.steps && (
           <Text style={createRecipeStyles.errorText}>
