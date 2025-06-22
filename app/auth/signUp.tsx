@@ -50,6 +50,9 @@ export default function SignUpScreen() {
     setLoading(true);
     try {
       const { error } = await signUpWithEmail(data.email, data.password);
+      if (!error) {
+        router.push("/auth/login");
+      }
       if (error) {
         Alert.alert("오류", error.message);
       }

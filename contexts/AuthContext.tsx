@@ -15,8 +15,6 @@ interface AuthContextType {
     password: string,
     displayName?: string
   ) => Promise<{ data: any; error: any }>;
-  signInWithGoogle: () => Promise<{ data: any; error: any }>;
-  signInWithApple: () => Promise<{ data: any; error: any }>;
   signOut: () => Promise<{ error: any }>;
 }
 

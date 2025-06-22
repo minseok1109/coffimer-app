@@ -140,9 +140,13 @@ export default function ProfileScreen() {
         {/* Logout Button */}
         <TouchableOpacity
           style={styles.logoutButton}
-          onPress={() => {
-            signOut();
-            router.replace("/auth/login");
+          onPress={async () => {
+            try {
+              await signOut();
+              router.replace("/auth/login");
+            } catch (error) {
+              console.error("로그아웃 오류:", error);
+            }
           }}
         >
           <Ionicons name="log-out-outline" size={20} color="#F44336" />
