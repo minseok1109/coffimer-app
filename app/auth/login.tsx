@@ -3,9 +3,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -17,14 +19,28 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+interface LoginFormData {
+  email: string;
+  password: string;
+}
+
 export default function LoginScreen() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const { user, signInWithEmail, signUpWithEmail } = useAuthContext();
+  const { user, signInWithEmail } = useAuthContext();
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm<LoginFormData>({
+    mode: "onChange",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
 
   // 로그인 성공 시 자동 리다이렉트
   useEffect(() => {
@@ -35,15 +51,10 @@ export default function LoginScreen() {
     }
   }, [user]);
 
-  const handleEmailAuth = async () => {
-    if (!email || !password) {
-      Alert.alert("오류", "이메일과 비밀번호를 입력해주세요.");
-      return;
-    }
-
+  const onSubmit = async (data: LoginFormData) => {
     setLoading(true);
     try {
-      const { error } = await signInWithEmail(email, password);
+      const { error } = await signInWithEmail(data.email, data.password);
 
       if (error) {
         Alert.alert("오류", error.message);
@@ -70,69 +81,120 @@ export default function LoginScreen() {
           {/* 헤더 */}
           <View style={styles.header}>
             <View style={styles.logoContainer}>
-              <Ionicons name="cafe" size={48} color="#8B4513" />
+              <Image
+                source={require("@/assets/images/logo.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.title}>Coffimer</Text>
-            <Text style={styles.subtitle}>완벽한 커피 레시피를 찾아보세요</Text>
           </View>
 
           {/* 메인 카드 */}
           <View style={styles.card}>
             {/* 폼 */}
             <View style={styles.form}>
-              <View style={styles.inputContainer}>
-                <Ionicons
-                  name="mail-outline"
-                  size={20}
-                  color="#666"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="이메일"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                />
-              </View>
-
-              <View style={styles.inputContainer}>
-                <Ionicons
-                  name="lock-closed-outline"
-                  size={20}
-                  color="#666"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder="비밀번호"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                />
-                <TouchableOpacity
-                  style={styles.passwordToggle}
-                  onPress={() => setShowPassword(!showPassword)}
+              <View>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    errors.email && styles.inputError,
+                  ]}
                 >
                   <Ionicons
-                    name={showPassword ? "eye-outline" : "eye-off-outline"}
+                    name="mail-outline"
                     size={20}
-                    color="#666"
+                    color={errors.email ? "#dc3545" : "#666"}
+                    style={styles.inputIcon}
                   />
-                </TouchableOpacity>
+                  <Controller
+                    control={control}
+                    name="email"
+                    rules={{
+                      required: "이메일을 입력해주세요",
+                      pattern: {
+                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                        message: "올바른 이메일 형식을 입력해주세요",
+                      },
+                    }}
+                    render={({ field: { onChange, value } }) => (
+                      <TextInput
+                        style={styles.input}
+                        placeholder="이메일"
+                        value={value}
+                        onChangeText={onChange}
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        autoComplete="email"
+                      />
+                    )}
+                  />
+                </View>
+                {errors.email && (
+                  <Text style={styles.errorText}>{errors.email.message}</Text>
+                )}
+              </View>
+
+              <View>
+                <View
+                  style={[
+                    styles.inputContainer,
+                    errors.password && styles.inputError,
+                  ]}
+                >
+                  <Ionicons
+                    name="lock-closed-outline"
+                    size={20}
+                    color={errors.password ? "#dc3545" : "#666"}
+                    style={styles.inputIcon}
+                  />
+                  <Controller
+                    control={control}
+                    name="password"
+                    rules={{
+                      required: "비밀번호를 입력해주세요",
+                      minLength: {
+                        value: 1,
+                        message: "비밀번호를 입력해주세요",
+                      },
+                    }}
+                    render={({ field: { onChange, value } }) => (
+                      <TextInput
+                        style={styles.input}
+                        placeholder="비밀번호"
+                        value={value}
+                        onChangeText={onChange}
+                        secureTextEntry={!showPassword}
+                        autoCapitalize="none"
+                      />
+                    )}
+                  />
+                  <TouchableOpacity
+                    style={styles.passwordToggle}
+                    onPress={() => setShowPassword(!showPassword)}
+                  >
+                    <Ionicons
+                      name={showPassword ? "eye-outline" : "eye-off-outline"}
+                      size={20}
+                      color="#666"
+                    />
+                  </TouchableOpacity>
+                </View>
+                {errors.password && (
+                  <Text style={styles.errorText}>
+                    {errors.password.message}
+                  </Text>
+                )}
               </View>
 
               <View style={styles.loginButtonContainer}>
                 <TouchableOpacity
                   style={[
                     styles.primaryButton,
-                    loading && styles.disabledButton,
+                    (loading || !isValid) && styles.disabledButton,
                   ]}
-                  onPress={handleEmailAuth}
-                  disabled={loading}
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={loading || !isValid}
                 >
                   {loading ? (
                     <ActivityIndicator color="white" />
@@ -147,7 +209,12 @@ export default function LoginScreen() {
                     onPress={() => router.push("/auth/signUp")}
                     activeOpacity={0.8}
                   >
-                    <Ionicons name="person-add-outline" size={18} color="#8B4513" style={styles.signUpIcon} />
+                    <Ionicons
+                      name="person-add-outline"
+                      size={18}
+                      color="#8B4513"
+                      style={styles.signUpIcon}
+                    />
                     <Text style={styles.signUpButtonText}>회원가입</Text>
                   </TouchableOpacity>
                 </View>
@@ -232,6 +299,10 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  logoImage: {
+    width: 80,
+    height: 80,
+  },
   title: {
     fontSize: 32,
     fontWeight: "bold",
@@ -289,9 +360,20 @@ const styles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     borderRadius: 12,
     paddingHorizontal: 16,
-    marginBottom: 16,
+    marginBottom: 8,
     borderWidth: 1,
     borderColor: "#e0e0e0",
+  },
+  inputError: {
+    borderColor: "#dc3545",
+    borderWidth: 1.5,
+  },
+  errorText: {
+    fontSize: 12,
+    color: "#dc3545",
+    marginBottom: 12,
+    marginLeft: 4,
+    fontWeight: "400",
   },
   inputIcon: {
     marginRight: 12,

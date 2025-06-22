@@ -7,6 +7,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -80,7 +81,11 @@ export default function SignUpScreen() {
               <Ionicons name="chevron-back" size={24} color="#8B4513" />
             </TouchableOpacity>
             <View style={styles.logoContainer}>
-              <Ionicons name="cafe" size={48} color="#8B4513" />
+              <Image
+                source={require("@/assets/images/logo.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
+              />
             </View>
             <Text style={styles.title}>회원가입</Text>
             <Text style={styles.subtitle}>Coffimer에 오신 것을 환영합니다</Text>
@@ -401,6 +406,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+  logoImage: {
+    width: 80,
+    height: 80,
   },
   title: {
     fontSize: 32,
