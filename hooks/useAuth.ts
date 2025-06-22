@@ -1,5 +1,5 @@
 import { secureStorage } from "@/lib/secureStorage";
-import { supabase } from "@/lib/supabaseClient";
+import { supabaseAuth, syncAuth } from "@/lib/supabaseClient";
 
 import type { Session, User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
@@ -25,7 +25,8 @@ export function useAuth() {
 
         if (!autoLoginEnabled) {
           // 자동 로그인이 비활성화된 경우 세션 정리
-          await supabase.auth.signOut();
+          await supabaseAuth.auth.signOut();
+          await syncAuth(null);
           setAuthState({
             user: null,
             session: null,
@@ -37,7 +38,12 @@ export function useAuth() {
         // 자동 로그인이 활성화된 경우 세션 복원
         const {
           data: { session },
-        } = await supabase.auth.getSession();
+        } = await supabaseAuth.auth.getSession();
+
+        // 세션이 있으면 데이터 로딩 클라이언트에도 동기화
+        if (session) {
+          await syncAuth(session);
+        }
 
         setAuthState({
           user: session?.user ?? null,
@@ -56,10 +62,15 @@ export function useAuth() {
 
     initializeAuth();
 
-    // Auth 상태 변경 감지
+    // Auth 상태 변경 감지 (인증 클라이언트 사용)
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabaseAuth.auth.onAuthStateChange(async (event, session) => {
+      console.log("🔐 Auth 상태 변경:", event, session?.user?.email);
+      
+      // 데이터 로딩 클라이언트와 동기화
+      await syncAuth(session);
+      
       setAuthState({
         user: session?.user ?? null,
         session,
@@ -83,7 +94,8 @@ export function useAuth() {
 
   const syncUserProfile = async (user: User) => {
     try {
-      const { data: existingUser } = await supabase
+      // 인증된 상태에서 사용자 프로필 동기화 (인증 클라이언트 사용)
+      const { data: existingUser } = await supabaseAuth
         .from("users")
         .select("*")
         .eq("id", user.id)
@@ -91,7 +103,7 @@ export function useAuth() {
 
       if (!existingUser) {
         // 새 사용자 생성
-        await supabase.from("users").insert({
+        await supabaseAuth.from("users").insert({
           id: user.id,
           email: user.email!,
           display_name:
@@ -102,7 +114,7 @@ export function useAuth() {
         });
       } else {
         // 기존 사용자 정보 업데이트
-        await supabase
+        await supabaseAuth
           .from("users")
           .update({
             display_name:
@@ -119,7 +131,7 @@ export function useAuth() {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabaseAuth.auth.signInWithPassword({
       email,
       password,
     });
@@ -137,7 +149,7 @@ export function useAuth() {
     password: string,
     displayName?: string
   ) => {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await supabaseAuth.auth.signUp({
       email,
       password,
       options: {
@@ -154,7 +166,7 @@ export function useAuth() {
     await secureStorage.clearSessionData();
     await secureStorage.setAutoLoginEnabled(false);
 
-    const { error } = await supabase.auth.signOut();
+    const { error } = await supabaseAuth.auth.signOut();
     return { error };
   };
 

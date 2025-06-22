@@ -16,6 +16,7 @@ export interface Recipe {
   is_public?: boolean;
   created_at?: string;
   updated_at?: string;
+  steps?: RecipeStep[];
 }
 
 export interface RecipeStep {

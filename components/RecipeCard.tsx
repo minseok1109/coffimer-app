@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import { Recipe } from "../lib/recipes";
+import { Recipe } from "../types/recipe";
 import { formatTimeKorean } from "../lib/timer/formatters";
 
 interface RecipeCardProps {
@@ -25,12 +25,12 @@ export default function RecipeCard({ recipe }: RecipeCardProps) {
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
           <Ionicons name="cafe-outline" size={16} color="#8B4513" />
-          <Text style={styles.infoText}>{recipe.coffee}</Text>
+          <Text style={styles.infoText}>{recipe.coffee}g</Text>
         </View>
         <View style={styles.infoItem}>
           <Ionicons name="time-outline" size={16} color="#666" />
           <Text style={styles.infoText}>
-            {formatTimeKorean(recipe.totalTime)}
+            {formatTimeKorean(recipe.total_time)}
           </Text>
         </View>
       </View>

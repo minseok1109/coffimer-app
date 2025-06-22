@@ -2,7 +2,7 @@ import { useAuthContext } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -18,19 +18,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function LoginScreen() {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  const {
-    signInWithEmail,
-    signUpWithEmail,
-    signInWithGoogle,
-    signInWithApple,
-  } = useAuthContext();
+  const { user, signInWithEmail, signUpWithEmail } = useAuthContext();
+
+  // 로그인 성공 시 자동 리다이렉트
+  useEffect(() => {
+    if (user) {
+      console.log("✅ 로그인 성공, 메인 화면으로 이동:", user.email);
+      router.replace("/(tabs)");
+      setLoading(false); // 리다이렉트 후 loading 해제
+    }
+  }, [user]);
 
   const handleEmailAuth = async () => {
     if (!email || !password) {
@@ -38,60 +41,20 @@ export default function LoginScreen() {
       return;
     }
 
-    if (isSignUp && !displayName.trim()) {
-      Alert.alert("오류", "표시 이름을 입력해주세요.");
-      return;
-    }
-
     setLoading(true);
     try {
-      const { error } = isSignUp
-        ? await signUpWithEmail(email, password, displayName)
-        : await signInWithEmail(email, password);
+      const { error } = await signInWithEmail(email, password);
 
       if (error) {
         Alert.alert("오류", error.message);
+        setLoading(false);
       } else {
-        if (isSignUp) {
-          Alert.alert(
-            "성공",
-            "회원가입이 완료되었습니다. 이메일을 확인해주세요."
-          );
-        } else {
-          router.replace("/(tabs)");
-        }
+        // 로그인 성공 - useEffect에서 자동으로 리다이렉트됨
+        console.log("🔄 로그인 요청 성공, 상태 업데이트 대기 중...");
+        // loading 상태는 useEffect에서 리다이렉트된 후에 해제됨
       }
     } catch (error) {
       Alert.alert("오류", "예상치 못한 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    try {
-      const { error } = await signInWithGoogle();
-      if (error) {
-        Alert.alert("오류", error.message);
-      }
-    } catch (error) {
-      Alert.alert("오류", "Google 로그인 중 오류가 발생했습니다.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAppleLogin = async () => {
-    setLoading(true);
-    try {
-      const { error } = await signInWithApple();
-      if (error) {
-        Alert.alert("오류", error.message);
-      }
-    } catch (error) {
-      Alert.alert("오류", "Apple 로그인 중 오류가 발생했습니다.");
-    } finally {
       setLoading(false);
     }
   };
@@ -115,49 +78,8 @@ export default function LoginScreen() {
 
           {/* 메인 카드 */}
           <View style={styles.card}>
-            <View style={styles.tabContainer}>
-              <TouchableOpacity
-                style={[styles.tab, !isSignUp && styles.activeTab]}
-                onPress={() => setIsSignUp(false)}
-              >
-                <Text
-                  style={[styles.tabText, !isSignUp && styles.activeTabText]}
-                >
-                  로그인
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tab, isSignUp && styles.activeTab]}
-                onPress={() => setIsSignUp(true)}
-              >
-                <Text
-                  style={[styles.tabText, isSignUp && styles.activeTabText]}
-                >
-                  회원가입
-                </Text>
-              </TouchableOpacity>
-            </View>
-
             {/* 폼 */}
             <View style={styles.form}>
-              {isSignUp && (
-                <View style={styles.inputContainer}>
-                  <Ionicons
-                    name="person-outline"
-                    size={20}
-                    color="#666"
-                    style={styles.inputIcon}
-                  />
-                  <TextInput
-                    style={styles.input}
-                    placeholder="표시 이름"
-                    value={displayName}
-                    onChangeText={setDisplayName}
-                    autoCapitalize="words"
-                  />
-                </View>
-              )}
-
               <View style={styles.inputContainer}>
                 <Ionicons
                   name="mail-outline"
@@ -203,19 +125,33 @@ export default function LoginScreen() {
                 </TouchableOpacity>
               </View>
 
-              <TouchableOpacity
-                style={[styles.primaryButton, loading && styles.disabledButton]}
-                onPress={handleEmailAuth}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>
-                    {isSignUp ? "회원가입" : "로그인"}
-                  </Text>
-                )}
-              </TouchableOpacity>
+              <View style={styles.loginButtonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.primaryButton,
+                    loading && styles.disabledButton,
+                  ]}
+                  onPress={handleEmailAuth}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>로그인</Text>
+                  )}
+                </TouchableOpacity>
+                <View style={styles.signUpContainer}>
+                  <Text style={styles.signUpText}>아직 계정이 없으신가요?</Text>
+                  <TouchableOpacity
+                    style={styles.signUpButton}
+                    onPress={() => router.push("/auth/signUp")}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="person-add-outline" size={18} color="#8B4513" style={styles.signUpIcon} />
+                    <Text style={styles.signUpButtonText}>회원가입</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
             </View>
           </View>
         </ScrollView>
@@ -236,6 +172,44 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     padding: 20,
     justifyContent: "center",
+  },
+  loginButtonContainer: { gap: 16 },
+  signUpContainer: {
+    alignItems: "center",
+    gap: 12,
+  },
+  signUpText: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "400",
+  },
+  signUpButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    borderWidth: 2,
+    borderColor: "#8B4513",
+    borderRadius: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    gap: 8,
+    shadowColor: "#8B4513",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  signUpIcon: {
+    marginRight: 4,
+  },
+  signUpButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#8B4513",
   },
   header: {
     alignItems: "center",

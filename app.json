@@ -3,6 +3,7 @@
     "name": "coffimer",
     "slug": "coffimer",
     "version": "1.0.0",
+    "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "coffimerapp",
