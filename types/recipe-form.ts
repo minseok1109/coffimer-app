@@ -4,6 +4,7 @@ export const recipeFormSchema = z.object({
   // Step 1
   title: z.string().min(1, "레시피 제목을 입력해주세요"),
   description: z.string().optional(),
+  youtubeUrl: z.string().url("올바른 URL을 입력해주세요").optional().or(z.literal("")),
   isPublic: z.boolean().default(false),
 
   // Step 2

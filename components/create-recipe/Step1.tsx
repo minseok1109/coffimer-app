@@ -3,6 +3,8 @@ import { RecipeFormData } from "@/types/recipe-form";
 import React from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import { Switch, Text, TextInput, View } from "react-native";
+import { YouTubePreview } from "./YouTubePreview";
+import { isValidYouTubeUrl } from "@/lib/youtube";
 
 interface Step1Props {
   hasAttemptedNext?: boolean;
@@ -12,7 +14,10 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
   const {
     control,
     formState: { errors },
+    watch,
   } = useFormContext<RecipeFormData>();
+
+  const youtubeUrl = watch("youtubeUrl");
 
   return (
     <View style={createRecipeStyles.stepContent}>
@@ -62,6 +67,38 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
             />
           )}
         />
+      </View>
+
+      <View style={createRecipeStyles.inputGroup}>
+        <Text style={createRecipeStyles.label}>YouTube URL (선택)</Text>
+        <Controller
+          control={control}
+          name="youtubeUrl"
+          render={({ field: { onChange, onBlur, value } }) => (
+            <>
+              <TextInput
+                style={[
+                  createRecipeStyles.input,
+                  hasAttemptedNext &&
+                    errors.youtubeUrl &&
+                    createRecipeStyles.inputError,
+                ]}
+                placeholder="https://youtube.com/watch?v=..."
+                onBlur={onBlur}
+                onChangeText={onChange}
+                value={value}
+              />
+              {hasAttemptedNext && errors.youtubeUrl && (
+                <Text style={createRecipeStyles.errorText}>
+                  {errors.youtubeUrl.message}
+                </Text>
+              )}
+            </>
+          )}
+        />
+        {youtubeUrl && isValidYouTubeUrl(youtubeUrl) && (
+          <YouTubePreview url={youtubeUrl} />
+        )}
       </View>
 
       <View style={createRecipeStyles.switchGroup}>
