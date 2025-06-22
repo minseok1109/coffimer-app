@@ -67,10 +67,10 @@ export function useAuth() {
       data: { subscription },
     } = supabaseAuth.auth.onAuthStateChange(async (event, session) => {
       console.log("🔐 Auth 상태 변경:", event, session?.user?.email);
-      
+
       // 데이터 로딩 클라이언트와 동기화
       await syncAuth(session);
-      
+
       setAuthState({
         user: session?.user ?? null,
         session,

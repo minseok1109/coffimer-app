@@ -1,30 +1,21 @@
+import { RecipeWithSteps } from "@/types/recipe";
+import { NextStepInfo, StepInfo } from "@/types/timer";
 import { useMemo } from "react";
-import { NextStepInfo, StepInfo } from "../../lib/timer/types";
-
-interface Recipe {
-  steps?: {
-    title: string;
-    water: string;
-    time: number;
-    description?: string;
-  }[];
-  totalTime: number;
-}
 
 export const useStepInfo = (
-  recipe: Recipe | null,
+  recipe: RecipeWithSteps | null,
   currentStep: number,
   currentTime: number
-): { currentStepInfo: StepInfo | null; nextStepInfo: NextStepInfo | null } => {
+) => {
   const currentStepInfo = useMemo((): StepInfo | null => {
-    if (!recipe?.steps || recipe.steps.length === 0) {
+    if (!recipe?.recipe_steps || recipe.recipe_steps.length === 0) {
       return null;
     }
 
-    const step = recipe.steps[currentStep];
+    const step = recipe.recipe_steps[currentStep];
     // 현재 단계의 시작 시간 계산 (누적시간 방식)
     const stepStartTime =
-      currentStep === 0 ? 0 : recipe.steps[currentStep - 1].time;
+      currentStep === 0 ? 0 : recipe.recipe_steps[currentStep - 1].time;
     // 현재 단계의 끝 시간 계산 (누적시간)
     const stepEndTime = step.time;
 
@@ -40,8 +31,8 @@ export const useStepInfo = (
 
     // 전체 진행률 계산
     const totalProgress =
-      recipe.totalTime > 0
-        ? Math.min((currentTime / recipe.totalTime) * 100, 100)
+      recipe.total_time > 0
+        ? Math.min((currentTime / recipe.total_time) * 100, 100)
         : 0;
 
     return {
@@ -49,7 +40,7 @@ export const useStepInfo = (
       progress,
       totalProgress,
       stepNumber: currentStep + 1,
-      totalSteps: recipe.steps.length,
+      totalSteps: recipe.recipe_steps.length,
       stepStartTime,
       stepEndTime,
       stepCurrentTime,
@@ -57,17 +48,20 @@ export const useStepInfo = (
   }, [recipe, currentStep, currentTime]);
 
   const nextStepInfo = useMemo((): NextStepInfo | null => {
-    if (!recipe?.steps || currentStep >= recipe.steps.length - 1) {
+    if (
+      !recipe?.recipe_steps ||
+      currentStep >= recipe.recipe_steps.length - 1
+    ) {
       return null;
     }
 
-    const nextStep = recipe.steps[currentStep + 1];
+    const nextStep = recipe.recipe_steps[currentStep + 1];
     return {
       step: nextStep,
       stepNumber: currentStep + 2,
-      totalSteps: recipe.steps.length,
+      totalSteps: recipe.recipe_steps.length,
     };
-  }, [recipe?.steps, currentStep]);
+  }, [recipe?.recipe_steps, currentStep]);
 
   return { currentStepInfo, nextStepInfo };
 };

@@ -1,11 +1,5 @@
-import {
-  CreateRecipeRequest,
-  Recipe,
-  RecipeStep,
-  RecipeWithSteps,
-} from "@/types/recipe";
+import { CreateRecipeRequest, Recipe, RecipeStep } from "@/types/recipe";
 import { RecipeFormData } from "@/types/recipe-form";
-import { supabase } from "./supabaseClient";
 
 /**
  * 폼 데이터를 데이터베이스 형식으로 변환
@@ -34,10 +28,13 @@ export function transformFormDataToRecipe(
     coffee: coffeeAmount,
     water: waterAmount,
     water_temperature: waterTemperature,
-    dripper: formData.dripper,
+    dripper: formData.dripper || null,
+    filter: null, // 필터 정보가 폼에 없으므로 null로 설정
     ratio: ratio,
-    description: formData.description || "",
-    is_public: formData.isPublic,
+    description: formData.description || null,
+    micron: null, // 미크론 정보가 폼에 없으므로 null로 설정
+    youtube_url: formData.youtubeUrl || null, // YouTube URL 추가
+    is_public: formData.isPublic || false,
   };
 
   // 스텝 데이터 변환
@@ -48,185 +45,15 @@ export function transformFormDataToRecipe(
       cumulativeWater += stepWater;
 
       return {
-        step_index: index + 1,
+        step_index: index,
         time: parseInt(step.time),
         title: `Step ${index + 1}`,
-        description: step.description || "",
-        water: stepWater,
-        total_water: cumulativeWater,
+        description: step.description || null,
+        water: stepWater || 0,
+        total_water: cumulativeWater || null,
       };
     }
   );
 
   return { recipe, steps };
-}
-
-/**
- * 레시피와 스텝을 데이터베이스에 저장
- */
-export async function createRecipe(
-  formData: RecipeFormData,
-  userId: string
-): Promise<{ success: boolean; data?: RecipeWithSteps; error?: string }> {
-  try {
-    const { recipe, steps } = transformFormDataToRecipe(formData, userId);
-
-    // 1. 레시피 저장
-    const { data: recipeData, error: recipeError } = await supabase
-      .from("recipes")
-      .insert(recipe)
-      .select()
-      .single();
-
-    if (recipeError) {
-      console.error("레시피 저장 오류:", recipeError);
-      return { success: false, error: recipeError.message };
-    }
-
-    // 2. 스텝 저장
-    const stepsWithRecipeId = steps.map((step) => ({
-      ...step,
-      recipe_id: recipeData.id,
-    }));
-
-    const { data: stepsData, error: stepsError } = await supabase
-      .from("recipe_steps")
-      .insert(stepsWithRecipeId)
-      .select();
-
-    if (stepsError) {
-      console.error("레시피 스텝 저장 오류:", stepsError);
-      // 레시피 롤백
-      await supabase.from("recipes").delete().eq("id", recipeData.id);
-      return { success: false, error: stepsError.message };
-    }
-
-    const result: RecipeWithSteps = {
-      ...recipeData,
-      recipe_steps: stepsData,
-    };
-
-    return { success: true, data: result };
-  } catch (error) {
-    console.error("레시피 생성 오류:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.",
-    };
-  }
-}
-
-/**
- * 사용자의 레시피 목록 조회
- */
-export async function getUserRecipes(
-  userId: string
-): Promise<{ success: boolean; data?: RecipeWithSteps[]; error?: string }> {
-  try {
-    const { data, error } = await supabase
-      .from("recipes")
-      .select(
-        `
-        *,
-        recipe_steps (*)
-      `
-      )
-      .eq("owner_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("레시피 조회 오류:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data: data as RecipeWithSteps[] };
-  } catch (error) {
-    console.error("레시피 조회 오류:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.",
-    };
-  }
-}
-
-/**
- * 특정 레시피 상세 조회
- */
-export async function getRecipeById(
-  recipeId: string
-): Promise<{ success: boolean; data?: RecipeWithSteps; error?: string }> {
-  try {
-    const { data, error } = await supabase
-      .from("recipes")
-      .select(
-        `
-        *,
-        recipe_steps (*),
-        users (display_name, profile_image)
-      `
-      )
-      .eq("id", recipeId)
-      .single();
-
-    if (error) {
-      console.error("레시피 상세 조회 오류:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data: data as RecipeWithSteps };
-  } catch (error) {
-    console.error("레시피 상세 조회 오류:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.",
-    };
-  }
-}
-
-/**
- * 공개 레시피 목록 조회
- */
-export async function getPublicRecipes(): Promise<{
-  success: boolean;
-  data?: RecipeWithSteps[];
-  error?: string;
-}> {
-  try {
-    const { data, error } = await supabase
-      .from("recipes")
-      .select(
-        `
-        *,
-        recipe_steps (*),
-        users (display_name, profile_image)
-      `
-      )
-      .eq("is_public", true)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("공개 레시피 조회 오류:", error);
-      return { success: false, error: error.message };
-    }
-
-    return { success: true, data: data as RecipeWithSteps[] };
-  } catch (error) {
-    console.error("공개 레시피 조회 오류:", error);
-    return {
-      success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "알 수 없는 오류가 발생했습니다.",
-    };
-  }
 }

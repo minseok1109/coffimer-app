@@ -1,42 +1,27 @@
-// Supabase 데이터베이스 스키마에 맞는 Recipe 타입 정의
-export interface Recipe {
-  id?: string;
-  owner_id: string;
-  name: string;
-  total_time: number;
-  coffee: number;
-  water: number;
-  water_temperature: number;
-  dripper?: string;
-  filter?: string;
-  ratio?: number;
-  description?: string;
-  micron?: number;
-  youtube_url?: string;
-  is_public?: boolean;
-  created_at?: string;
-  updated_at?: string;
-  steps?: RecipeStep[];
+import type { Database, Tables, InsertTables } from './database'
+
+// 기본 타입 정의 (Supabase 자동 생성 타입 기반)
+export type Recipe = Tables<'recipes'>
+export type RecipeStep = Tables<'recipe_steps'>
+export type User = Tables<'users'>
+
+export type RecipeInsert = InsertTables<'recipes'>
+export type RecipeStepInsert = InsertTables<'recipe_steps'>
+
+// 레시피 생성을 위한 입력 타입
+export interface CreateRecipeInput {
+  recipe: Omit<RecipeInsert, 'owner_id'>
+  steps: Omit<RecipeStepInsert, 'recipe_id'>[]
 }
 
-export interface RecipeStep {
-  id?: number;
-  recipe_id: string;
-  step_index: number;
-  time: number;
-  title?: string;
-  description?: string;
-  water?: number;
-  total_water?: number;
-}
-
-// 레시피 생성 요청 타입
+// 레시피 생성 요청 타입 (기존 호환성을 위해 유지)
 export interface CreateRecipeRequest {
-  recipe: Omit<Recipe, "id" | "created_at" | "updated_at">;
-  steps: Omit<RecipeStep, "id" | "recipe_id">[];
+  recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at'>
+  steps: Omit<RecipeStep, 'id' | 'recipe_id'>[]
 }
 
-// 레시피 응답 타입
+// 완전한 레시피 타입 (단계 포함)
 export interface RecipeWithSteps extends Recipe {
-  recipe_steps: RecipeStep[];
+  recipe_steps: RecipeStep[]
+  users?: Pick<User, 'id' | 'display_name' | 'profile_image'>
 }

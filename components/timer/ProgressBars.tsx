@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { formatTime } from "../../lib/timer/formatters";
-import { StepInfo } from "../../lib/timer/types";
+
+import { StepInfo } from "@/types/timer";
 
 interface ProgressBarsProps {
   currentStepInfo: StepInfo;

@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { StepInfo, WaterInfo } from '../../lib/timer/types';
+import { StepInfo } from "@/types/timer";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { WaterInfo } from "../../lib/timer/types";
 
 interface WaterInfoGridProps {
   currentStepInfo: StepInfo;

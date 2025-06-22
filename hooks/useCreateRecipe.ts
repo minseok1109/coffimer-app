@@ -1,6 +1,7 @@
 import { useAuth } from "@/hooks/useAuth";
-import { createRecipe } from "@/lib/recipeApi";
 import { RecipeFormData, recipeFormSchema } from "@/types/recipe-form";
+import { useCreateRecipeMutation } from "./useCreateRecipeMutation";
+import { transformFormDataToRecipe } from "@/lib/recipeApi";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -101,29 +102,62 @@ export const useCreateRecipe = () => {
     }
   };
 
+  // 새로운 뮤테이션 훅 사용
+  const createRecipeMutation = useCreateRecipeMutation({
+    onSuccess: (recipe) => {
+      Alert.alert("성공", "레시피가 성공적으로 저장되었습니다!", [
+        {
+          text: "확인",
+          onPress: () => {
+            router.back();
+          },
+        },
+      ]);
+    },
+    onError: (error) => {
+      Alert.alert("오류", error.message || "레시피 저장에 실패했습니다.");
+    }
+  });
+
   const onSubmit = async (data: RecipeFormData) => {
-    // if (!user) {
-    //   Alert.alert("오류", "로그인이 필요합니다.");
-    //   return;
-    // }
+    if (!user) {
+      Alert.alert("오류", "로그인이 필요합니다.");
+      return;
+    }
 
     try {
       setIsSaving(true);
 
-      const result = await createRecipe(data, "c8482dd6-f094-4a07-b66a-3d4f8acc4c58");
+      // 폼 데이터를 CreateRecipeInput 형태로 변환
+      const { recipe, steps } = transformFormDataToRecipe(data, user.id);
+      
+      // CreateRecipeInput 타입으로 변환
+      const input = {
+        recipe: {
+          name: recipe.name,
+          total_time: recipe.total_time,
+          coffee: recipe.coffee,
+          water: recipe.water,
+          water_temperature: recipe.water_temperature,
+          dripper: recipe.dripper,
+          filter: recipe.filter,
+          ratio: recipe.ratio,
+          description: recipe.description,
+          micron: recipe.micron,
+          youtube_url: recipe.youtube_url,
+          is_public: recipe.is_public
+        },
+        steps: steps.map(step => ({
+          step_index: step.step_index,
+          time: step.time,
+          title: step.title,
+          description: step.description,
+          water: step.water,
+          total_water: step.total_water
+        }))
+      };
 
-      if (result.success) {
-        Alert.alert("성공", "레시피가 성공적으로 저장되었습니다!", [
-          {
-            text: "확인",
-            onPress: () => {
-              router.back();
-            },
-          },
-        ]);
-      } else {
-        Alert.alert("오류", result.error || "레시피 저장에 실패했습니다.");
-      }
+      await createRecipeMutation.mutateAsync(input);
     } catch (error) {
       console.error("레시피 저장 오류:", error);
       Alert.alert("오류", "레시피 저장 중 예상치 못한 오류가 발생했습니다.");

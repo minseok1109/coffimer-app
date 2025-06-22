@@ -1,8 +1,8 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { NextStepInfo } from '../../lib/timer/types';
-import { formatTime } from '../../lib/timer/formatters';
+import { NextStepInfo } from "@/types/timer";
+import { Ionicons } from "@expo/vector-icons";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { formatTime } from "../../lib/timer/formatters";
 
 interface NextStepCardProps {
   nextStepInfo: NextStepInfo;
@@ -14,9 +14,6 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({ nextStepInfo }) => {
       <View style={styles.nextStepHeader}>
         <Ionicons name="arrow-forward-circle" size={20} color="#D2691E" />
         <Text style={styles.nextStepLabel}>다음 단계</Text>
-        <Text style={styles.nextStepCounter}>
-          {nextStepInfo.stepNumber}/{nextStepInfo.totalSteps}
-        </Text>
       </View>
 
       <Text style={styles.nextStepTitle}>{nextStepInfo.step.title}</Text>
@@ -25,7 +22,7 @@ export const NextStepCard: React.FC<NextStepCardProps> = ({ nextStepInfo }) => {
         <View style={styles.nextWaterInfo}>
           <Ionicons name="water-outline" size={16} color="#D2691E" />
           <Text style={styles.nextWaterAmount}>
-            {nextStepInfo.step.water}
+            {nextStepInfo.step.water}ml
           </Text>
         </View>
         <Text style={styles.nextStepTime}>
@@ -42,7 +39,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     borderRadius: 16,
     padding: 20,
-    marginBottom: 32,
+    marginBottom: 16,
     borderWidth: 1,
     borderColor: "#D2691E",
     shadowColor: "#000",

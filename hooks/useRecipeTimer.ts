@@ -1,6 +1,6 @@
-import { Recipe } from "@/lib/recipes";
 import { useCallback, useEffect, useState } from "react";
 
+import { RecipeWithSteps } from "@/types/recipe";
 import { INITIAL_STEP, INITIAL_TIME, TIMER_INTERVAL_MS } from "../constants";
 import { useNotification } from "./useNotification";
 
@@ -14,7 +14,9 @@ interface UseRecipeTimerReturn {
   goToNextStep: () => void;
 }
 
-export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
+export const useRecipeTimer = (
+  recipe: RecipeWithSteps
+): UseRecipeTimerReturn => {
   const [currentTime, setCurrentTime] = useState(INITIAL_TIME);
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(INITIAL_STEP);
@@ -29,7 +31,11 @@ export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
 
   // 타이머 로직
   useEffect(() => {
-    if (!isRunning || currentTime >= recipe.totalTime || !recipe.steps) {
+    if (
+      !isRunning ||
+      currentTime >= recipe.total_time ||
+      !recipe.recipe_steps
+    ) {
       return;
     }
 
@@ -38,7 +44,7 @@ export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
         const newTime = prevTime + 1;
 
         // 단계 완료 체크 및 알림
-        const completedStep = recipe.steps?.find(
+        const completedStep = recipe.recipe_steps?.find(
           (step) => step.time === newTime
         );
         if (completedStep) {
@@ -50,13 +56,16 @@ export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
 
         // 현재 단계 업데이트 (시간 구간 기반)
         let newCurrentStep = 0;
-        if (recipe.steps) {
+        if (recipe.recipe_steps) {
           // 현재 시간이 넘어간 단계들의 개수를 계산
-          const passedSteps = recipe.steps.filter(
+          const passedSteps = recipe.recipe_steps.filter(
             (step) => newTime > step.time
           ).length;
           // 마지막 단계를 넘지 않도록 제한
-          newCurrentStep = Math.min(passedSteps, recipe.steps.length - 1);
+          newCurrentStep = Math.min(
+            passedSteps,
+            recipe.recipe_steps.length - 1
+          );
         }
 
         if (newCurrentStep !== currentStep) {
@@ -85,22 +94,23 @@ export const useRecipeTimer = (recipe: Recipe): UseRecipeTimerReturn => {
   }, []);
 
   const goToPreviousStep = useCallback(() => {
-    if (currentStep > 0 && recipe.steps) {
+    if (currentStep > 0 && recipe.recipe_steps) {
       const previousStep = currentStep - 1;
-      const previousStepTime = previousStep === 0 ? 0 : recipe.steps[previousStep - 1].time;
+      const previousStepTime =
+        previousStep === 0 ? 0 : recipe.recipe_steps[previousStep - 1].time;
       setCurrentStep(previousStep);
       setCurrentTime(previousStepTime);
     }
-  }, [currentStep, recipe.steps]);
+  }, [currentStep, recipe.recipe_steps]);
 
   const goToNextStep = useCallback(() => {
-    if (recipe.steps && currentStep < recipe.steps.length - 1) {
+    if (recipe.recipe_steps && currentStep < recipe.recipe_steps.length - 1) {
       const nextStep = currentStep + 1;
-      const nextStepTime = recipe.steps[nextStep - 1].time;
+      const nextStepTime = recipe.recipe_steps[nextStep - 1].time;
       setCurrentStep(nextStep);
       setCurrentTime(nextStepTime);
     }
-  }, [currentStep, recipe.steps]);
+  }, [currentStep, recipe.recipe_steps]);
 
   return {
     currentTime,

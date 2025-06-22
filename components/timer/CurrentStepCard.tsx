@@ -1,13 +1,14 @@
+import { RecipeWithSteps } from "@/types/recipe";
+import { StepInfo } from "@/types/timer";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Recipe } from "../../lib/recipes";
-import { StepInfo, WaterInfo } from "../../lib/timer/types";
+import { WaterInfo } from "../../lib/timer/types";
 import { WaterProgressBar } from "./WaterProgressBar";
 
 interface CurrentStepCardProps {
   currentStepInfo: StepInfo;
   waterInfo: WaterInfo;
-  recipe?: Recipe | null;
+  recipe?: RecipeWithSteps;
 }
 
 export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
@@ -19,9 +20,6 @@ export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
     <View style={styles.currentStepCard}>
       <View style={styles.currentStepHeader}>
         <Text style={styles.currentStepLabel}>현재 단계 정보</Text>
-        <Text style={styles.stepCounter}>
-          단계 {currentStepInfo.stepNumber}/{currentStepInfo.totalSteps}
-        </Text>
       </View>
 
       <WaterProgressBar

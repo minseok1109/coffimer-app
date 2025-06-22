@@ -1,3 +1,4 @@
+import { useRecipe } from "@/hooks/useRecipes";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
@@ -11,12 +12,11 @@ import {
 } from "../../../components/timer";
 import { useStepInfo, useWaterCalculation } from "../../../hooks/timer";
 import { useRecipeTimer } from "../../../hooks/useRecipeTimer";
-import { getRecipeById, Recipe } from "../../../lib/recipes";
 
 export default function RecipeTimer() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const recipe = getRecipeById(Number(id)) as Recipe;
+  const { data: recipe } = useRecipe(id as string);
 
   const {
     currentTime,
@@ -28,9 +28,9 @@ export default function RecipeTimer() {
     goToNextStep,
   } = useRecipeTimer(recipe!);
 
-  const waterInfo = useWaterCalculation(recipe, currentStep);
+  const waterInfo = useWaterCalculation(recipe!, currentStep);
   const { currentStepInfo, nextStepInfo } = useStepInfo(
-    recipe,
+    recipe!,
     currentStep,
     currentTime
   );
@@ -52,17 +52,18 @@ export default function RecipeTimer() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {currentStepInfo && recipe.steps && (
+        {currentStepInfo && recipe.recipe_steps && (
           <ProgressBars
             currentStepInfo={currentStepInfo}
             currentTime={currentTime}
-            totalTime={recipe.totalTime}
+            totalTime={recipe.total_time}
             onPreviousStep={goToPreviousStep}
             onNextStep={goToNextStep}
             canGoToPrevious={currentStep > 0}
-            canGoToNext={currentStep < recipe.steps.length - 1}
+            canGoToNext={currentStep < recipe.recipe_steps.length - 1}
           />
         )}
+        {nextStepInfo && <NextStepCard nextStepInfo={nextStepInfo} />}
         {currentStepInfo && (
           <CurrentStepCard
             currentStepInfo={currentStepInfo}
@@ -70,9 +71,8 @@ export default function RecipeTimer() {
             recipe={recipe}
           />
         )}
-        {nextStepInfo && <NextStepCard nextStepInfo={nextStepInfo} />}
       </ScrollView>
-      {recipe.steps && (
+      {recipe.recipe_steps && (
         <TimerControls
           isRunning={isRunning}
           onToggleTimer={toggleTimer}
@@ -92,6 +92,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 0,
   },
 });

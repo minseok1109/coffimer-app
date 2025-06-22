@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { StepInfo } from '../../lib/timer/types';
+import { StepInfo } from "@/types/timer";
+import React from "react";
+import { StyleSheet, Text, View } from "react-native";
 
 interface StepTitleProps {
   currentStepInfo: StepInfo;
@@ -9,9 +9,7 @@ interface StepTitleProps {
 export const StepTitle: React.FC<StepTitleProps> = ({ currentStepInfo }) => {
   return (
     <View style={styles.currentStepTitleContainer}>
-      <Text style={styles.currentStepTitle}>
-        {currentStepInfo.step.title}
-      </Text>
+      <Text style={styles.currentStepTitle}>{currentStepInfo.step.title}</Text>
       <Text style={styles.stepCounter}>
         단계 {currentStepInfo.stepNumber} / {currentStepInfo.totalSteps}
       </Text>

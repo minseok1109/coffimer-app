@@ -1,15 +1,18 @@
 import { supabase } from "@/lib/supabaseClient";
-import { Recipe } from "../types/recipe";
+import { Recipe, RecipeWithSteps } from "../types/recipe";
 
 export class RecipeService {
   /**
    * 특정 ID의 레시피를 조회합니다 (steps 포함)
    */
-  static async getRecipeById(recipeId: string): Promise<Recipe> {
-    // 레시피 기본 정보 조회
+  static async getRecipeById(recipeId: string): Promise<RecipeWithSteps> {
+    // 레시피와 단계 조회
     const { data: recipe, error: recipeError } = await supabase
       .from("recipes")
-      .select("*")
+      .select(`
+        *,
+        recipe_steps (*)
+      `)
       .eq("id", recipeId)
       .single();
 
@@ -17,32 +20,50 @@ export class RecipeService {
       throw new Error(`Failed to fetch recipe: ${recipeError.message}`);
     }
 
-    // 레시피 스텝 조회
-    const { data: steps, error: stepsError } = await supabase
-      .from("recipe_steps")
-      .select("*")
-      .eq("recipe_id", recipeId)
-      .order("step_index", { ascending: true });
-
-    if (stepsError) {
-      console.warn("Failed to fetch recipe steps:", stepsError);
+    if (!recipe) {
+      throw new Error("Recipe not found");
     }
+
+    // 사용자 정보 조회
+    const { data: user } = await supabase
+      .from("users")
+      .select("id, display_name, profile_image")
+      .eq("id", recipe.owner_id)
+      .single();
 
     return {
       ...recipe,
-      steps: steps || [],
-    };
+      users: user
+    } as RecipeWithSteps;
   }
 
   /**
    * 모든 공개 레시피를 조회합니다
    */
-  static async getAllRecipes(includeSteps: boolean = false): Promise<Recipe[]> {
+  static async getAllRecipes(includeSteps: boolean = false): Promise<Recipe[] | RecipeWithSteps[]> {
     try {
-      // 공개된 레시피만 조회
+      if (!includeSteps) {
+        // 스텝 없이 기본 레시피만 조회
+        const { data: recipes, error } = await supabase
+          .from("recipes")
+          .select("*")
+          .eq("is_public", true)
+          .order("created_at", { ascending: false });
+
+        if (error) {
+          throw new Error(`Failed to fetch recipes: ${error.message}`);
+        }
+
+        return recipes || [];
+      }
+
+      // 스텝 정보도 포함하는 경우 - 별도 쿼리로 분리
       const { data: recipes, error } = await supabase
         .from("recipes")
-        .select("*")
+        .select(`
+          *,
+          recipe_steps (*)
+        `)
         .eq("is_public", true)
         .order("created_at", { ascending: false });
 
@@ -54,27 +75,20 @@ export class RecipeService {
         return [];
       }
 
-      if (!includeSteps) {
-        return recipes;
-      }
+      // 사용자 정보 별도 조회
+      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, display_name, profile_image")
+        .in("id", userIds as string[]);
 
-      // 스텝 정보도 포함하는 경우
-      const recipesWithSteps: Recipe[] = await Promise.all(
-        recipes.map(async (recipe) => {
-          const { data: steps } = await supabase
-            .from("recipe_steps")
-            .select("*")
-            .eq("recipe_id", recipe.id)
-            .order("step_index", { ascending: true });
+      // 레시피와 사용자 정보 결합
+      const recipesWithUsers = (recipes as any).map((recipe: any) => ({
+        ...recipe,
+        users: users?.find(user => user.id === recipe.owner_id)
+      }));
 
-          return {
-            ...recipe,
-            steps: steps || [],
-          };
-        })
-      );
-
-      return recipesWithSteps;
+      return recipesWithUsers as any;
     } catch (error) {
       console.error("RecipeService.getAllRecipes 오류:", error);
       throw error;
@@ -86,8 +100,9 @@ export class RecipeService {
    */
   static async getRecipesPaginated(
     page: number = 0,
-    pageSize: number = 10
-  ): Promise<{ recipes: Recipe[]; totalCount: number; totalPages: number }> {
+    pageSize: number = 10,
+    includeSteps: boolean = false
+  ): Promise<{ recipes: Recipe[] | RecipeWithSteps[]; totalCount: number; totalPages: number }> {
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
@@ -98,9 +113,16 @@ export class RecipeService {
       .eq("is_public", true);
 
     // 페이지네이션된 데이터 조회
+    const selectQuery = includeSteps 
+      ? `
+        *,
+        recipe_steps (*)
+      `
+      : "*";
+
     const { data: recipes, error } = await supabase
       .from("recipes")
-      .select("*")
+      .select(selectQuery)
       .eq("is_public", true)
       .order("created_at", { ascending: false })
       .range(from, to);
@@ -109,11 +131,27 @@ export class RecipeService {
       throw new Error(`Failed to fetch paginated recipes: ${error.message}`);
     }
 
+    let recipesWithUsers = recipes || [];
+
+    // 사용자 정보 추가 (includeSteps인 경우에만)
+    if (includeSteps && recipes && recipes.length > 0) {
+      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, display_name, profile_image")
+        .in("id", userIds as string[]);
+
+      recipesWithUsers = (recipes as any).map((recipe: any) => ({
+        ...recipe,
+        users: users?.find(user => user.id === recipe.owner_id)
+      }));
+    }
+
     const totalCount = count || 0;
     const totalPages = Math.ceil(totalCount / pageSize);
 
     return {
-      recipes: recipes || [],
+      recipes: recipesWithUsers as any,
       totalCount,
       totalPages,
     };
@@ -122,14 +160,21 @@ export class RecipeService {
   /**
    * 검색어로 레시피를 검색합니다
    */
-  static async searchRecipes(searchTerm: string): Promise<Recipe[]> {
+  static async searchRecipes(searchTerm: string, includeSteps: boolean = false): Promise<Recipe[] | RecipeWithSteps[]> {
     if (!searchTerm.trim()) {
-      return this.getAllRecipes();
+      return this.getAllRecipes(includeSteps);
     }
+
+    const selectQuery = includeSteps 
+      ? `
+        *,
+        recipe_steps (*)
+      `
+      : "*";
 
     const { data: recipes, error } = await supabase
       .from("recipes")
-      .select("*")
+      .select(selectQuery)
       .eq("is_public", true)
       .or(`name.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%`)
       .order("created_at", { ascending: false });
@@ -138,7 +183,23 @@ export class RecipeService {
       throw new Error(`Failed to search recipes: ${error.message}`);
     }
 
-    return recipes || [];
+    let recipesWithUsers = recipes || [];
+
+    // 사용자 정보 추가 (includeSteps인 경우에만)
+    if (includeSteps && recipes && recipes.length > 0) {
+      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const { data: users } = await supabase
+        .from("users")
+        .select("id, display_name, profile_image")
+        .in("id", userIds as string[]);
+
+      recipesWithUsers = (recipes as any).map((recipe: any) => ({
+        ...recipe,
+        users: users?.find(user => user.id === recipe.owner_id)
+      }));
+    }
+
+    return recipesWithUsers as any;
   }
 
   /**

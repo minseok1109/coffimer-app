@@ -1,8 +1,12 @@
+import RecipeCard from "@/components/RecipeCard";
+import { useAuthContext } from "@/contexts/AuthContext";
+import { useUserRecipes } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -11,27 +15,38 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface Recipe {
-  id: string;
-  title: string;
-  description: string;
-  ingredients: string[];
-  difficulty: "Easy" | "Medium" | "Hard";
-  time: string;
-}
-
 export default function RecipesScreen() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [recipes] = useState<Recipe[]>([]);
   const router = useRouter();
-
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const { user } = useAuthContext();
+  const { data: myRecipes, isLoading, error } = useUserRecipes(user?.id || "");
 
   const handleAddRecipe = () => {
     router.push("/create-recipe");
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, styles.centered]}>
+          <ActivityIndicator size="large" color="#8B4513" />
+          <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (error) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, styles.centered]}>
+          <Text style={styles.errorText}>
+            레시피를 불러오는데 실패했습니다.
+          </Text>
+          <Text style={styles.errorDetail}>{error.message}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,34 +61,17 @@ export default function RecipesScreen() {
         </View>
       </View>
 
-      {/* <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color="#999"
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="레시피 검색..."
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
-      </View> */}
-
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {filteredRecipes.length === 0 && (
+        {myRecipes && myRecipes.length > 0 ? (
+          myRecipes.map((recipe) => (
+            <RecipeCard key={recipe.id} recipe={recipe} />
+          ))
+        ) : (
           <View style={styles.emptyState}>
             <Ionicons name="document-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>
-              {searchQuery
-                ? "검색 결과가 없습니다"
-                : "아직 저장된 레시피가 없습니다"}
-            </Text>
+            <Text style={styles.emptyText}>아직 저장된 레시피가 없습니다</Text>
             <Text style={styles.emptySubtext}>
-              {searchQuery
-                ? "다른 키워드로 검색해보세요"
-                : "첫 번째 레시피를 추가해보세요!"}
+              첫 번째 레시피를 추가해보세요!
             </Text>
           </View>
         )}
@@ -86,6 +84,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
+  },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     flexDirection: "row",
@@ -119,31 +121,6 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
-  },
-  searchContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "white",
-    marginHorizontal: 20,
-    marginBottom: 20,
-    paddingHorizontal: 15,
-    borderRadius: 25,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  searchIcon: {
-    marginRight: 10,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
   },
   scrollView: {
     paddingHorizontal: 20,
@@ -234,6 +211,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#ccc",
     marginTop: 8,
+    textAlign: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#d32f2f",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  errorDetail: {
+    fontSize: 14,
+    color: "#666",
     textAlign: "center",
   },
 });

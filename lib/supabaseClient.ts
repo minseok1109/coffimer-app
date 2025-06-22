@@ -1,12 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/types/database";
 
 const supabaseUrl = "https://qyjbrwvlzxrtrypwncfl.supabase.co";
 const supabaseAnonKey =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF5amJyd3ZsenhydHJ5cHduY2ZsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkzNTE5OTQsImV4cCI6MjA2NDkyNzk5NH0.d5yLGjuwAHF0AZDXV7YTQl-loRrK1iGSAXoR-4XQkZw";
 
 // 1. 데이터 로딩용 클라이언트 (세션 없음, 빠른 초기화)
-export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
@@ -15,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 // 2. 인증용 클라이언트 (세션 유지, 로그인 상태 보존)
-export const supabaseAuth = createClient(supabaseUrl, supabaseAnonKey, {
+export const supabaseAuth = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

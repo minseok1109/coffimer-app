@@ -1,22 +1,35 @@
+import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
+  ActivityIndicator,
   Alert,
   Linking,
+  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { getRecipeById } from "../../lib/recipes";
 import { formatTime, formatTimeKorean } from "../../lib/timer/formatters";
 
 export default function RecipeDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
-  const recipe = getRecipeById(Number(id));
+  const { data: recipe, isLoading } = useRecipe(id as string);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={[styles.container, styles.centered]}>
+          <ActivityIndicator size="large" color="#8B4513" />
+          <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!recipe) {
     return (
@@ -39,12 +52,12 @@ export default function RecipeDetail() {
   };
 
   const handleYouTubePress = async () => {
-    if (!recipe.youtubeUrl) return;
+    if (!recipe.youtube_url) return;
 
     try {
-      const supported = await Linking.canOpenURL(recipe.youtubeUrl);
+      const supported = await Linking.canOpenURL(recipe.youtube_url);
       if (supported) {
-        await Linking.openURL(recipe.youtubeUrl);
+        await Linking.openURL(recipe.youtube_url);
       } else {
         Alert.alert("오류", "YouTube 앱을 열 수 없습니다.");
       }
@@ -81,13 +94,13 @@ export default function RecipeDetail() {
             <Ionicons name="time-outline" size={20} color="#666" />
             <Text style={styles.infoLabel}>소요시간</Text>
             <Text style={styles.infoValue}>
-              {formatTimeKorean(recipe.totalTime)}
+              {formatTimeKorean(recipe.total_time)}
             </Text>
           </View>
           <View style={styles.infoCard}>
             <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
             <Text style={styles.infoLabel}>수온</Text>
-            <Text style={styles.infoValue}>{recipe.waterTemperature}</Text>
+            <Text style={styles.infoValue}>{recipe.water_temperature}</Text>
           </View>
           <View style={styles.infoCard}>
             <Ionicons name="funnel-outline" size={20} color="#8B4513" />
@@ -101,10 +114,10 @@ export default function RecipeDetail() {
           </View>
         </View>
 
-        {recipe.steps && recipe.steps.length > 0 && (
+        {recipe.recipe_steps && recipe.recipe_steps.length > 0 && (
           <View style={styles.stepsContainer}>
             <Text style={styles.sectionTitle}>단계</Text>
-            {recipe.steps.map((step, index) => (
+            {recipe.recipe_steps.map((step, index) => (
               <View key={index} style={styles.stepCard}>
                 <View style={styles.stepHeader}>
                   <View style={styles.stepNumber}>
@@ -116,9 +129,9 @@ export default function RecipeDetail() {
                   </View>
                   <View style={styles.stepWater}>
                     <Text style={styles.stepWaterText}>{step.water}</Text>
-                    {step.totalWater && (
+                    {step.total_water && (
                       <Text style={styles.stepTotalWater}>
-                        (총 {step.totalWater}ml)
+                        (총 {step.total_water}ml)
                       </Text>
                     )}
                   </View>
@@ -129,7 +142,7 @@ export default function RecipeDetail() {
           </View>
         )}
 
-        {recipe.youtubeUrl && (
+        {recipe.youtube_url && (
           <TouchableOpacity
             style={styles.youtubeButton}
             onPress={handleYouTubePress}
@@ -155,6 +168,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa",
+  },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: "#666",
   },
   header: {
     flexDirection: "row",

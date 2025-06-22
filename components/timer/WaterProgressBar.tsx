@@ -1,12 +1,13 @@
+import { RecipeWithSteps } from "@/types/recipe";
+import { StepInfo } from "@/types/timer";
 import React from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Recipe } from "../../lib/recipes";
-import { StepInfo, WaterInfo } from "../../lib/timer/types";
+import { WaterInfo } from "../../lib/timer/types";
 
 interface WaterProgressBarProps {
   currentStepInfo: StepInfo;
   waterInfo: WaterInfo;
-  recipe?: Recipe | null | undefined;
+  recipe?: RecipeWithSteps | null | undefined;
 }
 
 // 커피 관련 색상 팔레트
@@ -28,17 +29,19 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
 }) => {
   const { totalNeeded, remaining } = waterInfo;
   const currentStepWater =
-    parseInt(currentStepInfo.step.water.replace("ml", "")) || 0;
+    parseInt(currentStepInfo.step.water.toString().replace("ml", "") || "0") ||
+    0;
 
   // 각 단계별 물양 계산
   const stepWaterAmounts = React.useMemo(() => {
-    if (!recipe?.steps) return [];
+    if (!recipe?.recipe_steps) return [];
 
-    return recipe.steps.map((step) => {
-      const waterAmount = parseInt(step.water.replace(/[^\d]/g, "")) || 0;
+    return recipe.recipe_steps.map((step) => {
+      const waterAmount =
+        parseInt(step.water.toString().replace(/[^\d]/g, "")) || 0;
       return waterAmount;
     });
-  }, [recipe?.steps]);
+  }, [recipe?.recipe_steps]);
 
   // 진행률 계산을 위한 누적 물양
   const cumulativeWaterAmounts = React.useMemo(() => {
