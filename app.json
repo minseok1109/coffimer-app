@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "coffimer",
-    "slug": "coffimer",
+    "name": "coffimer-app",
+    "slug": "coffimer-app",
     "version": "1.0.0",
     "platforms": ["ios", "android"],
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "coffimerapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -33,7 +33,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

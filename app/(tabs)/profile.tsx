@@ -1,4 +1,5 @@
 import { useAuth } from "@/hooks/useAuth";
+import { useCurrentUserProfile } from "@/hooks/useUser";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -24,6 +25,8 @@ interface ProfileSetting {
 export default function ProfileScreen() {
   const { signOut, user } = useAuth();
   const router = useRouter();
+  const { data: userProfile } = useCurrentUserProfile();
+  console.log("🚀 ~ ProfileScreen ~ userProfile:", userProfile);
 
   const supportSettings: ProfileSetting[] = [
     { id: "contact", title: "문의하기", icon: "mail-outline", hasArrow: true },
@@ -79,8 +82,12 @@ export default function ProfileScreen() {
               <Ionicons name="camera" size={16} color="white" />
             </TouchableOpacity> */}
           </View>
-          <Text style={styles.userName}>커피 애호가</Text>
-          <Text style={styles.userEmail}>coffee.lover@example.com</Text>
+          {userProfile && (
+            <>
+              <Text style={styles.userName}>{userProfile.display_name}</Text>
+              <Text style={styles.userEmail}>{userProfile.email}</Text>
+            </>
+          )}
           {/* <TouchableOpacity style={styles.editProfileButton}>
             <Text style={styles.editProfileText}>프로필 편집</Text>
           </TouchableOpacity> */}
