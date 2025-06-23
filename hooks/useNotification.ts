@@ -66,12 +66,20 @@ export const useNotification = () => {
       try {
         // 사운드 재생
         try {
-          // 플레이어가 이미 재생 중이면 처음부터 다시 재생
-          if (alarmPlayer.playing) {
-            alarmPlayer.seekTo(0);
-          } else {
-            alarmPlayer.play();
+          // 오디오 초기화 확인
+          if (!isInitializedRef.current) {
+            await initializeAudio();
           }
+          
+          // 매번 확실하게 재생하기 위해 정지 후 처음부터 재생
+          if (alarmPlayer.playing) {
+            alarmPlayer.pause();
+          }
+          alarmPlayer.seekTo(0);
+          alarmPlayer.volume = 1.0; // 최대 볼륨으로 설정
+          alarmPlayer.play();
+          
+          console.log("🔊 알람 사운드 재생됨");
         } catch (soundError) {
           console.log("사운드 재생 실패:", soundError);
         }
@@ -125,7 +133,7 @@ export const useNotification = () => {
         ]);
       }
     },
-    [alarmPlayer]
+    [alarmPlayer, initializeAudio]
   );
 
   return { sendNotification, initializeAudio };

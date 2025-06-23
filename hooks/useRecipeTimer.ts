@@ -31,28 +31,13 @@ export const useRecipeTimer = (
 
   // 타이머 로직
   useEffect(() => {
-    if (
-      !isRunning ||
-      currentTime >= recipe.total_time ||
-      !recipe.recipe_steps
-    ) {
+    if (!isRunning || !recipe.recipe_steps) {
       return;
     }
 
     const interval = setInterval(() => {
       setCurrentTime((prevTime) => {
         const newTime = prevTime + 1;
-
-        // 단계 완료 체크 및 알림
-        const completedStep = recipe.recipe_steps?.find(
-          (step) => step.time === newTime
-        );
-        if (completedStep) {
-          sendNotification(
-            `${completedStep.title} 완료`,
-            `다음 단계를 진행하세요: ${completedStep.description}`
-          );
-        }
 
         // 현재 단계 업데이트 (시간 구간 기반)
         let newCurrentStep = 0;
@@ -68,7 +53,18 @@ export const useRecipeTimer = (
           );
         }
 
-        if (newCurrentStep !== currentStep) {
+        // 단계가 변경될 때 알림 발송
+        if (newCurrentStep !== currentStep && recipe.recipe_steps) {
+          const completedStepIndex = newCurrentStep > 0 ? newCurrentStep - 1 : 0;
+          const completedStep = recipe.recipe_steps[completedStepIndex];
+          
+          if (completedStep && newCurrentStep > currentStep) {
+            sendNotification(
+              `${completedStep.title} 완료`,
+              `다음 단계를 진행하세요: ${completedStep.description}`
+            );
+          }
+          
           setCurrentStep(newCurrentStep);
         }
 

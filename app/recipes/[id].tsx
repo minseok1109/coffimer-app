@@ -33,7 +33,7 @@ export default function RecipeDetail() {
 
   if (!recipe) {
     return (
-      <View style={styles.container}>
+      <>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={24} color="#333" />
@@ -43,7 +43,7 @@ export default function RecipeDetail() {
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>레시피를 찾을 수 없습니다.</Text>
         </View>
-      </View>
+      </>
     );
   }
 
@@ -67,7 +67,7 @@ export default function RecipeDetail() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={24} color="#333" />
@@ -75,73 +75,78 @@ export default function RecipeDetail() {
         <Text style={styles.headerTitle}>레시피 상세</Text>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>{recipe.name}</Text>
-        <Text style={styles.description}>{recipe.description}</Text>
+      <ScrollView style={styles.container}>
+        <View style={styles.content}>
+          <Text style={styles.title}>{recipe.name}</Text>
+          <Text style={styles.description}>{recipe.description}</Text>
 
-        <View style={styles.infoGrid}>
-          <View style={styles.infoCard}>
-            <Ionicons name="cafe-outline" size={20} color="#D2691E" />
-            <Text style={styles.infoLabel}>원두</Text>
-            <Text style={styles.infoValue}>{recipe.coffee}</Text>
+          <View style={styles.infoGrid}>
+            <View style={styles.infoCard}>
+              <Ionicons name="cafe-outline" size={20} color="#D2691E" />
+              <Text style={styles.infoLabel}>원두</Text>
+              <Text style={styles.infoValue}>{recipe.coffee}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Ionicons name="water-outline" size={20} color="#4A90E2" />
+              <Text style={styles.infoLabel}>물</Text>
+              <Text style={styles.infoValue}>{recipe.water}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Ionicons name="time-outline" size={20} color="#666" />
+              <Text style={styles.infoLabel}>소요시간</Text>
+              <Text style={styles.infoValue}>
+                {formatTimeKorean(recipe.total_time)}
+              </Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
+              <Text style={styles.infoLabel}>수온</Text>
+              <Text style={styles.infoValue}>{recipe.water_temperature}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Ionicons name="funnel-outline" size={20} color="#8B4513" />
+              <Text style={styles.infoLabel}>드리퍼</Text>
+              <Text style={styles.infoValue}>{recipe.dripper}</Text>
+            </View>
+            <View style={styles.infoCard}>
+              <Ionicons name="analytics-outline" size={20} color="#4ECDC4" />
+              <Text style={styles.infoLabel}>비율</Text>
+              <Text style={styles.infoValue}>1:{recipe.ratio}</Text>
+            </View>
           </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="water-outline" size={20} color="#4A90E2" />
-            <Text style={styles.infoLabel}>물</Text>
-            <Text style={styles.infoValue}>{recipe.water}</Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="time-outline" size={20} color="#666" />
-            <Text style={styles.infoLabel}>소요시간</Text>
-            <Text style={styles.infoValue}>
-              {formatTimeKorean(recipe.total_time)}
-            </Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
-            <Text style={styles.infoLabel}>수온</Text>
-            <Text style={styles.infoValue}>{recipe.water_temperature}</Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="funnel-outline" size={20} color="#8B4513" />
-            <Text style={styles.infoLabel}>드리퍼</Text>
-            <Text style={styles.infoValue}>{recipe.dripper}</Text>
-          </View>
-          <View style={styles.infoCard}>
-            <Ionicons name="analytics-outline" size={20} color="#4ECDC4" />
-            <Text style={styles.infoLabel}>비율</Text>
-            <Text style={styles.infoValue}>{recipe.ratio}</Text>
-          </View>
-        </View>
 
-        {recipe.recipe_steps && recipe.recipe_steps.length > 0 && (
-          <View style={styles.stepsContainer}>
-            <Text style={styles.sectionTitle}>단계</Text>
-            {recipe.recipe_steps.map((step, index) => (
-              <View key={index} style={styles.stepCard}>
-                <View style={styles.stepHeader}>
-                  <View style={styles.stepNumber}>
-                    <Text style={styles.stepNumberText}>{index + 1}</Text>
-                  </View>
-                  <View style={styles.stepInfo}>
-                    <Text style={styles.stepTitle}>{step.title}</Text>
-                    <Text style={styles.stepTime}>{formatTime(step.time)}</Text>
-                  </View>
-                  <View style={styles.stepWater}>
-                    <Text style={styles.stepWaterText}>{step.water}</Text>
-                    {step.total_water && (
-                      <Text style={styles.stepTotalWater}>
-                        (총 {step.total_water}ml)
+          {recipe.recipe_steps && recipe.recipe_steps.length > 0 && (
+            <View style={styles.stepsContainer}>
+              <Text style={styles.sectionTitle}>단계</Text>
+              {recipe.recipe_steps.map((step, index) => (
+                <View key={index} style={styles.stepCard}>
+                  <View style={styles.stepHeader}>
+                    <View style={styles.stepNumber}>
+                      <Text style={styles.stepNumberText}>{index + 1}</Text>
+                    </View>
+                    <View style={styles.stepInfo}>
+                      <Text style={styles.stepTitle}>{step.title}</Text>
+                      <Text style={styles.stepTime}>
+                        {formatTime(step.time)}
                       </Text>
-                    )}
+                    </View>
+                    <View style={styles.stepWater}>
+                      <Text style={styles.stepWaterText}>{step.water}</Text>
+                      {step.total_water && (
+                        <Text style={styles.stepTotalWater}>
+                          (총 {step.total_water}ml)
+                        </Text>
+                      )}
+                    </View>
                   </View>
+                  <Text style={styles.stepDescription}>{step.description}</Text>
                 </View>
-                <Text style={styles.stepDescription}>{step.description}</Text>
-              </View>
-            ))}
-          </View>
-        )}
-
+              ))}
+            </View>
+          )}
+        </View>
+      </ScrollView>
+      <View style={styles.buttonContainer}>
         {recipe.youtube_url && (
           <TouchableOpacity
             style={styles.youtubeButton}
@@ -160,7 +165,7 @@ export default function RecipeDetail() {
           <Text style={styles.startButtonText}>레시피 시작하기</Text>
         </TouchableOpacity>
       </View>
-    </ScrollView>
+    </>
   );
 }
 
@@ -168,6 +173,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f8f9fa",
+    marginTop: 0,
   },
   centered: {
     justifyContent: "center",
@@ -187,6 +193,11 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#e9ecef",
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
   },
   headerTitle: {
     fontSize: 18,
@@ -196,6 +207,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingTop: 120,
   },
   title: {
     fontSize: 24,
@@ -314,14 +326,21 @@ const styles = StyleSheet.create({
     color: "#666",
     lineHeight: 20,
   },
+  buttonContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+    gap: 16,
+  },
   youtubeButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+    borderRadius: 16,
+    padding: 20,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#dee2e6",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -329,22 +348,29 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 3,
   },
   youtubeButtonText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
     color: "#FF0000",
-    marginLeft: 8,
   },
   startButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#D2691E",
-    borderRadius: 12,
-    padding: 16,
-    gap: 8,
+    backgroundColor: "#A0522D",
+    borderRadius: 16,
+    padding: 20,
+    gap: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   startButtonText: {
     color: "white",
