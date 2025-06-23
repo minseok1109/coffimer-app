@@ -9,10 +9,12 @@ export class RecipeService {
     // 레시피와 단계 조회
     const { data: recipe, error: recipeError } = await supabase
       .from("recipes")
-      .select(`
+      .select(
+        `
         *,
         recipe_steps (*)
-      `)
+      `
+      )
       .eq("id", recipeId)
       .single();
 
@@ -33,14 +35,16 @@ export class RecipeService {
 
     return {
       ...recipe,
-      users: user
+      users: user,
     } as RecipeWithSteps;
   }
 
   /**
    * 모든 공개 레시피를 조회합니다
    */
-  static async getAllRecipes(includeSteps: boolean = false): Promise<Recipe[] | RecipeWithSteps[]> {
+  static async getAllRecipes(
+    includeSteps: boolean = false
+  ): Promise<Recipe[] | RecipeWithSteps[]> {
     try {
       if (!includeSteps) {
         // 스텝 없이 기본 레시피만 조회
@@ -60,13 +64,14 @@ export class RecipeService {
       // 스텝 정보도 포함하는 경우 - 별도 쿼리로 분리
       const { data: recipes, error } = await supabase
         .from("recipes")
-        .select(`
+        .select(
+          `
           *,
           recipe_steps (*)
-        `)
+          `
+        )
         .eq("is_public", true)
-        .order("created_at", { ascending: false });
-
+        .order("created_at", { ascending: true });
       if (error) {
         throw new Error(`Failed to fetch recipes: ${error.message}`);
       }
@@ -76,7 +81,9 @@ export class RecipeService {
       }
 
       // 사용자 정보 별도 조회
-      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const userIds = [
+        ...new Set((recipes as any).map((recipe: any) => recipe.owner_id)),
+      ];
       const { data: users } = await supabase
         .from("users")
         .select("id, display_name, profile_image")
@@ -85,7 +92,7 @@ export class RecipeService {
       // 레시피와 사용자 정보 결합
       const recipesWithUsers = (recipes as any).map((recipe: any) => ({
         ...recipe,
-        users: users?.find(user => user.id === recipe.owner_id)
+        users: users?.find((user) => user.id === recipe.owner_id),
       }));
 
       return recipesWithUsers as any;
@@ -102,7 +109,11 @@ export class RecipeService {
     page: number = 0,
     pageSize: number = 10,
     includeSteps: boolean = false
-  ): Promise<{ recipes: Recipe[] | RecipeWithSteps[]; totalCount: number; totalPages: number }> {
+  ): Promise<{
+    recipes: Recipe[] | RecipeWithSteps[];
+    totalCount: number;
+    totalPages: number;
+  }> {
     const from = page * pageSize;
     const to = from + pageSize - 1;
 
@@ -113,7 +124,7 @@ export class RecipeService {
       .eq("is_public", true);
 
     // 페이지네이션된 데이터 조회
-    const selectQuery = includeSteps 
+    const selectQuery = includeSteps
       ? `
         *,
         recipe_steps (*)
@@ -135,7 +146,9 @@ export class RecipeService {
 
     // 사용자 정보 추가 (includeSteps인 경우에만)
     if (includeSteps && recipes && recipes.length > 0) {
-      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const userIds = [
+        ...new Set((recipes as any).map((recipe: any) => recipe.owner_id)),
+      ];
       const { data: users } = await supabase
         .from("users")
         .select("id, display_name, profile_image")
@@ -143,7 +156,7 @@ export class RecipeService {
 
       recipesWithUsers = (recipes as any).map((recipe: any) => ({
         ...recipe,
-        users: users?.find(user => user.id === recipe.owner_id)
+        users: users?.find((user) => user.id === recipe.owner_id),
       }));
     }
 
@@ -160,12 +173,15 @@ export class RecipeService {
   /**
    * 검색어로 레시피를 검색합니다
    */
-  static async searchRecipes(searchTerm: string, includeSteps: boolean = false): Promise<Recipe[] | RecipeWithSteps[]> {
+  static async searchRecipes(
+    searchTerm: string,
+    includeSteps: boolean = false
+  ): Promise<Recipe[] | RecipeWithSteps[]> {
     if (!searchTerm.trim()) {
       return this.getAllRecipes(includeSteps);
     }
 
-    const selectQuery = includeSteps 
+    const selectQuery = includeSteps
       ? `
         *,
         recipe_steps (*)
@@ -187,7 +203,9 @@ export class RecipeService {
 
     // 사용자 정보 추가 (includeSteps인 경우에만)
     if (includeSteps && recipes && recipes.length > 0) {
-      const userIds = [...new Set((recipes as any).map((recipe: any) => recipe.owner_id))];
+      const userIds = [
+        ...new Set((recipes as any).map((recipe: any) => recipe.owner_id)),
+      ];
       const { data: users } = await supabase
         .from("users")
         .select("id, display_name, profile_image")
@@ -195,7 +213,7 @@ export class RecipeService {
 
       recipesWithUsers = (recipes as any).map((recipe: any) => ({
         ...recipe,
-        users: users?.find(user => user.id === recipe.owner_id)
+        users: users?.find((user) => user.id === recipe.owner_id),
       }));
     }
 
