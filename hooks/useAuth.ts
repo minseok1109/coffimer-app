@@ -1,5 +1,6 @@
 import { secureStorage } from "@/lib/secureStorage";
 import { supabaseAuth, syncAuth } from "@/lib/supabaseClient";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import type { Session, User } from "@supabase/supabase-js";
 import { useEffect, useState } from "react";
@@ -158,13 +159,27 @@ export function useAuth() {
         },
       },
     });
+
+    // 회원가입 성공 시 users 테이블에 사용자 정보 저장
+    if (data.user && !error) {
+      try {
+        await supabaseAuth.from("users").insert({
+          id: data.user.id,
+          email: data.user.email!,
+          display_name: displayName || data.user.email?.split("@")[0] || "User",
+          profile_image: null,
+        });
+      } catch (insertError) {
+        console.error("Error creating user profile:", insertError);
+      }
+    }
+
     return { data, error };
   };
 
   const signOut = async () => {
-    // 로그아웃 시 보안 데이터 정리
-    await secureStorage.clearSessionData();
-    await secureStorage.setAutoLoginEnabled(false);
+    
+    await AsyncStorage.clear();
 
     const { error } = await supabaseAuth.auth.signOut();
     return { error };
