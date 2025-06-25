@@ -84,12 +84,12 @@ export default function RecipeDetail() {
             <View style={styles.infoCard}>
               <Ionicons name="cafe-outline" size={20} color="#D2691E" />
               <Text style={styles.infoLabel}>원두</Text>
-              <Text style={styles.infoValue}>{recipe.coffee}</Text>
+              <Text style={styles.infoValue}>{recipe.coffee}g</Text>
             </View>
             <View style={styles.infoCard}>
               <Ionicons name="water-outline" size={20} color="#4A90E2" />
               <Text style={styles.infoLabel}>물</Text>
-              <Text style={styles.infoValue}>{recipe.water}</Text>
+              <Text style={styles.infoValue}>{recipe.water}ml</Text>
             </View>
             <View style={styles.infoCard}>
               <Ionicons name="time-outline" size={20} color="#666" />
@@ -100,8 +100,8 @@ export default function RecipeDetail() {
             </View>
             <View style={styles.infoCard}>
               <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
-              <Text style={styles.infoLabel}>수온</Text>
-              <Text style={styles.infoValue}>{recipe.water_temperature}</Text>
+              <Text style={styles.infoLabel}>물 온도</Text>
+              <Text style={styles.infoValue}>{recipe.water_temperature}°C</Text>
             </View>
             <View style={styles.infoCard}>
               <Ionicons name="funnel-outline" size={20} color="#8B4513" />
@@ -131,7 +131,7 @@ export default function RecipeDetail() {
                       </Text>
                     </View>
                     <View style={styles.stepWater}>
-                      <Text style={styles.stepWaterText}>{step.water}</Text>
+                      <Text style={styles.stepWaterText}>{step.water}ml</Text>
                       {step.total_water && (
                         <Text style={styles.stepTotalWater}>
                           (총 {step.total_water}ml)

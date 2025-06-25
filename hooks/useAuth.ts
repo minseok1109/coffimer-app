@@ -1,5 +1,5 @@
 import { secureStorage } from "@/lib/secureStorage";
-import { supabaseAuth, syncAuth } from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import type { Session, User } from "@supabase/supabase-js";
@@ -26,8 +26,7 @@ export function useAuth() {
 
         if (!autoLoginEnabled) {
           // 자동 로그인이 비활성화된 경우 세션 정리
-          await supabaseAuth.auth.signOut();
-          await syncAuth(null);
+          await supabase.auth.signOut();
           setAuthState({
             user: null,
             session: null,
@@ -39,11 +38,12 @@ export function useAuth() {
         // 자동 로그인이 활성화된 경우 세션 복원
         const {
           data: { session },
-        } = await supabaseAuth.auth.getSession();
+        } = await supabase.auth.getSession();
 
-        // 세션이 있으면 데이터 로딩 클라이언트에도 동기화
+        // 세션이 있으면 상태 설정
         if (session) {
-          await syncAuth(session);
+          // 세션 정보 로그
+          console.log("🔐 세션 복원:", session.user?.email);
         }
 
         setAuthState({
@@ -66,11 +66,8 @@ export function useAuth() {
     // Auth 상태 변경 감지 (인증 클라이언트 사용)
     const {
       data: { subscription },
-    } = supabaseAuth.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("🔐 Auth 상태 변경:", event, session?.user?.email);
-
-      // 데이터 로딩 클라이언트와 동기화
-      await syncAuth(session);
 
       setAuthState({
         user: session?.user ?? null,
@@ -78,9 +75,8 @@ export function useAuth() {
         loading: false,
       });
 
-      // 로그인 시 사용자 정보 동기화 및 자동 로그인 활성화
+      // 로그인 시 자동 로그인 활성화
       if (event === "SIGNED_IN" && session?.user) {
-        await syncUserProfile(session.user);
         await secureStorage.setAutoLoginEnabled(true);
       }
 
@@ -96,7 +92,7 @@ export function useAuth() {
   const syncUserProfile = async (user: User) => {
     try {
       // 인증된 상태에서 사용자 프로필 동기화 (인증 클라이언트 사용)
-      const { data: existingUser } = await supabaseAuth
+      const { data: existingUser } = await supabase
         .from("users")
         .select("*")
         .eq("id", user.id)
@@ -104,7 +100,7 @@ export function useAuth() {
 
       if (!existingUser) {
         // 새 사용자 생성
-        await supabaseAuth.from("users").insert({
+        await supabase.from("users").insert({
           id: user.id,
           email: user.email!,
           display_name:
@@ -115,7 +111,7 @@ export function useAuth() {
         });
       } else {
         // 기존 사용자 정보 업데이트
-        await supabaseAuth
+        await supabase
           .from("users")
           .update({
             display_name:
@@ -132,7 +128,7 @@ export function useAuth() {
   };
 
   const signInWithEmail = async (email: string, password: string) => {
-    const { data, error } = await supabaseAuth.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -150,7 +146,7 @@ export function useAuth() {
     password: string,
     displayName?: string
   ) => {
-    const { data, error } = await supabaseAuth.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -163,7 +159,7 @@ export function useAuth() {
     // 회원가입 성공 시 users 테이블에 사용자 정보 저장
     if (data.user && !error) {
       try {
-        await supabaseAuth.from("users").insert({
+        await supabase.from("users").insert({
           id: data.user.id,
           email: data.user.email!,
           display_name: displayName || data.user.email?.split("@")[0] || "User",
@@ -178,11 +174,35 @@ export function useAuth() {
   };
 
   const signOut = async () => {
-    
-    await AsyncStorage.clear();
+    try {
+      // 1. AsyncStorage에서 특정 키들 제거
+      const keysToRemove = [
+        "supabase.auth.token",
+        "user_session",
+        "auto_login_enabled",
+        "user_profile",
+        // 필요한 다른 키들 추가
+      ];
 
-    const { error } = await supabaseAuth.auth.signOut();
-    return { error };
+      await AsyncStorage.multiRemove(keysToRemove);
+
+      // 2. 또는 AsyncStorage 전체 정리 (주의: 앱의 모든 데이터가 삭제됨)
+      // await AsyncStorage.clear();
+
+      // 3. Supabase 로그아웃
+      const { error } = await supabase.auth.signOut();
+
+      if (error) {
+        console.error("로그아웃 오류:", error);
+        return { success: false, error };
+      }
+
+      console.log("완전 로그아웃 완료");
+      return { success: true };
+    } catch (error) {
+      console.error("로그아웃 중 오류 발생:", error);
+      return { success: false, error };
+    }
   };
 
   return {
