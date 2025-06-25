@@ -23,7 +23,7 @@ export const useCreateRecipeMutation = (options?: UseCreateRecipeOptions) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: recipeKeys.lists() }),
         queryClient.invalidateQueries({
-          queryKey: ["user-recipes", user?.id],
+          queryKey: recipeKeys.userRecipes(user?.id || ""),
         }),
         queryClient.invalidateQueries({ queryKey: ["user"] }),
         // 새로 생성된 레시피를 캐시에 추가합니다. setQueryData는 동기적으로 작동하지만,
@@ -62,7 +62,9 @@ export const useUpdateRecipeMutation = (options?: UseCreateRecipeOptions) => {
     onSuccess: (data) => {
       // 캐시 무효화 및 업데이트
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: ["user-recipes", user?.id] });
+      queryClient.invalidateQueries({ 
+        queryKey: recipeKeys.userRecipes(user?.id || "")
+      });
 
       // 업데이트된 레시피를 캐시에 설정
       queryClient.setQueryData(recipeKeys.detail(data.id), data);
@@ -95,7 +97,9 @@ export const useDeleteRecipeMutation = (options?: {
 
       // 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
-      queryClient.invalidateQueries({ queryKey: ["user-recipes", user?.id] });
+      queryClient.invalidateQueries({ 
+        queryKey: recipeKeys.userRecipes(user?.id || "")
+      });
 
       options?.onSuccess?.();
     },

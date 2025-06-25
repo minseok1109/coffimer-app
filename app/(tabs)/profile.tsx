@@ -23,7 +23,7 @@ interface ProfileSetting {
 }
 
 export default function ProfileScreen() {
-  const { signOut, user } = useAuth();
+  const { signOut, clearSupabaseStorage, user } = useAuth();
   const router = useRouter();
   const { data: userProfile } = useCurrentUserProfile();
   console.log("🚀 ~ ProfileScreen ~ userProfile:", userProfile);
@@ -148,7 +148,12 @@ export default function ProfileScreen() {
           style={styles.logoutButton}
           onPress={async () => {
             try {
+              // Option 1: Use the standard signOut (already includes supabase.auth.token cleanup)
               await signOut();
+              
+              // Option 2: Use the new clearSupabaseStorage utility for explicit clarity
+              // await clearSupabaseStorage();
+              
               router.replace("/auth/login");
             } catch (error) {
               console.error("로그아웃 오류:", error);

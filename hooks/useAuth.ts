@@ -173,11 +173,35 @@ export function useAuth() {
     return { data, error };
   };
 
+  /**
+   * Supabase 스토리지 완전 정리 유틸리티
+   * supabase.auth.signOut()과 AsyncStorage.removeItem('supabase.auth.token')을 모두 실행
+   */
+  const clearSupabaseStorage = async () => {
+    try {
+      // 1. Supabase 로그아웃
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Supabase 로그아웃 오류:", error);
+      }
+
+      // 2. AsyncStorage에서 supabase.auth.token 제거 (통합 클라이언트가 사용하는 키)
+      await AsyncStorage.removeItem('supabase.auth.token');
+      
+      console.log("Supabase 스토리지 정리 완료");
+      return { success: true, error: null };
+    } catch (error) {
+      console.error("Supabase 스토리지 정리 중 오류:", error);
+      return { success: false, error };
+    }
+  };
+
   const signOut = async () => {
     try {
       // 1. AsyncStorage에서 특정 키들 제거
       const keysToRemove = [
-        "supabase.auth.token",
+        "supabase.auth.token", // 통합 클라이언트가 사용하는 키 유지
         "user_session",
         "auto_login_enabled",
         "user_profile",
@@ -210,5 +234,6 @@ export function useAuth() {
     signInWithEmail,
     signUpWithEmail,
     signOut,
+    clearSupabaseStorage, // 새로운 유틸리티 함수 추가
   };
 }
