@@ -15,6 +15,12 @@ export const Step4: React.FC = () => {
       0
     ) || 0;
 
+  const totalTime =
+    formData.steps?.reduce(
+      (sum, step) => sum + (parseInt(step.time || "0") || 0),
+      0
+    ) || 0;
+
   return (
     <View style={createRecipeStyles.stepContent}>
       <ScrollView
@@ -113,6 +119,11 @@ export const Step4: React.FC = () => {
                 </View>
                 <View style={styles.stepContent}>
                   <View style={styles.stepInfo}>
+                    {step.title && (
+                      <Text style={styles.stepTitleText}>
+                        {step.title}
+                      </Text>
+                    )}
                     <View style={styles.stepTimeWater}>
                       <View style={styles.stepTimeBox}>
                         <Ionicons name="time" size={16} color="#666" />
@@ -136,6 +147,29 @@ export const Step4: React.FC = () => {
                 </View>
               </View>
             ))}
+            
+            {/* Total Summary */}
+            <View style={styles.totalSummary}>
+              <View style={styles.totalRow}>
+                <View style={styles.totalItem}>
+                  <Ionicons name="time-outline" size={20} color="#8B4513" />
+                  <View style={styles.totalInfo}>
+                    <Text style={styles.totalLabel}>총 시간</Text>
+                    <Text style={styles.totalValue}>{totalTime}초</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.totalDivider} />
+                
+                <View style={styles.totalItem}>
+                  <Ionicons name="water-outline" size={20} color="#2196F3" />
+                  <View style={styles.totalInfo}>
+                    <Text style={styles.totalLabel}>총 물량</Text>
+                    <Text style={styles.totalValue}>{totalWater}ml</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -310,6 +344,12 @@ const styles = StyleSheet.create({
   stepInfo: {
     gap: 8,
   },
+  stepTitleText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#8B4513",
+    marginBottom: 4,
+  },
   stepTimeWater: {
     flexDirection: "row",
     gap: 12,
@@ -347,5 +387,46 @@ const styles = StyleSheet.create({
     color: "#666",
     lineHeight: 18,
     marginTop: 4,
+  },
+  totalSummary: {
+    marginTop: 20,
+    paddingTop: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  totalRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8f8f8",
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#e8e8e8",
+  },
+  totalItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  totalInfo: {
+    marginLeft: 12,
+    flex: 1,
+  },
+  totalLabel: {
+    fontSize: 13,
+    color: "#666",
+    fontWeight: "500",
+    marginBottom: 2,
+  },
+  totalValue: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  totalDivider: {
+    width: 1,
+    height: 40,
+    backgroundColor: "#ddd",
+    marginHorizontal: 16,
   },
 });

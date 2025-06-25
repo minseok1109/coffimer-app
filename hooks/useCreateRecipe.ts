@@ -34,7 +34,7 @@ export const useCreateRecipe = () => {
       waterAmount: "",
       ratio: "",
       dripper: "",
-      steps: [{ time: "", waterAmount: "" }],
+      steps: [{ title: "", time: "", waterAmount: "", description: "" }],
     },
   });
 

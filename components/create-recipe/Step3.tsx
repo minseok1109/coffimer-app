@@ -25,7 +25,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
     name: "steps",
   });
   const addStep = () => {
-    append({ time: "", waterAmount: "" });
+    append({ title: "", time: "", waterAmount: "", description: "" });
   };
 
   return (
@@ -141,6 +141,31 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                       }}>ml</Text>
                     </View>
                   </View>
+                </View>
+                <View>
+                  <Text style={createRecipeStyles.subLabel}>단계 제목</Text>
+                  <Controller
+                    control={control}
+                    name={`steps.${index}.title`}
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        style={{
+                          backgroundColor: 'white',
+                          borderRadius: 8,
+                          borderWidth: 1,
+                          borderColor: '#e0e0e0',
+                          paddingHorizontal: 12,
+                          paddingVertical: 12,
+                          fontSize: 16,
+                          color: '#333',
+                        }}
+                        placeholder="단계 제목을 입력하세요 (예: 뜸들이기, 1차 추출)"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
                 </View>
                 <View>
                   <Text style={createRecipeStyles.subLabel}>설명</Text>

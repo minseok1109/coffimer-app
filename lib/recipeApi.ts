@@ -47,7 +47,7 @@ export function transformFormDataToRecipe(
       return {
         step_index: index,
         time: parseInt(step.time),
-        title: `Step ${index + 1}`,
+        title: step.title || `Step ${index + 1}`,
         description: step.description || null,
         water: stepWater || 0,
         total_water: cumulativeWater || null,

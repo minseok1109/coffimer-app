@@ -27,6 +27,7 @@ export const recipeFormSchema = z.object({
   steps: z
     .array(
       z.object({
+        title: z.string(),
         time: z.string().min(1, "시간을 입력해주세요"),
         waterAmount: z.string().min(1, "물의 양을 입력해주세요"),
         description: z.string().optional(),
