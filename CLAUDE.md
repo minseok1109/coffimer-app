@@ -18,19 +18,19 @@ Coffimer App is a React Native coffee brewing timer application built with Expo 
 
 ```bash
 # Start development server
-npm start
+pnpm start
 expo start
 
 # Platform-specific development  
-npm run android    # Android emulator
-npm run ios       # iOS simulator
-npm run web       # Web browser
+pnpm run android    # Android emulator
+pnpm run ios       # iOS simulator
+pnpm run web       # Web browser
 
 # Code quality
-npm run lint      # ESLint linting
+pnpm run lint      # ESLint linting
 
 # Reset project
-npm run reset-project  # Clean project slate
+pnpm run reset-project  # Clean project slate
 ```
 
 ## Architecture Overview

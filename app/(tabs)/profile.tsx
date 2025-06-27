@@ -11,6 +11,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -23,11 +24,9 @@ interface ProfileSetting {
 }
 
 export default function ProfileScreen() {
-  const { signOut, clearSupabaseStorage, user } = useAuth();
+  const { signOut } = useAuth();
   const router = useRouter();
   const { data: userProfile } = useCurrentUserProfile();
-  console.log("🚀 ~ ProfileScreen ~ userProfile:", userProfile);
-
   const supportSettings: ProfileSetting[] = [
     { id: "contact", title: "문의하기", icon: "mail-outline", hasArrow: true },
     {
@@ -38,12 +37,20 @@ export default function ProfileScreen() {
     },
   ];
 
+  const handleSettingPress = (item: ProfileSetting) => {
+    if (item.id === "contact") {
+      Linking.openURL("mailto:minseok32@gmail.com");
+    } else if (item.id === "version") {
+      router.push("/info");
+    }
+  };
+
   const renderSettingItem = (
     item: ProfileSetting,
     onToggle?: (value: boolean) => void,
     toggleValue?: boolean
   ) => (
-    <TouchableOpacity key={item.id} style={styles.settingItem}>
+    <TouchableOpacity key={item.id} style={styles.settingItem} onPress={() => handleSettingPress(item)}>
       <View style={styles.settingLeft}>
         <Ionicons name={item.icon} size={24} color="#666" />
         <Text style={styles.settingTitle}>{item.title}</Text>
@@ -150,10 +157,10 @@ export default function ProfileScreen() {
             try {
               // Option 1: Use the standard signOut (already includes supabase.auth.token cleanup)
               await signOut();
-              
+
               // Option 2: Use the new clearSupabaseStorage utility for explicit clarity
               // await clearSupabaseStorage();
-              
+
               router.replace("/auth/login");
             } catch (error) {
               console.error("로그아웃 오류:", error);

@@ -130,6 +130,7 @@ export default function SignUpScreen() {
                         onChangeText={onChange}
                         autoCapitalize="none"
                         maxLength={20}
+                        placeholderTextColor="#999"
                       />
                     )}
                   />
@@ -168,6 +169,7 @@ export default function SignUpScreen() {
                       <TextInput
                         style={styles.input}
                         placeholder="이메일"
+                        placeholderTextColor="#999"
                         value={value}
                         onChangeText={onChange}
                         keyboardType="email-address"
@@ -213,6 +215,7 @@ export default function SignUpScreen() {
                       <TextInput
                         style={styles.input}
                         placeholder="비밀번호"
+                        placeholderTextColor="#999"
                         value={value}
                         onChangeText={onChange}
                         secureTextEntry={!showPassword}
@@ -264,6 +267,7 @@ export default function SignUpScreen() {
                       <TextInput
                         style={styles.input}
                         placeholder="비밀번호 확인"
+                        placeholderTextColor="#999"
                         value={value}
                         onChangeText={onChange}
                         secureTextEntry={!showConfirmPassword}
