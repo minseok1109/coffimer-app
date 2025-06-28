@@ -62,8 +62,8 @@ export const useUpdateRecipeMutation = (options?: UseCreateRecipeOptions) => {
     onSuccess: (data) => {
       // 캐시 무효화 및 업데이트
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
-      queryClient.invalidateQueries({ 
-        queryKey: recipeKeys.userRecipes(user?.id || "")
+      queryClient.invalidateQueries({
+        queryKey: recipeKeys.userRecipes(user?.id || ""),
       });
 
       // 업데이트된 레시피를 캐시에 설정
@@ -97,8 +97,8 @@ export const useDeleteRecipeMutation = (options?: {
 
       // 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
-      queryClient.invalidateQueries({ 
-        queryKey: recipeKeys.userRecipes(user?.id || "")
+      queryClient.invalidateQueries({
+        queryKey: recipeKeys.userRecipes(user?.id || ""),
       });
 
       options?.onSuccess?.();

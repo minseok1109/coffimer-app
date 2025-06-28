@@ -1,16 +1,25 @@
-import React, { useMemo, useCallback } from "react";
 import {
-  View,
+  RecipeEditFormData,
+  getDefaultRecipeStep,
+} from "@/lib/validation/recipeSchema";
+import { Ionicons } from "@expo/vector-icons";
+import React, { useCallback, useMemo } from "react";
+import {
+  Control,
+  Controller,
+  FieldErrors,
+  useFieldArray,
+  useWatch,
+} from "react-hook-form";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
+  View,
 } from "react-native";
-import { Control, useFieldArray, Controller, FieldErrors, useWatch } from "react-hook-form";
-import { Ionicons } from "@expo/vector-icons";
-import { RecipeEditFormData, getDefaultRecipeStep } from "@/lib/validation/recipeSchema";
 
 interface StepEditorProps {
   control: Control<RecipeEditFormData>;
@@ -29,40 +38,36 @@ export const StepEditor: React.FC<StepEditorProps> = ({ control, errors }) => {
     append(newStep);
   }, [fields.length, append]);
 
-  const removeStep = useCallback((index: number) => {
-    if (fields.length <= 1) {
-      Alert.alert("알림", "최소 1개의 단계는 있어야 합니다.");
-      return;
-    }
-    
-    Alert.alert(
-      "단계 삭제",
-      `${index + 1}단계를 삭제하시겠습니까?`,
-      [
-        { text: "취소", style: "cancel" },
-        { 
-          text: "삭제", 
-          style: "destructive", 
-          onPress: () => remove(index) 
-        },
-      ]
-    );
-  }, [fields.length, remove]);
+  const removeStep = useCallback(
+    (index: number) => {
+      if (fields.length <= 1) {
+        Alert.alert("알림", "최소 1개의 단계는 있어야 합니다.");
+        return;
+      }
 
-  const moveStep = useCallback((fromIndex: number, toIndex: number) => {
-    move(fromIndex, toIndex);
-  }, [move]);
+      Alert.alert("단계 삭제", `${index + 1}단계를 삭제하시겠습니까?`, [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: () => remove(index),
+        },
+      ]);
+    },
+    [fields.length, remove]
+  );
+
+  const moveStep = useCallback(
+    (fromIndex: number, toIndex: number) => {
+      move(fromIndex, toIndex);
+    },
+    [move]
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.helperText}>
-          시간은 누적으로 작성해주세요 (예: 30초 → 60초 → 90초)
-        </Text>
-      </View>
-
-      <ScrollView 
-        style={styles.scrollView} 
+      <ScrollView
+        style={styles.scrollView}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
       >
@@ -105,8 +110,14 @@ const StepCard: React.FC<{
   onRemove: (index: number) => void;
   onMove: (fromIndex: number, toIndex: number) => void;
   errors?: FieldErrors<RecipeEditFormData["steps"]>;
-}> = React.memo(function StepCard({ control, index, fieldsLength, onRemove, onMove, errors }) {
-  
+}> = React.memo(function StepCard({
+  control,
+  index,
+  fieldsLength,
+  onRemove,
+  onMove,
+  errors,
+}) {
   const handleMoveUp = useCallback(() => {
     onMove(index, index - 1);
   }, [index, onMove]);
@@ -133,7 +144,7 @@ const StepCard: React.FC<{
               <Ionicons name="chevron-up" size={20} color="#666" />
             </TouchableOpacity>
           )}
-          
+
           {/* 아래로 이동 버튼 */}
           {index < fieldsLength - 1 && (
             <TouchableOpacity
@@ -143,7 +154,7 @@ const StepCard: React.FC<{
               <Ionicons name="chevron-down" size={20} color="#666" />
             </TouchableOpacity>
           )}
-          
+
           {/* 삭제 버튼 */}
           {fieldsLength > 1 && (
             <TouchableOpacity
@@ -165,10 +176,12 @@ const StepCard: React.FC<{
             name={`steps.${index}.time`}
             render={({ field: { onChange, onBlur, value } }) => (
               <>
-                <View style={[
-                  styles.inputWithSuffix,
-                  errors?.[index]?.time && styles.inputError,
-                ]}>
+                <View
+                  style={[
+                    styles.inputWithSuffix,
+                    errors?.[index]?.time && styles.inputError,
+                  ]}
+                >
                   <TextInput
                     style={styles.numberInput}
                     placeholder="30"
@@ -180,9 +193,7 @@ const StepCard: React.FC<{
                   <Text style={styles.suffix}>초</Text>
                 </View>
                 {errors?.[index]?.time && (
-                  <Text style={styles.errorText}>
-                    시간을 입력해주세요
-                  </Text>
+                  <Text style={styles.errorText}>시간을 입력해주세요</Text>
                 )}
               </>
             )}
@@ -196,10 +207,12 @@ const StepCard: React.FC<{
             name={`steps.${index}.water`}
             render={({ field: { onChange, onBlur, value } }) => (
               <>
-                <View style={[
-                  styles.inputWithSuffix,
-                  errors?.[index]?.water && styles.inputError,
-                ]}>
+                <View
+                  style={[
+                    styles.inputWithSuffix,
+                    errors?.[index]?.water && styles.inputError,
+                  ]}
+                >
                   <TextInput
                     style={styles.numberInput}
                     placeholder="50"
@@ -211,9 +224,7 @@ const StepCard: React.FC<{
                   <Text style={styles.suffix}>ml</Text>
                 </View>
                 {errors?.[index]?.water && (
-                  <Text style={styles.errorText}>
-                    물량을 입력해주세요
-                  </Text>
+                  <Text style={styles.errorText}>물량을 입력해주세요</Text>
                 )}
               </>
             )}
@@ -265,29 +276,39 @@ const StepCard: React.FC<{
   );
 });
 
-// 총 물량 표시 컴포넌트 (useWatch로 최적화)
+// 총 시간 및 누적 물량 표시 컴포넌트 (useWatch로 최적화)
 const TotalWaterDisplay: React.FC<{
   control: Control<RecipeEditFormData>;
   stepIndex: number;
 }> = React.memo(function TotalWaterDisplay({ control, stepIndex }) {
   // useWatch로 steps만 감시하여 불필요한 re-render 방지
   const steps = useWatch({ control, name: "steps" });
-  
-  const totalWater = useMemo(() => {
-    if (!steps || !Array.isArray(steps)) return 0;
+
+  const { totalTime, totalWater } = useMemo(() => {
+    if (!steps || !Array.isArray(steps)) return { totalTime: 0, totalWater: 0 };
+
+    let maxTime = 0;
+    let totalWater = 0;
     
-    let total = 0;
     for (let i = 0; i <= stepIndex; i++) {
-      total += steps[i]?.water || 0;
+      const time = steps[i]?.time || 0;
+      const water = steps[i]?.water || 0;
+      
+      maxTime = Math.max(maxTime, time);
+      totalWater += water;
     }
-    return total;
+    
+    return { totalTime: maxTime, totalWater };
   }, [steps, stepIndex]);
 
   return (
-    <View style={styles.totalWaterContainer}>
-      <Text style={styles.totalWaterLabel}>
-        누적 물량: {totalWater}ml
-      </Text>
+    <View style={styles.totalContainer}>
+      <View style={styles.totalTimeContainer}>
+        <Text style={styles.totalTimeLabel}>총 시간: {totalTime}초</Text>
+      </View>
+      <View style={styles.totalWaterContainer}>
+        <Text style={styles.totalWaterLabel}>누적 물량: {totalWater}ml</Text>
+      </View>
     </View>
   );
 });
@@ -400,12 +421,27 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "500",
   },
+  totalContainer: {
+    flexDirection: "row",
+    gap: 12,
+    alignSelf: "flex-start",
+  },
+  totalTimeContainer: {
+    backgroundColor: "#fff3cd",
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  totalTimeLabel: {
+    fontSize: 12,
+    color: "#856404",
+    fontWeight: "600",
+  },
   totalWaterContainer: {
     backgroundColor: "#e8f5e8",
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
-    alignSelf: "flex-start",
   },
   totalWaterLabel: {
     fontSize: 12,
@@ -416,20 +452,16 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "white",
-    borderWidth: 2,
-    borderColor: "#8B4513",
-    borderStyle: "dashed",
-    borderRadius: 12,
-    paddingVertical: 16,
-    paddingHorizontal: 16,
+    marginTop: 16,
     marginBottom: 20,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
   },
   addButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
+    fontSize: 14,
+    fontWeight: "500",
     color: "#8B4513",
-    marginLeft: 8,
+    marginLeft: 6,
   },
   inputError: {
     borderColor: "#ff4444",

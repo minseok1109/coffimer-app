@@ -1,23 +1,35 @@
+import { useDeleteRecipeMutation } from "@/hooks/useCreateRecipeMutation";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
-import { StyleSheet, Text, TouchableOpacity, View, Modal, Alert, Animated } from "react-native";
-import { Recipe } from "../types/recipe";
-import { formatTimeKorean } from "../lib/timer/formatters";
+import React, { useEffect, useState } from "react";
+import {
+  Alert,
+  Animated,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../hooks/useAuth";
-import { RecipeAPI } from "../lib/api/recipes";
+import { formatTimeKorean } from "../lib/timer/formatters";
+import { Recipe } from "../types/recipe";
 
 interface RecipeCardProps {
   recipe: Recipe;
   showMenu?: boolean;
 }
 
-export default function RecipeCard({ recipe, showMenu = true }: RecipeCardProps) {
+export default function RecipeCard({
+  recipe,
+  showMenu = true,
+}: RecipeCardProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [showActionSheet, setShowActionSheet] = useState(false);
   const [overlayOpacity] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(300));
+  const { mutate: deleteRecipe } = useDeleteRecipeMutation();
 
   // 소유자 확인
   const isOwner = user && recipe.owner_id && user.id === recipe.owner_id;
@@ -62,7 +74,7 @@ export default function RecipeCard({ recipe, showMenu = true }: RecipeCardProps)
         }),
       ]).start();
     }
-  }, [showActionSheet]);
+  }, [overlayOpacity, showActionSheet, slideAnim]);
 
   const handleEdit = () => {
     closeActionSheet();
@@ -76,9 +88,9 @@ export default function RecipeCard({ recipe, showMenu = true }: RecipeCardProps)
       "정말로 이 레시피를 삭제하시겠습니까? 삭제된 레시피는 복구할 수 없습니다.",
       [
         { text: "취소", style: "cancel" },
-        { 
-          text: "삭제", 
-          style: "destructive", 
+        {
+          text: "삭제",
+          style: "destructive",
           onPress: async () => {
             try {
               if (!user?.id) {
@@ -86,24 +98,26 @@ export default function RecipeCard({ recipe, showMenu = true }: RecipeCardProps)
                 return;
               }
 
-              await RecipeAPI.deleteRecipe(recipe.id, user.id);
+              deleteRecipe(recipe.id);
               Alert.alert("성공", "레시피가 삭제되었습니다.", [
-                { 
-                  text: "확인", 
+                {
+                  text: "확인",
                   onPress: () => {
                     // 레시피 목록 페이지로 이동
                     router.push("/(tabs)/recipes");
-                  }
-                }
+                  },
+                },
               ]);
             } catch (error) {
               console.error("레시피 삭제 오류:", error);
               Alert.alert(
-                "삭제 실패", 
-                error instanceof Error ? error.message : "레시피 삭제 중 오류가 발생했습니다."
+                "삭제 실패",
+                error instanceof Error
+                  ? error.message
+                  : "레시피 삭제 중 오류가 발생했습니다."
               );
             }
-          }
+          },
         },
       ]
     );
@@ -152,26 +166,34 @@ export default function RecipeCard({ recipe, showMenu = true }: RecipeCardProps)
             activeOpacity={1}
             onPress={closeActionSheet}
           >
-            <Animated.View 
+            <Animated.View
               style={[
                 styles.bottomSheetContent,
                 {
                   transform: [{ translateY: slideAnim }],
-                }
+                },
               ]}
             >
-              <TouchableOpacity style={styles.actionButton} onPress={handleEdit}>
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleEdit}
+              >
                 <Ionicons name="create-outline" size={20} color="#8B4513" />
                 <Text style={styles.actionButtonText}>레시피 수정</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity style={styles.actionButton} onPress={handleDelete}>
+
+              <TouchableOpacity
+                style={styles.actionButton}
+                onPress={handleDelete}
+              >
                 <Ionicons name="trash-outline" size={20} color="#ff4444" />
-                <Text style={[styles.actionButtonText, { color: "#ff4444" }]}>레시피 삭제</Text>
+                <Text style={[styles.actionButtonText, { color: "#ff4444" }]}>
+                  레시피 삭제
+                </Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
-                style={styles.cancelButton} 
+
+              <TouchableOpacity
+                style={styles.cancelButton}
                 onPress={closeActionSheet}
               >
                 <Text style={styles.cancelButtonText}>취소</Text>

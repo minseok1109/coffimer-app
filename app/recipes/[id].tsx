@@ -1,5 +1,5 @@
-import { useRecipe } from "@/hooks/useRecipes";
 import { useAuth } from "@/hooks/useAuth";
+import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -167,17 +167,6 @@ export default function RecipeDetail() {
           >
             <Ionicons name="logo-youtube" size={20} color="#FF0000" />
             <Text style={styles.youtubeButtonText}>YouTube 영상 보기</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* 소유자에게만 수정 버튼 표시 */}
-        {isOwner && (
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={handleEditRecipe}
-          >
-            <Ionicons name="create-outline" size={20} color="#8B4513" />
-            <Text style={styles.editButtonText}>레시피 수정</Text>
           </TouchableOpacity>
         )}
 

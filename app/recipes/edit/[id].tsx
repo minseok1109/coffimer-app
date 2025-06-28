@@ -1,26 +1,26 @@
-import { useRecipe } from "@/hooks/useRecipes";
+import { EditForm } from "@/components/recipe/EditForm";
 import { useAuth } from "@/hooks/useAuth";
+import { useUpdateRecipeMutation } from "@/hooks/useCreateRecipeMutation";
+import { useRecipe } from "@/hooks/useRecipes";
+import { RecipeEditFormData } from "@/lib/validation/recipeSchema";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { EditForm } from "@/components/recipe/EditForm";
-import { RecipeEditFormData } from "@/lib/validation/recipeSchema";
-import { RecipeAPI } from "@/lib/api/recipes";
 
 export default function RecipeEditPage() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { data: recipe, isLoading, error } = useRecipe(id as string);
   const { user, loading: authLoading } = useAuth();
+  const { mutate: updateRecipe } = useUpdateRecipeMutation();
 
   const currentUserId = user?.id;
 
@@ -36,7 +36,9 @@ export default function RecipeEditPage() {
         <View style={[styles.container, styles.centered]}>
           <ActivityIndicator size="large" color="#8B4513" />
           <Text style={styles.loadingText}>
-            {isLoading ? "레시피를 불러오는 중..." : "사용자 정보를 확인하는 중..."}
+            {isLoading
+              ? "레시피를 불러오는 중..."
+              : "사용자 정보를 확인하는 중..."}
           </Text>
         </View>
       </SafeAreaView>
@@ -132,8 +134,8 @@ export default function RecipeEditPage() {
         throw new Error("로그인이 필요합니다.");
       }
 
-      await RecipeAPI.updateRecipe(recipe.id, data, currentUserId);
-      
+      updateRecipe({ recipeId: recipe.id, input: data });
+
       // 수정 완료 후 상세 페이지로 이동
       router.replace(`/recipes/${recipe.id}`);
     } catch (error) {
@@ -155,11 +157,7 @@ export default function RecipeEditPage() {
         <Text style={styles.headerTitle}>레시피 수정</Text>
       </View>
 
-      <EditForm
-        recipe={recipe}
-        onSave={handleSave}
-        onCancel={handleCancel}
-      />
+      <EditForm recipe={recipe} onSave={handleSave} onCancel={handleCancel} />
     </SafeAreaView>
   );
 }
@@ -177,7 +175,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 20,
-    paddingTop: 60,
+    paddingTop: 20,
     paddingBottom: 20,
     backgroundColor: "white",
     borderBottomWidth: 1,
