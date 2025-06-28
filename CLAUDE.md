@@ -21,7 +21,7 @@ Coffimer App is a React Native coffee brewing timer application built with Expo 
 pnpm start
 expo start
 
-# Platform-specific development  
+# Platform-specific development
 pnpm run android    # Android emulator
 pnpm run ios       # iOS simulator
 pnpm run web       # Web browser
@@ -36,6 +36,7 @@ pnpm run reset-project  # Clean project slate
 ## Architecture Overview
 
 ### File-Based Routing (Expo Router)
+
 - `app/` directory contains all routes
 - `app/(tabs)/` - Tab navigation layout with home, recipes, profile
 - `app/recipes/[id].tsx` - Dynamic recipe detail pages
@@ -43,11 +44,13 @@ pnpm run reset-project  # Clean project slate
 - `_layout.tsx` files define nested navigation structures
 
 ### Component Structure
+
 - `components/timer/` - All timer-related UI components with barrel exports
 - `components/RecipeCard.tsx` - Recipe list item component
 - Components use TypeScript interfaces and follow functional patterns
 
 ### Custom Hooks Architecture
+
 - `hooks/useRecipeTimer.ts` - Core timer logic with play/pause/reset functionality
 - `hooks/timer/useStepInfo.ts` - Current/next step information calculation
 - `hooks/timer/useWaterCalculation.ts` - Water amount tracking logic
@@ -55,6 +58,7 @@ pnpm run reset-project  # Clean project slate
 - `hooks/useColorScheme.ts` - Dark/light mode detection
 
 ### Data Layer
+
 - `lib/recipes.ts` - Recipe data structure with 15+ coffee brewing recipes
 - `lib/supabaseClient.ts` - Supabase configuration and client setup
 - `lib/timer/` - Timer utilities, formatters, and TypeScript interfaces
@@ -63,6 +67,7 @@ pnpm run reset-project  # Clean project slate
 ## Key Data Interfaces
 
 ### Recipe Structure
+
 ```typescript
 interface Recipe {
   id: string;
@@ -83,7 +88,9 @@ interface RecipeStep {
 ```
 
 ### Timer State Management
+
 Timer logic is centralized in `useRecipeTimer` hook with states:
+
 - `isRunning`, `isPaused`, `isCompleted`
 - `currentStepIndex`, `elapsedTime`, `stepElapsedTime`
 - `totalWaterUsed`, `currentStepWater`
@@ -108,18 +115,21 @@ Timer logic is centralized in `useRecipeTimer` hook with states:
 ## Development Patterns
 
 ### Component Organization
+
 - Use barrel exports (`index.ts`) for clean imports
-- Separate UI components from business logic hooks  
+- Separate UI components from business logic hooks
 - Follow camelCase naming for component files
 - Group related components in subdirectories
 
 ### Timer Implementation
+
 - Notifications scheduled at step transitions using `expo-notifications`
 - Audio alerts played via `expo-audio` with `/public/alarm.mp3`
 - Step progression managed through `currentStepIndex` state
 - Water calculations aggregate across completed steps
 
 ### Navigation Patterns
+
 - Use `router.push()` for programmatic navigation
 - Dynamic routes with `[id]` syntax for recipe detail/timer pages
 - Tab navigation configured in `(tabs)/_layout.tsx`
@@ -131,3 +141,5 @@ Timer logic is centralized in `useRecipeTimer` hook with states:
 - Use Expo DevTools and Metro bundler logs for debugging
 - React Native debugger recommended for state inspection
 - Use `expo start --clear` to clear Metro cache if needed
+
+Avoid using useEffect at all costs, unless it’s truly essential.

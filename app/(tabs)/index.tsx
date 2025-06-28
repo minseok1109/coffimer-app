@@ -51,7 +51,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.content}>
           {recipes?.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+            <RecipeCard key={recipe.id} recipe={recipe} showMenu={false} />
           )) ?? <Text style={styles.noDataText}>레시피가 없습니다.</Text>}
         </View>
       </ScrollView>

@@ -1,4 +1,5 @@
 import { useRecipe } from "@/hooks/useRecipes";
+import { useAuth } from "@/hooks/useAuth";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
@@ -19,6 +20,7 @@ export default function RecipeDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { data: recipe, isLoading } = useRecipe(id as string);
+  const { user } = useAuth();
 
   if (isLoading) {
     return (
@@ -47,8 +49,19 @@ export default function RecipeDetail() {
     );
   }
 
+  // 소유자 확인
+  const isOwner = user && recipe && user.id === recipe.owner_id;
+
   const handleStartRecipe = () => {
     router.push(`/recipes/timer/${recipe.id}`);
+  };
+
+  const handleEditRecipe = () => {
+    if (!isOwner) {
+      Alert.alert("알림", "레시피 소유자만 수정할 수 있습니다.");
+      return;
+    }
+    router.push(`/recipes/edit/${recipe.id}`);
   };
 
   const handleYouTubePress = async () => {
@@ -154,6 +167,17 @@ export default function RecipeDetail() {
           >
             <Ionicons name="logo-youtube" size={20} color="#FF0000" />
             <Text style={styles.youtubeButtonText}>YouTube 영상 보기</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* 소유자에게만 수정 버튼 표시 */}
+        {isOwner && (
+          <TouchableOpacity
+            style={styles.editButton}
+            onPress={handleEditRecipe}
+          >
+            <Ionicons name="create-outline" size={20} color="#8B4513" />
+            <Text style={styles.editButtonText}>레시피 수정</Text>
           </TouchableOpacity>
         )}
 
@@ -354,6 +378,30 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: "#FF0000",
+  },
+  editButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "white",
+    borderRadius: 16,
+    padding: 20,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#8B4513",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 3,
+  },
+  editButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#8B4513",
   },
   startButton: {
     flexDirection: "row",
