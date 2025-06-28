@@ -83,6 +83,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                               },
                             ]}
                             placeholder="00"
+                            placeholderTextColor="#999"
                             onBlur={onBlur}
                             onChangeText={onChange}
                             value={value}
@@ -128,6 +129,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                               },
                             ]}
                             placeholder="0"
+                            placeholderTextColor="#999"
                             onBlur={onBlur}
                             onChangeText={onChange}
                             value={value}
@@ -166,6 +168,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                           color: "#333",
                         }}
                         placeholder="단계 제목을 입력하세요 (예: 뜸들이기, 1차 추출)"
+                        placeholderTextColor="#999"
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}
@@ -193,6 +196,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                           height: 80,
                         }}
                         placeholder="단계에 대한 설명을 입력하세요"
+                        placeholderTextColor="#999"
                         onBlur={onBlur}
                         onChangeText={onChange}
                         value={value}

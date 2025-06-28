@@ -81,6 +81,7 @@ export const Step2: React.FC<Step2Props> = ({
                 <TextInput
                   style={createRecipeStyles.numberInput}
                   placeholder="0"
+                  placeholderTextColor="#999"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -116,6 +117,7 @@ export const Step2: React.FC<Step2Props> = ({
                 <TextInput
                   style={createRecipeStyles.numberInput}
                   placeholder="0"
+                  placeholderTextColor="#999"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value}
@@ -142,6 +144,7 @@ export const Step2: React.FC<Step2Props> = ({
             <TextInput
               style={createRecipeStyles.input}
               placeholder="자동 계산됨"
+              placeholderTextColor="#999"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}

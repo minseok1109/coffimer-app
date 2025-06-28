@@ -185,6 +185,7 @@ const StepCard: React.FC<{
                   <TextInput
                     style={styles.numberInput}
                     placeholder="30"
+                    placeholderTextColor="#999"
                     onBlur={onBlur}
                     onChangeText={(text) => onChange(Number(text) || 0)}
                     value={value?.toString() || ""}
@@ -216,6 +217,7 @@ const StepCard: React.FC<{
                   <TextInput
                     style={styles.numberInput}
                     placeholder="50"
+                    placeholderTextColor="#999"
                     onBlur={onBlur}
                     onChangeText={(text) => onChange(Number(text) || 0)}
                     value={value?.toString() || ""}
@@ -242,6 +244,7 @@ const StepCard: React.FC<{
             <TextInput
               style={styles.input}
               placeholder="뜸들이기, 1차 추출, 완료 등"
+              placeholderTextColor="#999"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value || ""}
@@ -260,6 +263,7 @@ const StepCard: React.FC<{
             <TextInput
               style={[styles.input, styles.textArea]}
               placeholder="이 단계에서 수행할 작업을 설명해주세요"
+              placeholderTextColor="#999"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value || ""}

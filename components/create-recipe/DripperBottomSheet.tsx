@@ -101,6 +101,7 @@ export const DripperBottomSheet = forwardRef<
             <BottomSheetTextInput
               style={styles.textInput}
               placeholder="원하는 드리퍼를 직접 입력하세요..."
+              placeholderTextColor="#999"
               value={inputValue}
               onChangeText={setInputValue}
               onSubmitEditing={handleSubmitEditing}

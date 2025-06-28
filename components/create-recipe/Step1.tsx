@@ -36,6 +36,7 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
                     createRecipeStyles.inputError,
                 ]}
                 placeholder="예) 케냐 AA 핸드드립"
+                placeholderTextColor="#999"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}
@@ -59,6 +60,7 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
             <TextInput
               style={[createRecipeStyles.input, createRecipeStyles.textArea]}
               placeholder="이 레시피의 특징이나 맛의 포인트를 적어주세요"
+              placeholderTextColor="#999"
               onBlur={onBlur}
               onChangeText={onChange}
               value={value}
@@ -84,6 +86,7 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
                     createRecipeStyles.inputError,
                 ]}
                 placeholder="https://youtube.com/watch?v=..."
+                placeholderTextColor="#999"
                 onBlur={onBlur}
                 onChangeText={onChange}
                 value={value}

@@ -141,6 +141,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       errors.recipe?.name && styles.inputError,
                     ]}
                     placeholder="레시피 이름을 입력하세요"
+                    placeholderTextColor="#999"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value}
@@ -164,6 +165,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                 <TextInput
                   style={[styles.input, styles.textArea]}
                   placeholder="레시피에 대한 설명을 입력하세요"
+                  placeholderTextColor="#999"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value || ""}
@@ -196,6 +198,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       <TextInput
                         style={styles.numberInput}
                         placeholder="20"
+                        placeholderTextColor="#999"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
                         value={value?.toString() || ""}
@@ -229,6 +232,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       <TextInput
                         style={styles.numberInput}
                         placeholder="300"
+                        placeholderTextColor="#999"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
                         value={value?.toString() || ""}
@@ -264,6 +268,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       <TextInput
                         style={styles.numberInput}
                         placeholder="92"
+                        placeholderTextColor="#999"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
                         value={value?.toString() || ""}
@@ -292,6 +297,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                     <TextInput
                       style={styles.numberInput}
                       placeholder="15"
+                      placeholderTextColor="#999"
                       onBlur={onBlur}
                       onChangeText={(text) => onChange(Number(text) || 0)}
                       value={value?.toString() || ""}
@@ -312,6 +318,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="V60, 칼리타, 오리가미 등"
+                  placeholderTextColor="#999"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value || ""}
@@ -329,6 +336,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                 <TextInput
                   style={styles.input}
                   placeholder="V60 종이 필터, 칼리타 웨이브 등"
+                  placeholderTextColor="#999"
                   onBlur={onBlur}
                   onChangeText={onChange}
                   value={value || ""}
@@ -350,6 +358,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       errors.recipe?.youtube_url && styles.inputError,
                     ]}
                     placeholder="https://youtube.com/watch?v=..."
+                    placeholderTextColor="#999"
                     onBlur={onBlur}
                     onChangeText={onChange}
                     value={value || ""}
