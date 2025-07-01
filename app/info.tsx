@@ -1,17 +1,19 @@
+import { useAuthContext } from "@/contexts/AuthContext";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import * as WebBrowser from "expo-web-browser";
+import React, { useState } from "react";
 import {
+  Alert,
+  Linking,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import * as WebBrowser from "expo-web-browser";
 
 interface InfoItem {
   id: string;
@@ -24,6 +26,8 @@ interface InfoItem {
 
 export default function InfoScreen() {
   const router = useRouter();
+  const { deleteAccount } = useAuthContext();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const basicInfo: InfoItem[] = [
     {
@@ -54,6 +58,67 @@ export default function InfoScreen() {
     },
   ];
 
+  const handleDeleteAccount = () => {
+    Alert.alert(
+      "계정 탈퇴",
+      "정말로 계정을 삭제하시겠습니까?\n\n• 모든 개인 데이터가 영구적으로 삭제됩니다\n• 생성한 레시피와 저장된 데이터가 모두 사라집니다\n• 이 작업은 되돌릴 수 없습니다",
+      [
+        {
+          text: "취소",
+          style: "cancel",
+        },
+        {
+          text: "탈퇴하기",
+          style: "destructive",
+          onPress: () => {
+            Alert.alert(
+              "최종 확인",
+              "계정 탈퇴를 진행하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.",
+              [
+                {
+                  text: "취소",
+                  style: "cancel",
+                },
+                {
+                  text: "확인",
+                  style: "destructive",
+                  onPress: async () => {
+                    setIsDeleting(true);
+                    try {
+                      const result = await deleteAccount();
+                      if (result.success) {
+                        Alert.alert(
+                          "탈퇴 완료",
+                          "계정이 성공적으로 삭제되었습니다.",
+                          [
+                            {
+                              text: "확인",
+                              onPress: () => router.replace("/auth/login"),
+                            },
+                          ]
+                        );
+                      } else {
+                        Alert.alert(
+                          "오류",
+                          (result.error as Error)?.message ||
+                            "계정 삭제에 실패했습니다."
+                        );
+                      }
+                    } catch (error) {
+                      Alert.alert("오류", "계정 삭제 중 오류가 발생했습니다.");
+                    } finally {
+                      setIsDeleting(false);
+                    }
+                  },
+                },
+              ]
+            );
+          },
+        },
+      ]
+    );
+  };
+
   const legalInfo: InfoItem[] = [
     {
       id: "privacy",
@@ -62,7 +127,7 @@ export default function InfoScreen() {
       hasArrow: true,
       onPress: () => {
         // 실제 운영 시에는 정책 페이지 URL로 변경
-        WebBrowser.openBrowserAsync("https://coffimer.app/privacy");
+        WebBrowser.openBrowserAsync("https://coffimer.app/terms");
       },
     },
     {
@@ -72,7 +137,7 @@ export default function InfoScreen() {
       hasArrow: true,
       onPress: () => {
         // 실제 운영 시에는 약관 페이지 URL로 변경
-        WebBrowser.openBrowserAsync("https://coffimer.com");
+        WebBrowser.openBrowserAsync("https://coffimer.com/terms");
       },
     },
     {
@@ -164,7 +229,9 @@ export default function InfoScreen() {
             {basicInfo.map((item, index) => (
               <View key={item.id}>
                 {renderInfoItem(item)}
-                {index < basicInfo.length - 1 && <View style={styles.divider} />}
+                {index < basicInfo.length - 1 && (
+                  <View style={styles.divider} />
+                )}
               </View>
             ))}
           </View>
@@ -177,7 +244,9 @@ export default function InfoScreen() {
             {legalInfo.map((item, index) => (
               <View key={item.id}>
                 {renderInfoItem(item)}
-                {index < legalInfo.length - 1 && <View style={styles.divider} />}
+                {index < legalInfo.length - 1 && (
+                  <View style={styles.divider} />
+                )}
               </View>
             ))}
           </View>
@@ -193,6 +262,37 @@ export default function InfoScreen() {
                 {index < techInfo.length - 1 && <View style={styles.divider} />}
               </View>
             ))}
+          </View>
+        </View>
+
+        {/* 계정 관리 섹션 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>계정 관리</Text>
+          <View style={styles.infoContainer}>
+            <TouchableOpacity
+              style={[styles.infoItem, styles.deleteAccountItem]}
+              onPress={handleDeleteAccount}
+              disabled={isDeleting}
+            >
+              <View style={styles.infoLeft}>
+                <Ionicons
+                  name="trash-outline"
+                  size={24}
+                  color={isDeleting ? "#ccc" : "#ff4444"}
+                />
+                <View style={styles.infoTextContainer}>
+                  <Text style={[styles.infoTitle, styles.deleteAccountText]}>
+                    {isDeleting ? "탈퇴 처리 중..." : "계정 탈퇴"}
+                  </Text>
+                  <Text style={styles.infoSubtitle}>
+                    모든 데이터가 영구적으로 삭제됩니다
+                  </Text>
+                </View>
+              </View>
+              <View style={styles.infoRight}>
+                <Ionicons name="chevron-forward" size={20} color="#ccc" />
+              </View>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -340,5 +440,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     textAlign: "center",
+  },
+  deleteAccountItem: {
+    backgroundColor: "#fff5f5",
+  },
+  deleteAccountText: {
+    color: "#ff4444",
+    fontWeight: "600",
   },
 });
