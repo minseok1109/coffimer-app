@@ -89,43 +89,6 @@ export function useAuth() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const syncUserProfile = async (user: User) => {
-    try {
-      // 인증된 상태에서 사용자 프로필 동기화 (인증 클라이언트 사용)
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (!existingUser) {
-        // 새 사용자 생성
-        await supabase.from("users").insert({
-          id: user.id,
-          email: user.email!,
-          display_name:
-            user.user_metadata?.full_name ||
-            user.email?.split("@")[0] ||
-            "User",
-          profile_image: user.user_metadata?.avatar_url || null,
-        });
-      } else {
-        // 기존 사용자 정보 업데이트
-        await supabase
-          .from("users")
-          .update({
-            display_name:
-              user.user_metadata?.full_name || existingUser.display_name,
-            profile_image:
-              user.user_metadata?.avatar_url || existingUser.profile_image,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", user.id);
-      }
-    } catch (error) {
-      console.error("Error syncing user profile:", error);
-    }
-  };
 
   const signInWithEmail = async (email: string, password: string) => {
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -181,14 +144,14 @@ export function useAuth() {
     try {
       // 1. Supabase 로그아웃
       const { error } = await supabase.auth.signOut();
-      
+
       if (error) {
         console.error("Supabase 로그아웃 오류:", error);
       }
 
       // 2. AsyncStorage에서 supabase.auth.token 제거 (통합 클라이언트가 사용하는 키)
-      await AsyncStorage.removeItem('supabase.auth.token');
-      
+      await AsyncStorage.removeItem("supabase.auth.token");
+
       console.log("Supabase 스토리지 정리 완료");
       return { success: true, error: null };
     } catch (error) {
@@ -229,11 +192,53 @@ export function useAuth() {
     }
   };
 
+  const deleteAccount = async () => {
+    try {
+      // 현재 세션 확인
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        return { success: false, error: new Error("로그인이 필요합니다") };
+      }
+
+      // Edge Function 호출하여 계정 삭제
+      const supabaseUrl = "https://qyjbrwvlzxrtrypwncfl.supabase.co";
+      const response = await fetch(
+        `${supabaseUrl}/functions/v1/delete-account`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "계정 삭제에 실패했습니다");
+      }
+
+      // 삭제 성공 시 로컬 데이터 정리
+      await clearSupabaseStorage();
+      await secureStorage.clearSessionData();
+
+      console.log("계정 탈퇴 완료");
+      return { success: true };
+    } catch (error) {
+      console.error("계정 탈퇴 중 오류:", error);
+      return { success: false, error };
+    }
+  };
+
   return {
     ...authState,
     signInWithEmail,
     signUpWithEmail,
     signOut,
     clearSupabaseStorage, // 새로운 유틸리티 함수 추가
+    deleteAccount, // 계정 삭제 함수 추가
   };
 }
