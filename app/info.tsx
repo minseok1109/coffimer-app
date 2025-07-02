@@ -127,7 +127,7 @@ export default function InfoScreen() {
       hasArrow: true,
       onPress: () => {
         // 실제 운영 시에는 정책 페이지 URL로 변경
-        WebBrowser.openBrowserAsync("https://coffimer.com/terms");
+        WebBrowser.openBrowserAsync("https://coffimer.com/privacy");
       },
     },
     {
