@@ -1,4 +1,5 @@
 import { getFilterLabel } from "@/constants/filterOptions";
+import { getDripperLabel } from "@/constants/dripperOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
@@ -161,7 +162,9 @@ export default function RecipeDetail() {
             <View style={styles.infoCard}>
               <Ionicons name="funnel-outline" size={20} color="#8B4513" />
               <Text style={styles.infoLabel}>드리퍼</Text>
-              <Text style={styles.infoValue}>{recipe.dripper}</Text>
+              <Text style={styles.infoValue}>
+                {getDripperLabel(recipe?.dripper ?? "") || "미지정"}
+              </Text>
             </View>
             <View style={styles.infoCard}>
               <Ionicons name="analytics-outline" size={20} color="#4ECDC4" />

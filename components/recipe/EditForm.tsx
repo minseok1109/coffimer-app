@@ -1,24 +1,37 @@
-import React, { useEffect } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  Switch,
-  TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  Alert,
-} from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Ionicons } from "@expo/vector-icons";
+  BottomSheetRef,
+  DripperBottomSheet,
+} from "@/components/create-recipe/DripperBottomSheet";
+import { FilterBottomSheet } from "@/components/create-recipe/FilterBottomSheet";
 import {
-  recipeEditSchema,
+  defaultDripperOptions,
+  getDripperLabel,
+} from "@/constants/dripperOptions";
+import {
+  defaultFilterOptions,
+  getFilterLabel,
+} from "@/constants/filterOptions";
+import {
   RecipeEditFormData,
   getDefaultRecipe,
   getDefaultRecipeStep,
+  recipeEditSchema,
 } from "@/lib/validation/recipeSchema";
 import { RecipeWithSteps } from "@/types/recipe";
+import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useEffect, useRef } from "react";
+import { Controller, useForm } from "react-hook-form";
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { StepEditor } from "./StepEditor";
 
 interface EditFormProps {
@@ -48,6 +61,9 @@ export const EditForm: React.FC<EditFormProps> = ({
       steps: [getDefaultRecipeStep()],
     },
   });
+
+  const dripperBottomSheetRef = useRef<BottomSheetRef>(null);
+  const filterBottomSheetRef = useRef<BottomSheetRef>(null);
 
   // 기존 레시피 데이터로 폼 초기화
   useEffect(() => {
@@ -314,15 +330,21 @@ export const EditForm: React.FC<EditFormProps> = ({
             <Controller
               control={control}
               name="recipe.dripper"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={styles.input}
-                  placeholder="V60, 칼리타, 오리가미 등"
-                  placeholderTextColor="#999"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value || ""}
-                />
+              render={({ field: { onChange, value } }) => (
+                <TouchableOpacity
+                  style={styles.selector}
+                  onPress={() => dripperBottomSheetRef.current?.expand()}
+                >
+                  <Text
+                    style={[
+                      styles.selectorText,
+                      !value && styles.selectorPlaceholder,
+                    ]}
+                  >
+                    {value ? getDripperLabel(value) : "드리퍼를 선택하세요"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                </TouchableOpacity>
               )}
             />
           </View>
@@ -332,15 +354,21 @@ export const EditForm: React.FC<EditFormProps> = ({
             <Controller
               control={control}
               name="recipe.filter"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <TextInput
-                  style={styles.input}
-                  placeholder="V60 종이 필터, 칼리타 웨이브 등"
-                  placeholderTextColor="#999"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value || ""}
-                />
+              render={({ field: { onChange, value } }) => (
+                <TouchableOpacity
+                  style={styles.selector}
+                  onPress={() => filterBottomSheetRef.current?.expand()}
+                >
+                  <Text
+                    style={[
+                      styles.selectorText,
+                      !value && styles.selectorPlaceholder,
+                    ]}
+                  >
+                    {value ? getFilterLabel(value) : "필터를 선택하세요"}
+                  </Text>
+                  <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                </TouchableOpacity>
               )}
             />
           </View>
@@ -420,6 +448,21 @@ export const EditForm: React.FC<EditFormProps> = ({
           )}
         </TouchableOpacity>
       </View>
+
+      {/* BottomSheets */}
+      <DripperBottomSheet
+        ref={dripperBottomSheetRef}
+        onSelect={(value) => setValue("recipe.dripper", value)}
+        selectedValue={watch("recipe.dripper")}
+        options={defaultDripperOptions}
+      />
+
+      <FilterBottomSheet
+        ref={filterBottomSheetRef}
+        onSelect={(value) => setValue("recipe.filter", value)}
+        selectedValue={watch("recipe.filter")}
+        options={defaultFilterOptions}
+      />
     </View>
   );
 };
@@ -563,5 +606,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
+  },
+  selector: {
+    flexDirection: "row",
+    backgroundColor: "white",
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  selectorText: {
+    fontSize: 16,
+    color: "#333",
+    flex: 1,
+  },
+  selectorPlaceholder: {
+    color: "#999",
   },
 });

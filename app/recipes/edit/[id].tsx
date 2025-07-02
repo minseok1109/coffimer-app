@@ -14,6 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 export default function RecipeEditPage() {
   const { id } = useLocalSearchParams();
@@ -149,16 +150,18 @@ export default function RecipeEditPage() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>레시피 수정</Text>
-      </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>레시피 수정</Text>
+        </View>
 
-      <EditForm recipe={recipe} onSave={handleSave} onCancel={handleCancel} />
-    </SafeAreaView>
+        <EditForm recipe={recipe} onSave={handleSave} onCancel={handleCancel} />
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
