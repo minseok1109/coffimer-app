@@ -29,7 +29,7 @@ export function transformFormDataToRecipe(
     water: waterAmount,
     water_temperature: waterTemperature,
     dripper: formData.dripper || null,
-    filter: null, // 필터 정보가 폼에 없으므로 null로 설정
+    filter: formData.filter || null,
     ratio: ratio,
     description: formData.description || null,
     micron: null, // 미크론 정보가 폼에 없으므로 null로 설정

@@ -1,8 +1,9 @@
+import { getFilterLabel } from "@/constants/filterOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState, useRef } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -170,10 +171,12 @@ export default function RecipeDetail() {
             <View style={styles.infoCard}>
               <Ionicons name="filter-outline" size={20} color="#8B7355" />
               <Text style={styles.infoLabel}>필터</Text>
-              <Text style={styles.infoValue}>{recipe.filter || "미지정"}</Text>
+              <Text style={styles.infoValue}>
+                {getFilterLabel(recipe?.filter ?? "") || "미지정"}
+              </Text>
             </View>
             {recipe.micron ? (
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.infoCard}
                 onPress={openBottomSheet}
               >
@@ -249,33 +252,35 @@ export default function RecipeDetail() {
         onRequestClose={closeBottomSheet}
       >
         <View style={styles.modalOverlay}>
-          <Animated.View 
+          <Animated.View
             style={[
               styles.modalBackground,
               {
-                opacity: fadeAnim
-              }
+                opacity: fadeAnim,
+              },
             ]}
           >
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.modalBackgroundTouchable}
               activeOpacity={1}
               onPress={closeBottomSheet}
             />
           </Animated.View>
-          <Animated.View style={[
-            styles.bottomSheet,
-            {
-              transform: [{ translateY: slideAnim }]
-            }
-          ]}>
+          <Animated.View
+            style={[
+              styles.bottomSheet,
+              {
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetTitle}>분쇄도 가이드</Text>
               <TouchableOpacity onPress={closeBottomSheet}>
                 <Ionicons name="close" size={24} color="#666" />
               </TouchableOpacity>
             </View>
-            
+
             <ScrollView style={styles.bottomSheetContent}>
               <View style={styles.micronSection}>
                 <Ionicons name="cog-outline" size={32} color="#8B4513" />
@@ -288,26 +293,26 @@ export default function RecipeDetail() {
 
               <View style={styles.grinderSection}>
                 <Text style={styles.grinderSectionTitle}>그라인더별 설정</Text>
-                
+
                 {/* 기본 그라인더 설정들 */}
                 <View style={styles.grinderItem}>
                   <Text style={styles.grinderName}>EK43S</Text>
                   <Text style={styles.grinderSetting}>2.5 회전</Text>
                   <Text style={styles.grinderDesc}>시계방향 2.5바퀴</Text>
                 </View>
-                
+
                 <View style={styles.grinderItem}>
                   <Text style={styles.grinderName}>Fellow Ode Gen 2</Text>
                   <Text style={styles.grinderSetting}>4 클릭</Text>
                   <Text style={styles.grinderDesc}>4번 클릭</Text>
                 </View>
-                
+
                 <View style={styles.grinderItem}>
                   <Text style={styles.grinderName}>Comandante C40</Text>
                   <Text style={styles.grinderSetting}>25 클릭</Text>
                   <Text style={styles.grinderDesc}>0에서 25클릭</Text>
                 </View>
-                
+
                 <View style={styles.grinderItem}>
                   <Text style={styles.grinderName}>1Zpresso JX-Pro</Text>
                   <Text style={styles.grinderSetting}>2.8.0</Text>

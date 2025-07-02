@@ -9,6 +9,9 @@ import {
   BottomSheetRef,
   DripperBottomSheet,
 } from "@/components/create-recipe/DripperBottomSheet";
+import {
+  FilterBottomSheet,
+} from "@/components/create-recipe/FilterBottomSheet";
 import { useCreateRecipe } from "@/hooks/useCreateRecipe";
 import { createRecipeStyles } from "@/styles/create-recipe.styles";
 import { Ionicons } from "@expo/vector-icons";
@@ -42,6 +45,7 @@ export default function CreateRecipeScreen() {
   } = useCreateRecipe();
 
   const bottomSheetRef = useRef<BottomSheetRef>(null);
+  const filterBottomSheetRef = useRef<BottomSheetRef>(null);
   const dripperOptions = [
     { label: "V60", value: "v60", icon: "funnel-outline" },
     { label: "칼리타", value: "kalita", icon: "funnel-outline" },
@@ -59,6 +63,14 @@ export default function CreateRecipeScreen() {
     bottomSheetRef.current?.expand();
   };
 
+  const handleFilterSelect = (value: string) => {
+    methods.setValue("filter", value);
+  };
+
+  const handleFilterPress = () => {
+    filterBottomSheetRef.current?.expand();
+  };
+
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
@@ -68,6 +80,7 @@ export default function CreateRecipeScreen() {
           <Step2
             hasAttemptedNext={hasAttemptedNext}
             onDripperPress={handleDripperPress}
+            onFilterPress={handleFilterPress}
           />
         );
       case 3:
@@ -157,12 +170,17 @@ export default function CreateRecipeScreen() {
           </SafeAreaView>
         </FormProvider>
 
-        {/* Global Bottom Sheet */}
+        {/* Global Bottom Sheets */}
         <DripperBottomSheet
           ref={bottomSheetRef}
           options={dripperOptions}
           selectedValue={methods.watch("dripper")}
           onSelect={handleDripperSelect}
+        />
+        <FilterBottomSheet
+          ref={filterBottomSheetRef}
+          selectedValue={methods.watch("filter")}
+          onSelect={handleFilterSelect}
         />
       </BottomSheetModalProvider>
     </GestureHandlerRootView>

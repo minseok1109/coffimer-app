@@ -22,6 +22,7 @@ export const recipeFormSchema = z.object({
     }),
   ratio: z.string().optional(),
   dripper: z.string().min(1, "사용할 드리퍼를 선택해주세요"),
+  filter: z.string().optional(),
 
   // Step 3
   steps: z

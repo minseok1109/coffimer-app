@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { useFormContext } from "react-hook-form";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { getFilterLabel } from "@/constants/filterOptions";
 
 export const Step4: React.FC = () => {
   const { watch } = useFormContext<RecipeFormData>();
@@ -99,6 +100,17 @@ export const Step4: React.FC = () => {
                 </Text>
               </View>
             </View>
+            {formData.filter && (
+              <View style={styles.filterSection}>
+                <Text style={styles.filterLabel}>필터</Text>
+                <View style={styles.filterBox}>
+                  <Ionicons name="filter-outline" size={18} color="#8B7355" />
+                  <Text style={styles.filterText}>
+                    {getFilterLabel(formData.filter)}
+                  </Text>
+                </View>
+              </View>
+            )}
           </View>
         </View>
 
@@ -315,6 +327,33 @@ const styles = StyleSheet.create({
     borderColor: "#e0e0e0",
   },
   dripperText: {
+    fontSize: 15,
+    color: "#333",
+    marginLeft: 10,
+    fontWeight: "500",
+  },
+  filterSection: {
+    paddingTop: 16,
+    marginTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  filterLabel: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
+  filterBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f8f8f8",
+    borderRadius: 8,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  filterText: {
     fontSize: 15,
     color: "#333",
     marginLeft: 10,

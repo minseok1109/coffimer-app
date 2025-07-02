@@ -8,11 +8,13 @@ import { Text, TextInput, TouchableOpacity, View } from "react-native";
 interface Step2Props {
   hasAttemptedNext?: boolean;
   onDripperPress?: () => void;
+  onFilterPress?: () => void;
 }
 
 export const Step2: React.FC<Step2Props> = ({
   hasAttemptedNext = false,
   onDripperPress,
+  onFilterPress,
 }) => {
   const {
     control,
@@ -24,6 +26,7 @@ export const Step2: React.FC<Step2Props> = ({
   const coffeeAmount = watch("coffeeAmount");
   const waterAmount = watch("waterAmount");
   const dripper = watch("dripper");
+  const filter = watch("filter");
 
   React.useEffect(() => {
     if (coffeeAmount && waterAmount) {
@@ -59,6 +62,31 @@ export const Step2: React.FC<Step2Props> = ({
 
     // dripper 값이 없는 경우 placeholder 반환
     return "드리퍼를 선택하세요";
+  };
+
+  const getSelectedFilterLabel = () => {
+    const filterOptions = [
+      { label: "V60 종이 필터", value: "v60_paper" },
+      { label: "카펙 아바카 필터", value: "cafec_abaca" },
+      { label: "오리가미 콘 필터", value: "origami_cone" },
+      { label: "칼리타 웨이브 185 필터", value: "kalita_wave_185" },
+      { label: "칼리타 웨이브 155", value: "kalita_wave_155" },
+      { label: "V60 전용 필터", value: "v60_exclusive" },
+    ];
+    const selected = filterOptions.find((option) => option.value === filter);
+
+    // 미리 정의된 옵션에서 찾은 경우 해당 label 반환
+    if (selected) {
+      return selected.label;
+    }
+
+    // 미리 정의된 옵션에 없지만 filter 값이 있는 경우 (사용자 직접 입력) 그 값을 그대로 반환
+    if (filter) {
+      return filter;
+    }
+
+    // filter 값이 없는 경우 placeholder 반환
+    return "필터를 선택하세요";
   };
 
   return (
@@ -183,6 +211,42 @@ export const Step2: React.FC<Step2Props> = ({
               {hasAttemptedNext && errors.dripper && (
                 <Text style={createRecipeStyles.errorText}>
                   {errors.dripper.message}
+                </Text>
+              )}
+            </>
+          )}
+        />
+      </View>
+
+      <View style={createRecipeStyles.inputGroup}>
+        <Text style={createRecipeStyles.label}>필터</Text>
+        <Controller
+          control={control}
+          name="filter"
+          render={({ field: { value } }) => (
+            <>
+              <TouchableOpacity
+                style={[
+                  createRecipeStyles.dripperSelector,
+                  hasAttemptedNext &&
+                    errors.filter &&
+                    createRecipeStyles.inputError,
+                ]}
+                onPress={onFilterPress}
+              >
+                <Text
+                  style={[
+                    createRecipeStyles.dripperSelectorText,
+                    !value && createRecipeStyles.dripperPlaceholderText,
+                  ]}
+                >
+                  {getSelectedFilterLabel()}
+                </Text>
+                <Ionicons name="chevron-down" size={20} color="#8B4513" />
+              </TouchableOpacity>
+              {hasAttemptedNext && errors.filter && (
+                <Text style={createRecipeStyles.errorText}>
+                  {errors.filter.message}
                 </Text>
               )}
             </>
