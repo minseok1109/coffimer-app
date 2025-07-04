@@ -45,7 +45,7 @@ export default function InfoScreen() {
     {
       id: "developer",
       title: "개발자",
-      subtitle: "Bang Minseok",
+      subtitle: "beon",
       icon: "person-outline",
     },
     {
