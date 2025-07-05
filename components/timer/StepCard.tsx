@@ -262,11 +262,11 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   waterStatLabel: {
-    fontSize: 12,
+    fontSize: 14,
     color: "#666",
   },
   waterStatValue: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: "600",
     color: "#333",
   },
