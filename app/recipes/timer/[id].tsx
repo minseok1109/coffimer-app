@@ -3,10 +3,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { ScrollView, StyleSheet, View } from "react-native";
 import {
-  CurrentStepCard,
   ErrorState,
-  NextStepCard,
   ProgressBars,
+  StepCard,
   TimerControls,
   TimerHeader,
 } from "../../../components/timer";
@@ -63,10 +62,10 @@ export default function RecipeTimer() {
             canGoToNext={currentStep < recipe.recipe_steps.length - 1}
           />
         )}
-        {nextStepInfo && <NextStepCard nextStepInfo={nextStepInfo} />}
         {currentStepInfo && (
-          <CurrentStepCard
+          <StepCard
             currentStepInfo={currentStepInfo}
+            nextStepInfo={nextStepInfo}
             waterInfo={waterInfo}
             recipe={recipe}
           />

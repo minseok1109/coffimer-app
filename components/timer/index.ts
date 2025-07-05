@@ -4,6 +4,7 @@ export { TimerDisplay } from './TimerDisplay';
 export { ProgressBars } from './ProgressBars';
 export { CurrentStepCard } from './CurrentStepCard';
 export { NextStepCard } from './NextStepCard';
+export { StepCard } from './StepCard';
 export { TimerControls } from './TimerControls';
 export { WaterInfoGrid } from './WaterInfoGrid';
 export { WaterProgressBar } from './WaterProgressBar';
