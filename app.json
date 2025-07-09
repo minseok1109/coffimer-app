@@ -3,7 +3,10 @@
     "name": "coffimer-app",
     "slug": "coffimer-app",
     "version": "1.0.1",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "coffimerapp",
@@ -63,7 +66,8 @@
           ]
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

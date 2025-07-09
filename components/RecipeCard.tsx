@@ -1,4 +1,5 @@
 import { useDeleteRecipeMutation } from "@/hooks/useCreateRecipeMutation";
+import { useFavoriteStatus, useFavoriteToggle } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -18,11 +19,13 @@ import { Recipe } from "../types/recipe";
 interface RecipeCardProps {
   recipe: Recipe;
   showMenu?: boolean;
+  showFavorite?: boolean;
 }
 
 export default function RecipeCard({
   recipe,
   showMenu = true,
+  showFavorite = true,
 }: RecipeCardProps) {
   const router = useRouter();
   const { user } = useAuth();
@@ -30,6 +33,13 @@ export default function RecipeCard({
   const [overlayOpacity] = useState(new Animated.Value(0));
   const [slideAnim] = useState(new Animated.Value(300));
   const { mutate: deleteRecipe } = useDeleteRecipeMutation();
+
+  // 즐겨찾기 관련 hooks
+  const { data: isFavorited, isLoading: isFavoriteLoading } = useFavoriteStatus(
+    user?.id || "",
+    recipe.id,
+  );
+  const { mutate: toggleFavorite, isPending: isToggling } = useFavoriteToggle();
 
   // 소유자 확인
   const isOwner = user && recipe.owner_id && user.id === recipe.owner_id;
@@ -40,6 +50,23 @@ export default function RecipeCard({
 
   const handleMenuPress = () => {
     setShowActionSheet(true);
+  };
+
+  const handleFavoriteToggle = () => {
+    if (!user?.id) {
+      Alert.alert("로그인 필요", "즐겨찾기를 사용하려면 로그인이 필요합니다.");
+      return;
+    }
+
+    toggleFavorite(
+      { userId: user.id, recipeId: recipe.id },
+      {
+        onError: (error) => {
+          console.error("즐겨찾기 토글 오류:", error);
+          Alert.alert("오류", "즐겨찾기 설정 중 오류가 발생했습니다.");
+        },
+      },
+    );
   };
 
   const closeActionSheet = () => {
@@ -114,12 +141,12 @@ export default function RecipeCard({
                 "삭제 실패",
                 error instanceof Error
                   ? error.message
-                  : "레시피 삭제 중 오류가 발생했습니다."
+                  : "레시피 삭제 중 오류가 발생했습니다.",
               );
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -127,11 +154,31 @@ export default function RecipeCard({
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>{recipe.name}</Text>
-        {isOwner && showMenu && (
-          <TouchableOpacity style={styles.menuButton} onPress={handleMenuPress}>
-            <Ionicons name="ellipsis-vertical" size={20} color="#666" />
-          </TouchableOpacity>
-        )}
+        <View style={styles.headerButtons}>
+          {/* 즐겨찾기 버튼 */}
+          {user && showFavorite && (
+            <TouchableOpacity
+              style={styles.favoriteButton}
+              onPress={handleFavoriteToggle}
+              disabled={isToggling || isFavoriteLoading}
+            >
+              <Ionicons
+                name={isFavorited ? "star" : "star-outline"}
+                size={20}
+                color={isFavorited ? "#FFD700" : "#666"}
+              />
+            </TouchableOpacity>
+          )}
+          {/* 메뉴 버튼 (소유자만) */}
+          {isOwner && showMenu && (
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={handleMenuPress}
+            >
+              <Ionicons name="ellipsis-vertical" size={20} color="#666" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
       <Text style={styles.description}>{recipe.description}</Text>
@@ -227,16 +274,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 12,
   },
+  headerButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 1,
+  },
   title: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#333",
     flex: 1,
   },
+  favoriteButton: {
+    padding: 4,
+  },
   menuButton: {
     padding: 4,
-    borderRadius: 16,
-    marginLeft: 8,
   },
   description: {
     fontSize: 14,

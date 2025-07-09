@@ -1,10 +1,11 @@
 import RecipeCard from "@/components/RecipeCard";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { useFavoriteRecipes } from "@/hooks/useFavorites";
 import { useUserRecipes } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -15,21 +16,32 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
+type TabType = "myRecipes" | "favorites";
+
 export default function RecipesScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
-  const { data: myRecipes, isLoading, error } = useUserRecipes(user?.id || "");
+  const [activeTab, setActiveTab] = useState<TabType>("myRecipes");
+  
+  const { data: myRecipes, isLoading: myRecipesLoading, error: myRecipesError } = useUserRecipes(user?.id || "");
+  const { data: favoriteRecipes, isLoading: favoritesLoading, error: favoritesError } = useFavoriteRecipes(user?.id || "");
 
   const handleAddRecipe = () => {
     router.push("/create-recipe");
   };
+
+  const isLoading = activeTab === "myRecipes" ? myRecipesLoading : favoritesLoading;
+  const error = activeTab === "myRecipes" ? myRecipesError : favoritesError;
+  const recipes = activeTab === "myRecipes" ? myRecipes : favoriteRecipes;
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
           <ActivityIndicator size="large" color="#8B4513" />
-          <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
+          <Text style={styles.loadingText}>
+            {activeTab === "myRecipes" ? "레시피를 불러오는 중..." : "즐겨찾기를 불러오는 중..."}
+          </Text>
         </View>
       </SafeAreaView>
     );
@@ -40,7 +52,7 @@ export default function RecipesScreen() {
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
           <Text style={styles.errorText}>
-            레시피를 불러오는데 실패했습니다.
+            {activeTab === "myRecipes" ? "레시피를 불러오는데 실패했습니다." : "즐겨찾기를 불러오는데 실패했습니다."}
           </Text>
           <Text style={styles.errorDetail}>{error.message}</Text>
         </View>
@@ -53,7 +65,9 @@ export default function RecipesScreen() {
       <StatusBar style="auto" />
 
       <View style={styles.header}>
-        <Text style={styles.title}>내 레시피</Text>
+        <Text style={styles.title}>
+          {activeTab === "myRecipes" ? "내 레시피" : "즐겨찾기"}
+        </Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.addButton} onPress={handleAddRecipe}>
             <Ionicons name="add" size={24} color="white" />
@@ -61,17 +75,51 @@ export default function RecipesScreen() {
         </View>
       </View>
 
+      {/* 탭 네비게이션 */}
+      <View style={styles.tabContainer}>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "myRecipes" && styles.activeTab]}
+          onPress={() => setActiveTab("myRecipes")}
+        >
+          <Text style={[styles.tabText, activeTab === "myRecipes" && styles.activeTabText]}>
+            내 레시피
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "favorites" && styles.activeTab]}
+          onPress={() => setActiveTab("favorites")}
+        >
+          <Text style={[styles.tabText, activeTab === "favorites" && styles.activeTabText]}>
+            즐겨찾기
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <ScrollView contentContainerStyle={styles.scrollView}>
-        {myRecipes && myRecipes.length > 0 ? (
-          myRecipes.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} />
+        {recipes && recipes.length > 0 ? (
+          recipes.map((recipe) => (
+            <RecipeCard 
+              key={recipe.id} 
+              recipe={recipe} 
+              showFavorite={activeTab === "favorites"}
+            />
           ))
         ) : (
           <View style={styles.emptyState}>
-            <Ionicons name="document-outline" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>아직 저장된 레시피가 없습니다</Text>
+            <Ionicons 
+              name={activeTab === "myRecipes" ? "document-outline" : "star-outline"} 
+              size={64} 
+              color="#ccc" 
+            />
+            <Text style={styles.emptyText}>
+              {activeTab === "myRecipes" 
+                ? "아직 저장된 레시피가 없습니다" 
+                : "즐겨찾기한 레시피가 없습니다"}
+            </Text>
             <Text style={styles.emptySubtext}>
-              첫 번째 레시피를 추가해보세요!
+              {activeTab === "myRecipes"
+                ? "첫 번째 레시피를 추가해보세요!"
+                : "마음에 드는 레시피를 즐겨찾기에 추가해보세요!"}
             </Text>
           </View>
         )}
@@ -121,6 +169,40 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
+  },
+  tabContainer: {
+    flexDirection: "row",
+    backgroundColor: "#f5f5f5",
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderRadius: 8,
+    padding: 4,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  activeTab: {
+    backgroundColor: "white",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  tabText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#666",
+  },
+  activeTabText: {
+    color: "#8B4513",
   },
   scrollView: {
     paddingHorizontal: 20,

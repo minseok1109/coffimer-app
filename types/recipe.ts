@@ -25,3 +25,13 @@ export interface RecipeWithSteps extends Recipe {
   recipe_steps: RecipeStep[]
   users?: Pick<User, 'id' | 'display_name' | 'profile_image'>
 }
+
+// 즐겨찾기 레시피 타입
+export interface SavedRecipe {
+  user_id: string
+  recipe_id: string
+  saved_at: string
+  is_pinned: boolean
+  pin_order: number | null
+  pinned_at: string | null
+}
