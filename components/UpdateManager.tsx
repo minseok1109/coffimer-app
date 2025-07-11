@@ -15,11 +15,6 @@ export const UpdateManager: React.FC = () => {
     shouldShowNotification,
   } = useUpdateNotification();
   
-  // 업데이트 기능이 비활성화된 경우 아무것도 렌더링하지 않음
-  if (!isUpdateEnabled()) {
-    return null;
-  }
-  
   // 앱 상태 변경 감지
   useEffect(() => {
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
@@ -32,6 +27,11 @@ export const UpdateManager: React.FC = () => {
     const subscription = AppState.addEventListener('change', handleAppStateChange);
     return () => subscription?.remove();
   }, []);
+  
+  // 업데이트 기능이 비활성화된 경우 아무것도 렌더링하지 않음
+  if (!isUpdateEnabled()) {
+    return null;
+  }
   
   // 업데이트 에러 처리
   const handleUpdateError = (error: Error) => {
