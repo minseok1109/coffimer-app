@@ -1,5 +1,5 @@
-import { getFilterLabel } from "@/constants/filterOptions";
 import { getDripperLabel } from "@/constants/dripperOptions";
+import { getFilterLabel } from "@/constants/filterOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";

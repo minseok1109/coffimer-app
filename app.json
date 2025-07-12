@@ -2,11 +2,8 @@
   "expo": {
     "name": "coffimer-app",
     "slug": "coffimer-app",
-    "version": "1.0.1",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "version": "1.0.11",
+    "platforms": ["ios", "android"],
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
     "scheme": "coffimerapp",
