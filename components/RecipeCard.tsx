@@ -2,7 +2,7 @@ import { useDeleteRecipeMutation } from "@/hooks/useCreateRecipeMutation";
 import { useFavoriteStatus, useFavoriteToggle } from "@/hooks/useFavorites";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { memo, useEffect, useState } from "react";
 import {
   Alert,
   Animated,
@@ -22,7 +22,7 @@ interface RecipeCardProps {
   showFavorite?: boolean;
 }
 
-export default function RecipeCard({
+const RecipeCard = memo(function RecipeCard({
   recipe,
   showMenu = true,
   showFavorite = true,
@@ -37,7 +37,7 @@ export default function RecipeCard({
   // 즐겨찾기 관련 hooks
   const { data: isFavorited, isLoading: isFavoriteLoading } = useFavoriteStatus(
     user?.id || "",
-    recipe.id,
+    recipe.id
   );
   const { mutate: toggleFavorite, isPending: isToggling } = useFavoriteToggle();
 
@@ -65,7 +65,7 @@ export default function RecipeCard({
           console.error("즐겨찾기 토글 오류:", error);
           Alert.alert("오류", "즐겨찾기 설정 중 오류가 발생했습니다.");
         },
-      },
+      }
     );
   };
 
@@ -141,12 +141,12 @@ export default function RecipeCard({
                 "삭제 실패",
                 error instanceof Error
                   ? error.message
-                  : "레시피 삭제 중 오류가 발생했습니다.",
+                  : "레시피 삭제 중 오류가 발생했습니다."
               );
             }
           },
         },
-      ],
+      ]
     );
   };
 
@@ -251,7 +251,7 @@ export default function RecipeCard({
       </Modal>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -374,3 +374,5 @@ const styles = StyleSheet.create({
     color: "#666",
   },
 });
+
+export default RecipeCard;

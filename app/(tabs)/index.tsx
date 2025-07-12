@@ -1,4 +1,7 @@
-import { useRecipes } from "@/hooks/useRecipes";
+import { CompactFilterChipsContainer } from "@/components/filter";
+import RecipeCard from "@/components/RecipeCard";
+import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
+import { useFilterState } from "@/hooks/useFilterState";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
@@ -10,12 +13,18 @@ import {
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import RecipeCard from "../../components/RecipeCard";
 
 export default function HomeScreen() {
-  const { data: recipes, error, isLoading } = useRecipes(true);
+  const filterState = useFilterState();
+  const {
+    data: recipes,
+    error,
+    isLoading,
+    isFetching,
+  } = useFilteredRecipes(filterState.filterState, false);
 
-  if (isLoading) {
+  // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
+  if (isLoading && !recipes) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
@@ -44,9 +53,21 @@ export default function HomeScreen() {
       <StatusBar style="auto" />
 
       <View style={styles.header}>
-        <Image source={require("@/assets/images/logo.png")} style={styles.logo} />
+        <Image
+          source={require("@/assets/images/logo.png")}
+          style={styles.logo}
+        />
         <Text style={styles.title}>Coffimer</Text>
       </View>
+
+      <CompactFilterChipsContainer
+        filterState={filterState.filterState}
+        onBrewingTypeChange={filterState.setBrewingType}
+        onDripperToggle={filterState.toggleDripper}
+        onFilterToggle={filterState.toggleFilter}
+        onReset={filterState.resetFilters}
+        isLoading={isFetching}
+      />
 
       <ScrollView contentContainerStyle={styles.scrollView}>
         <View style={styles.content}>

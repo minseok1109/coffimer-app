@@ -2,6 +2,9 @@ import RecipeCard from "@/components/RecipeCard";
 import { useAuthContext } from "@/contexts/AuthContext";
 import { useFavoriteRecipes } from "@/hooks/useFavorites";
 import { useUserRecipes } from "@/hooks/useRecipes";
+import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
+import { useFilterState } from "@/hooks/useFilterState";
+import { CompactFilterChipsContainer } from "@/components/filter";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -16,31 +19,40 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-type TabType = "myRecipes" | "favorites";
+type TabType = "myRecipes" | "favorites" | "all";
 
 export default function RecipesScreen() {
   const router = useRouter();
   const { user } = useAuthContext();
   const [activeTab, setActiveTab] = useState<TabType>("myRecipes");
+  const filterState = useFilterState();
   
   const { data: myRecipes, isLoading: myRecipesLoading, error: myRecipesError } = useUserRecipes(user?.id || "");
   const { data: favoriteRecipes, isLoading: favoritesLoading, error: favoritesError } = useFavoriteRecipes(user?.id || "");
+  const { data: filteredRecipes, isLoading: filteredLoading, error: filteredError, isFetching: filteredFetching } = useFilteredRecipes(filterState.filterState, false);
 
   const handleAddRecipe = () => {
     router.push("/create-recipe");
   };
 
-  const isLoading = activeTab === "myRecipes" ? myRecipesLoading : favoritesLoading;
-  const error = activeTab === "myRecipes" ? myRecipesError : favoritesError;
-  const recipes = activeTab === "myRecipes" ? myRecipes : favoriteRecipes;
+  const isLoading = activeTab === "myRecipes" ? myRecipesLoading : 
+                    activeTab === "favorites" ? favoritesLoading : filteredLoading;
+  const isFetching = activeTab === "myRecipes" ? myRecipesLoading : 
+                     activeTab === "favorites" ? favoritesLoading : filteredFetching;
+  const error = activeTab === "myRecipes" ? myRecipesError : 
+                activeTab === "favorites" ? favoritesError : filteredError;
+  const recipes = activeTab === "myRecipes" ? myRecipes : 
+                  activeTab === "favorites" ? favoriteRecipes : filteredRecipes;
 
-  if (isLoading) {
+  // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
+  if (isLoading && !recipes) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
           <ActivityIndicator size="large" color="#8B4513" />
           <Text style={styles.loadingText}>
-            {activeTab === "myRecipes" ? "레시피를 불러오는 중..." : "즐겨찾기를 불러오는 중..."}
+            {activeTab === "myRecipes" ? "레시피를 불러오는 중..." : 
+             activeTab === "favorites" ? "즐겨찾기를 불러오는 중..." : "레시피를 불러오는 중..."}
           </Text>
         </View>
       </SafeAreaView>
@@ -66,7 +78,8 @@ export default function RecipesScreen() {
 
       <View style={styles.header}>
         <Text style={styles.title}>
-          {activeTab === "myRecipes" ? "내 레시피" : "즐겨찾기"}
+          {activeTab === "myRecipes" ? "내 레시피" : 
+           activeTab === "favorites" ? "즐겨찾기" : "모든 레시피"}
         </Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity style={styles.addButton} onPress={handleAddRecipe}>
@@ -93,7 +106,27 @@ export default function RecipesScreen() {
             즐겨찾기
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.tab, activeTab === "all" && styles.activeTab]}
+          onPress={() => setActiveTab("all")}
+        >
+          <Text style={[styles.tabText, activeTab === "all" && styles.activeTabText]}>
+            모든 레시피
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {/* 필터 칩 - 모든 레시피 탭에서만 표시 */}
+      {activeTab === "all" && (
+        <CompactFilterChipsContainer
+          filterState={filterState.filterState}
+          onBrewingTypeChange={filterState.setBrewingType}
+          onDripperToggle={filterState.toggleDripper}
+          onFilterToggle={filterState.toggleFilter}
+          onReset={filterState.resetFilters}
+          isLoading={isFetching}
+        />
+      )}
 
       <ScrollView contentContainerStyle={styles.scrollView}>
         {recipes && recipes.length > 0 ? (
@@ -107,19 +140,24 @@ export default function RecipesScreen() {
         ) : (
           <View style={styles.emptyState}>
             <Ionicons 
-              name={activeTab === "myRecipes" ? "document-outline" : "star-outline"} 
+              name={activeTab === "myRecipes" ? "document-outline" : 
+                    activeTab === "favorites" ? "star-outline" : "search-outline"} 
               size={64} 
               color="#ccc" 
             />
             <Text style={styles.emptyText}>
               {activeTab === "myRecipes" 
                 ? "아직 저장된 레시피가 없습니다" 
-                : "즐겨찾기한 레시피가 없습니다"}
+                : activeTab === "favorites" 
+                ? "즐겨찾기한 레시피가 없습니다"
+                : "조건에 맞는 레시피가 없습니다"}
             </Text>
             <Text style={styles.emptySubtext}>
               {activeTab === "myRecipes"
                 ? "첫 번째 레시피를 추가해보세요!"
-                : "마음에 드는 레시피를 즐겨찾기에 추가해보세요!"}
+                : activeTab === "favorites"
+                ? "마음에 드는 레시피를 즐겨찾기에 추가해보세요!"
+                : "다른 필터 조건을 시도해보세요!"}
             </Text>
           </View>
         )}

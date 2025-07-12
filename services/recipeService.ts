@@ -1,3 +1,4 @@
+import { FilterState } from "@/constants/filterConstants";
 import { supabase } from "@/lib/supabaseClient";
 import { Recipe, RecipeWithSteps } from "../types/recipe";
 
@@ -257,5 +258,174 @@ export class RecipeService {
       ...new Set(data?.map((item) => item.dripper).filter(Boolean)),
     ];
     return uniqueDrippers as string[];
+  }
+
+  /**
+   * 필터 조건에 따라 레시피를 조회합니다
+   */
+  static async getFilteredRecipes(
+    filters: FilterState,
+    includeSteps: boolean = false
+  ): Promise<Recipe[] | RecipeWithSteps[]> {
+    try {
+      const selectQuery = includeSteps
+        ? `
+          *,
+          recipe_steps (*)
+        `
+        : "*";
+
+      let query = supabase
+        .from("recipes")
+        .select(selectQuery)
+        .eq("is_public", true);
+
+      // 추출 타입 필터
+      if (filters.brewingType !== "all") {
+        query = query.eq("brewing_type", filters.brewingType);
+      }
+
+      // 드리퍼 필터
+      if (filters.dripper.length > 0) {
+        const dripperConditions: string[] = [];
+
+        filters.dripper.forEach((filterValue) => {
+          switch (filterValue) {
+            case "v60":
+              dripperConditions.push(`dripper.ilike.*v60*`);
+              break;
+            case "origami":
+              dripperConditions.push(`dripper.ilike.*오리가미*`);
+              dripperConditions.push(`dripper.ilike.*origami*`);
+              break;
+            case "solo":
+              dripperConditions.push(`dripper.ilike.*솔로*`);
+              break;
+            case "hario":
+              dripperConditions.push(`dripper.ilike.*하리오*`);
+              dripperConditions.push(`dripper.ilike.*hario*`);
+              break;
+            case "other":
+              // 기타의 경우 복잡하므로 일단 제외
+              break;
+            default:
+              dripperConditions.push(`dripper.ilike.*${filterValue}*`);
+          }
+        });
+
+        if (dripperConditions.length > 0) {
+          query = query.or(dripperConditions.join(","));
+        }
+      }
+
+      // 필터 필터
+      if (filters.filter.length > 0) {
+        const filterConditions: string[] = [];
+
+        filters.filter.forEach((filterValue) => {
+          switch (filterValue) {
+            case "cafec_abaca":
+              filterConditions.push(`filter.ilike.*카펙*`);
+              filterConditions.push(`filter.ilike.*cafec*`);
+              filterConditions.push(`filter.ilike.*아바카*`);
+              filterConditions.push(`filter.ilike.*abaca*`);
+              break;
+            case "kalita_wave":
+              filterConditions.push(`filter.ilike.*칼리타*`);
+              filterConditions.push(`filter.ilike.*kalita*`);
+              filterConditions.push(`filter.ilike.*웨이브*`);
+              filterConditions.push(`filter.ilike.*wave*`);
+              break;
+            case "v60_paper":
+              filterConditions.push(`filter.ilike.*v60*`);
+              filterConditions.push(`filter.ilike.*전용*`);
+              break;
+            case "origami_cone":
+              filterConditions.push(`filter.ilike.*오리가미*`);
+              filterConditions.push(`filter.ilike.*origami*`);
+              filterConditions.push(`filter.ilike.*콘*`);
+              break;
+            case "none":
+              filterConditions.push(`filter.is.null`);
+              break;
+            default:
+              filterConditions.push(`filter.ilike.*${filterValue}*`);
+          }
+        });
+
+        if (filterConditions.length > 0) {
+          query = query.or(filterConditions.join(","));
+        }
+      }
+
+      query = query.order("created_at", { ascending: true });
+
+      const { data: recipes, error } = await query;
+
+      if (error) {
+        throw new Error(`Failed to fetch filtered recipes: ${error.message}`);
+      }
+
+      let recipesWithUsers = recipes || [];
+
+      // 사용자 정보 추가 (includeSteps인 경우에만)
+      if (includeSteps && recipes && recipes.length > 0) {
+        const userIds = [
+          ...new Set((recipes as any).map((recipe: any) => recipe.owner_id)),
+        ];
+        const { data: users } = await supabase
+          .from("users")
+          .select("id, display_name, profile_image")
+          .in("id", userIds as string[]);
+
+        recipesWithUsers = (recipes as any).map((recipe: any) => ({
+          ...recipe,
+          users: users?.find((user) => user.id === recipe.owner_id),
+        }));
+      }
+
+      return recipesWithUsers as any;
+    } catch (error) {
+      console.error("RecipeService.getFilteredRecipes 오류:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * 사용 가능한 모든 필터 목록을 조회합니다
+   */
+  static async getAvailableFilters(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("recipes")
+      .select("filter")
+      .eq("is_public", true);
+
+    if (error) {
+      throw new Error(`Failed to fetch filters: ${error.message}`);
+    }
+
+    // 중복 제거 (null 값 포함)
+    const uniqueFilters = [...new Set(data?.map((item) => item.filter))];
+    return uniqueFilters as string[];
+  }
+
+  /**
+   * 사용 가능한 모든 추출 타입을 조회합니다
+   */
+  static async getAvailableBrewingTypes(): Promise<string[]> {
+    const { data, error } = await supabase
+      .from("recipes")
+      .select("brewing_type")
+      .eq("is_public", true);
+
+    if (error) {
+      throw new Error(`Failed to fetch brewing types: ${error.message}`);
+    }
+
+    // 중복 제거
+    const uniqueBrewingTypes = [
+      ...new Set(data?.map((item) => item.brewing_type).filter(Boolean)),
+    ];
+    return uniqueBrewingTypes as string[];
   }
 }
