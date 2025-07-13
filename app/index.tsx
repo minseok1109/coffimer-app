@@ -6,7 +6,7 @@ import { ActivityIndicator, StyleSheet, View } from "react-native";
 export default function Index() {
   return (
     <PostHogProvider
-      apiKey="phc_IfnW9hTL4UtPiUALycBoWcvBJ17zrD6QTZw3PTjMtxT"
+      apiKey="phc_MBKpDo1Pp4pdZxcVcyna0BHgJgIygBdLEfeh0FlocNO"
       options={{
         host: "https://us.i.posthog.com",
       }}
