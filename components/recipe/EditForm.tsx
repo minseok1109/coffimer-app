@@ -98,6 +98,7 @@ export const EditForm: React.FC<EditFormProps> = ({
 
   const coffeeAmount = watch("recipe.coffee");
   const waterAmount = watch("recipe.water");
+  const steps = watch("steps");
 
   // 비율 자동 계산
   useEffect(() => {
@@ -106,6 +107,16 @@ export const EditForm: React.FC<EditFormProps> = ({
       setValue("recipe.ratio", Math.round(ratio * 10) / 10);
     }
   }, [coffeeAmount, waterAmount, setValue]);
+
+  // 총 시간 자동 계산 (마지막 단계의 시간이 전체 시간)
+  useEffect(() => {
+    if (steps && Array.isArray(steps) && steps.length > 0) {
+      // 마지막 단계의 시간이 전체 레시피의 총 시간
+      const lastStep = steps[steps.length - 1];
+      const totalTime = lastStep?.time || 0;
+      setValue("recipe.total_time", totalTime);
+    }
+  }, [steps, setValue]);
 
   const handleSavePress = async (data: RecipeEditFormData) => {
     try {

@@ -291,25 +291,25 @@ const TotalWaterDisplay: React.FC<{
   const { totalTime, totalWater } = useMemo(() => {
     if (!steps || !Array.isArray(steps)) return { totalTime: 0, totalWater: 0 };
 
-    let maxTime = 0;
+    let totalTime = 0;
     let totalWater = 0;
-    
+
     for (let i = 0; i <= stepIndex; i++) {
       const time = steps[i]?.time || 0;
       const water = steps[i]?.water || 0;
-      
-      maxTime = Math.max(maxTime, time);
+
+      totalTime += time;
       totalWater += water;
     }
-    
-    return { totalTime: maxTime, totalWater };
+
+    return { totalTime, totalWater };
   }, [steps, stepIndex]);
 
   return (
     <View style={styles.totalContainer}>
-      <View style={styles.totalTimeContainer}>
+      {/* <View style={styles.totalTimeContainer}>
         <Text style={styles.totalTimeLabel}>총 시간: {totalTime}초</Text>
-      </View>
+      </View> */}
       <View style={styles.totalWaterContainer}>
         <Text style={styles.totalWaterLabel}>누적 물량: {totalWater}ml</Text>
       </View>
