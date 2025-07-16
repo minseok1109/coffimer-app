@@ -72,7 +72,7 @@ export const StepCard: React.FC<StepCardProps> = ({
               ]}
             />
             <Text style={styles.waterStatLabel}>총 </Text>
-            <Text style={styles.waterStatValue}>{remaining}ml</Text>
+            <Text style={styles.waterStatValue}>{totalNeeded}ml</Text>
           </View>
         </View>
       </View>
