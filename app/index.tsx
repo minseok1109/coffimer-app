@@ -1,22 +1,8 @@
 import { useAuthContext } from "@/contexts/AuthContext";
 import { Redirect } from "expo-router";
-import { PostHogProvider } from "posthog-react-native";
 import { ActivityIndicator, StyleSheet, View } from "react-native";
 
 export default function Index() {
-  return (
-    <PostHogProvider
-      apiKey="phc_MBKpDo1Pp4pdZxcVcyna0BHgJgIygBdLEfeh0FlocNO"
-      options={{
-        host: "https://us.i.posthog.com",
-      }}
-    >
-      <App />
-    </PostHogProvider>
-  );
-}
-
-const App = () => {
   const { user, loading } = useAuthContext();
 
   if (loading) {
@@ -32,7 +18,7 @@ const App = () => {
   }
 
   return <Redirect href="/auth/login" />;
-};
+}
 
 const styles = StyleSheet.create({
   loadingContainer: {
