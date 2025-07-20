@@ -2,6 +2,7 @@ import { CompactFilterChipsContainer } from "@/components/filter";
 import RecipeCard from "@/components/RecipeCard";
 import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
 import { useFilterState } from "@/hooks/useFilterState";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { StatusBar } from "expo-status-bar";
 import React from "react";
 import {
@@ -22,6 +23,13 @@ export default function HomeScreen() {
     isLoading,
     isFetching,
   } = useFilteredRecipes(filterState.filterState, false);
+  const { testConnection, screen } = useAnalytics();
+
+  // Test analytics connection and track screen view on mount
+  React.useEffect(() => {
+    testConnection();
+    screen("HomeScreen");
+  }, [testConnection, screen]);
 
   // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
   if (isLoading && !recipes) {

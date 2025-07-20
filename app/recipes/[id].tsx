@@ -2,6 +2,7 @@ import { getDripperLabel } from "@/constants/dripperOptions";
 import { getFilterLabel } from "@/constants/filterOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -26,12 +27,25 @@ export default function RecipeDetail() {
   const router = useRouter();
   const { data: recipe, isLoading } = useRecipe(id as string);
   const { user } = useAuth();
+  const { track, screen } = useAnalytics();
   const [showGrindGuide, setShowGrindGuide] = useState(false);
   const slideAnim = useRef(new Animated.Value(500)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
+  // Track recipe view when recipe loads
+  React.useEffect(() => {
+    if (recipe) {
+      track("recipe_viewed", { recipe_id: recipe.id, recipe_name: recipe.name });
+      screen("RecipeDetail", { recipe_id: recipe.id, recipe_name: recipe.name });
+    }
+  }, [recipe, track, screen]);
+
   const openBottomSheet = () => {
     setShowGrindGuide(true);
+    // Track grind guide open
+    if (recipe) {
+      track("screen_view", { screen_name: "GrindGuide" });
+    }
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -96,6 +110,14 @@ export default function RecipeDetail() {
   const isOwner = user && recipe && user.id === recipe.owner_id;
 
   const handleStartRecipe = () => {
+    // Track recipe start
+    if (recipe) {
+      track("recipe_started", { 
+        recipe_id: recipe.id, 
+        recipe_name: recipe.name, 
+        total_time: recipe.total_time 
+      });
+    }
     router.push(`/recipes/timer/${recipe.id}`);
   };
 
@@ -109,6 +131,9 @@ export default function RecipeDetail() {
 
   const handleYouTubePress = async () => {
     if (!recipe.youtube_url) return;
+
+    // Track YouTube video click
+    track("screen_view", { screen_name: "YouTube" });
 
     try {
       const supported = await Linking.canOpenURL(recipe.youtube_url);
