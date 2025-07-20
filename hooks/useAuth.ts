@@ -1,9 +1,10 @@
 import { secureStorage } from "@/lib/secureStorage";
 import { supabase } from "@/lib/supabaseClient";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { usePostHog } from "posthog-react-native";
 
 import type { Session, User } from "@supabase/supabase-js";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 
 interface AuthState {
   user: User | null;
@@ -12,11 +13,53 @@ interface AuthState {
 }
 
 export function useAuth() {
+  const posthog = usePostHog();
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
     session: null,
     loading: true,
   });
+
+  // PostHog 중복 호출 방지를 위한 추적
+  const lastIdentifiedUserId = useRef<string | null>(null);
+  const identificationInProgress = useRef(false);
+
+  // PostHog 사용자 식별 함수 (중복 방지 포함)
+  const identifyUserInPostHog = useCallback((user: User, context: 'session_restore' | 'login' = 'login') => {
+    if (!posthog || !user) return false;
+    
+    // 이미 같은 사용자를 식별했거나 식별이 진행 중이면 건너뛰기
+    if (lastIdentifiedUserId.current === user.id || identificationInProgress.current) {
+      console.log("🎯 PostHog 중복 식별 방지:", user.id, context);
+      return false;
+    }
+
+    try {
+      identificationInProgress.current = true;
+      
+      const userProperties = {
+        email: user.email,
+        user_id: user.id,
+        created_at: user.created_at,
+        context: context,
+        timestamp: new Date().toISOString(),
+        ...(user.user_metadata?.full_name && { 
+          full_name: user.user_metadata.full_name 
+        }),
+      };
+
+      posthog.identify(user.id, userProperties);
+      lastIdentifiedUserId.current = user.id;
+      
+      console.log("🎯 PostHog 사용자 식별 완료:", user.id, context, userProperties);
+      return true;
+    } catch (error) {
+      console.error("🎯 PostHog 식별 오류:", error);
+      return false;
+    } finally {
+      identificationInProgress.current = false;
+    }
+  }, [posthog]);
 
   useEffect(() => {
     // 자동 로그인 설정 확인 후 세션 가져오기
@@ -44,6 +87,11 @@ export function useAuth() {
         if (session) {
           // 세션 정보 로그
           console.log("🔐 세션 복원:", session.user?.email);
+          
+          // PostHog 사용자 식별 (세션 복원 시) - 중복 방지 포함
+          if (session.user) {
+            identifyUserInPostHog(session.user, 'session_restore');
+          }
         }
 
         setAuthState({
@@ -75,6 +123,39 @@ export function useAuth() {
         loading: false,
       });
 
+      // PostHog 사용자 식별 및 이벤트 추적
+      try {
+        if (posthog) {
+          if (event === "SIGNED_IN" && session?.user) {
+            // 사용자 식별 (중복 방지 포함)
+            const identified = identifyUserInPostHog(session.user, 'login');
+            
+            // 로그인 이벤트만 추적 (identify와 분리)
+            posthog.capture("user_login", { 
+              method: "email",
+              user_id: session.user.id,
+              identified: identified
+            });
+            
+            console.log("🎯 PostHog 로그인 이벤트 추적:", session.user.id, { identified });
+          } else if (event === "SIGNED_OUT") {
+            // 로그아웃 시 처리
+            posthog.capture("user_logout", {});
+            posthog.reset();
+            
+            // 추적 상태 초기화
+            lastIdentifiedUserId.current = null;
+            identificationInProgress.current = false;
+            
+            console.log("🎯 PostHog 로그아웃 및 상태 초기화");
+          }
+        } else {
+          console.warn("🎯 PostHog 인스턴스를 사용할 수 없습니다");
+        }
+      } catch (error) {
+        console.error("🎯 PostHog 연동 오류:", error);
+      }
+
       // 로그인 시 자동 로그인 활성화
       if (event === "SIGNED_IN" && session?.user) {
         await secureStorage.setAutoLoginEnabled(true);
@@ -87,7 +168,7 @@ export function useAuth() {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [identifyUserInPostHog]);
 
 
   const signInWithEmail = async (email: string, password: string) => {
