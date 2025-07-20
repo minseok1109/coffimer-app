@@ -8,7 +8,7 @@ export function transformFormDataToRecipe(
   formData: RecipeFormData,
   userId: string
 ): CreateRecipeRequest {
-  // 총 시간 계산 (모든 스텝의 시간 합계)
+  // 총 시간 계산 (모든 단계의 소요 시간 합계)
   const totalTime = formData.steps.reduce((sum, step) => {
     return sum + parseInt(step.time);
   }, 0);
@@ -35,18 +35,23 @@ export function transformFormDataToRecipe(
     micron: null, // 미크론 정보가 폼에 없으므로 null로 설정
     youtube_url: formData.youtubeUrl || null, // YouTube URL 추가
     is_public: formData.isPublic || false,
+    brewing_type: "hot", // 기본값: 핫 브루잉
   };
 
-  // 스텝 데이터 변환
+  // 스텝 데이터 변환 - 누적 시간으로 변환
+  let cumulativeTime = 0;
   let cumulativeWater = 0;
   const steps: Omit<RecipeStep, "id" | "recipe_id">[] = formData.steps.map(
     (step, index) => {
+      const stepTime = parseInt(step.time);
       const stepWater = parseInt(step.waterAmount);
+
+      cumulativeTime += stepTime; // 누적 시간 계산
       cumulativeWater += stepWater;
 
       return {
         step_index: index,
-        time: parseInt(step.time),
+        time: cumulativeTime, // 누적 시간으로 저장
         title: step.title || `Step ${index + 1}`,
         description: step.description || null,
         water: stepWater || 0,

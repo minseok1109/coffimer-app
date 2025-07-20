@@ -1,9 +1,9 @@
-import { InsertTables, Tables, UpdateTables } from "./database";
+import { TablesInsert, Tables, TablesUpdate } from "./database";
 
 export type User = Tables<"users">;
 
-export type UserInsert = InsertTables<"users">;
-export type UserUpdate = UpdateTables<"users">;
+export type UserInsert = TablesInsert<"users">;
+export type UserUpdate = TablesUpdate<"users">;
 
 /**
  * 사용자 관련 추가 타입 정의
