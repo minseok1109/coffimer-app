@@ -1,5 +1,8 @@
+import { ErrorMessage, PasswordRulesGuide } from "@/components/auth";
 import { useAuthContext } from "@/contexts/AuthContext";
+import { signUpSchema, type SignUpFormData } from "@/lib/validation/authSchema";
 import { Ionicons } from "@expo/vector-icons";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import React, { useState } from "react";
@@ -19,13 +22,6 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface SignUpFormData {
-  nickname: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-}
-
 export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +33,8 @@ export default function SignUpScreen() {
     formState: { errors, isValid },
     watch,
   } = useForm<SignUpFormData>({
+    resolver: zodResolver(signUpSchema),
+    mode: "onChange",
     defaultValues: {
       nickname: "",
       email: "",
@@ -58,6 +56,7 @@ export default function SignUpScreen() {
         Alert.alert("오류", error.message);
       }
     } catch (error) {
+      console.error("회원가입 오류:", error);
       Alert.alert("오류", "예상치 못한 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -111,17 +110,6 @@ export default function SignUpScreen() {
                   <Controller
                     control={control}
                     name="nickname"
-                    rules={{
-                      required: "닉네임을 입력해주세요",
-                      minLength: {
-                        value: 2,
-                        message: "닉네임은 2자 이상이어야 합니다",
-                      },
-                      maxLength: {
-                        value: 20,
-                        message: "닉네임은 20자 이하여야 합니다",
-                      },
-                    }}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
                         style={styles.input}
@@ -135,11 +123,7 @@ export default function SignUpScreen() {
                     )}
                   />
                 </View>
-                {errors.nickname && (
-                  <Text style={styles.errorText}>
-                    {errors.nickname.message}
-                  </Text>
-                )}
+                <ErrorMessage message={errors.nickname?.message || ""} />
               </View>
 
               <View>
@@ -158,13 +142,6 @@ export default function SignUpScreen() {
                   <Controller
                     control={control}
                     name="email"
-                    rules={{
-                      required: "이메일을 입력해주세요",
-                      pattern: {
-                        value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                        message: "올바른 이메일 형식을 입력해주세요",
-                      },
-                    }}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
                         style={styles.input}
@@ -179,9 +156,7 @@ export default function SignUpScreen() {
                     )}
                   />
                 </View>
-                {errors.email && (
-                  <Text style={styles.errorText}>{errors.email.message}</Text>
-                )}
+                <ErrorMessage message={errors.email?.message || ""} />
               </View>
 
               <View>
@@ -200,17 +175,6 @@ export default function SignUpScreen() {
                   <Controller
                     control={control}
                     name="password"
-                    rules={{
-                      required: "비밀번호를 입력해주세요",
-                      minLength: {
-                        value: 6,
-                        message: "비밀번호는 6자 이상이어야 합니다",
-                      },
-                      pattern: {
-                        value: /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*#?&]{6,}$/,
-                        message: "비밀번호는 영문자와 숫자를 포함해야 합니다",
-                      },
-                    }}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
                         style={styles.input}
@@ -234,11 +198,7 @@ export default function SignUpScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-                {errors.password && (
-                  <Text style={styles.errorText}>
-                    {errors.password.message}
-                  </Text>
-                )}
+                <ErrorMessage message={errors.password?.message || ""} />
               </View>
 
               <View>
@@ -257,12 +217,6 @@ export default function SignUpScreen() {
                   <Controller
                     control={control}
                     name="confirmPassword"
-                    rules={{
-                      required: "비밀번호 확인을 입력해주세요",
-                      validate: (value) =>
-                        value === watchPassword ||
-                        "비밀번호가 일치하지 않습니다",
-                    }}
                     render={({ field: { onChange, value } }) => (
                       <TextInput
                         style={styles.input}
@@ -288,12 +242,9 @@ export default function SignUpScreen() {
                     />
                   </TouchableOpacity>
                 </View>
-                {errors.confirmPassword && (
-                  <Text style={styles.errorText}>
-                    {errors.confirmPassword.message}
-                  </Text>
-                )}
+                <ErrorMessage message={errors.confirmPassword?.message || ""} />
               </View>
+              <PasswordRulesGuide password={watchPassword} />
 
               <View style={styles.signUpButtonContainer}>
                 <TouchableOpacity
