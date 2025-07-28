@@ -1,4 +1,6 @@
-import { getAllGrinders, type GrinderInfo } from "@/lib/grinders";
+// 그라인더 기능 비활성화로 인해 전체 컴포넌트 주석처리
+/* 
+import { useGrinders, type Grinder } from "@/hooks/useGrinders";
 import { Ionicons } from "@expo/vector-icons";
 import {
   BottomSheetBackdrop,
@@ -8,6 +10,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import React, { forwardRef, useCallback, useMemo } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   StyleSheet,
   Text,
@@ -31,7 +34,7 @@ export const GrinderBottomSheet = forwardRef<
 >(({ selectedValue, onSelect }, ref) => {
   const bottomSheetModalRef = React.useRef<BottomSheetModal>(null);
   const snapPoints = useMemo(() => ["50%", "70%"], []);
-  const grinders = useMemo(() => getAllGrinders(), []);
+  const { data: grinders = [], isLoading } = useGrinders();
 
   React.useImperativeHandle(ref, () => ({
     expand: () => bottomSheetModalRef.current?.present(),
@@ -59,7 +62,7 @@ export const GrinderBottomSheet = forwardRef<
   );
 
   const renderGrinderItem = useCallback(
-    ({ item }: { item: GrinderInfo }) => (
+    ({ item }: { item: Grinder }) => (
       <TouchableOpacity
         onPress={() => handleSelect(item.id)}
         style={[
@@ -75,50 +78,20 @@ export const GrinderBottomSheet = forwardRef<
                 selectedValue === item.id && styles.selectedOptionText,
               ]}
             >
-              {item.displayName}
+              {item.brand} {item.name}
             </Text>
-            <View
-              style={[
-                styles.typeTag,
-                item.type === "manual" ? styles.manualTag : styles.electricTag,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.typeText,
-                  item.type === "manual"
-                    ? styles.manualText
-                    : styles.electricText,
-                ]}
-              >
-                {item.type === "manual" ? "수동" : "전동"}
-              </Text>
-            </View>
           </View>
-
-          {item.description && (
-            <Text style={styles.descriptionText}>{item.description}</Text>
-          )}
 
           <View style={styles.infoRow}>
             <Text style={styles.infoText}>
-              클릭 범위: {item.clickRange.min}-{item.clickRange.max}
+              클릭 범위: {item.min_clicks}-{item.max_clicks}
             </Text>
-            <Text style={styles.infoText}>
-              분쇄 범위: {item.micronRange.min}-{item.micronRange.max}μm
-            </Text>
-          </View>
-
-          {item.recommendedClicks && (
-            <View style={styles.recommendedRow}>
-              <Text style={styles.recommendedTitle}>권장 설정:</Text>
-              <Text style={styles.recommendedText}>
-                핸드드립 {item.recommendedClicks.pourover}클릭, 에스프레소{" "}
-                {item.recommendedClicks.espresso}클릭, 프렌치프레스{" "}
-                {item.recommendedClicks.french_press}클릭
+            {item.micron_range_min && item.micron_range_max && (
+              <Text style={styles.infoText}>
+                분쇄 범위: {item.micron_range_min}-{item.micron_range_max}μm
               </Text>
-            </View>
-          )}
+            )}
+          </View>
         </View>
 
         {selectedValue === item.id && (
@@ -147,14 +120,21 @@ export const GrinderBottomSheet = forwardRef<
           </Text>
         </View>
 
-        <FlatList
-          contentContainerStyle={styles.listContent}
-          data={grinders}
-          keyExtractor={(item) => item.id}
-          renderItem={renderGrinderItem}
-          showsVerticalScrollIndicator={false}
-          style={styles.list}
-        />
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#8B4513" />
+            <Text style={styles.loadingText}>그라인더 목록을 불러오는 중...</Text>
+          </View>
+        ) : (
+          <FlatList
+            contentContainerStyle={styles.listContent}
+            data={grinders}
+            keyExtractor={(item) => item.id}
+            renderItem={renderGrinderItem}
+            showsVerticalScrollIndicator={false}
+            style={styles.list}
+          />
+        )}
       </BottomSheetView>
     </BottomSheetModal>
   );
@@ -162,6 +142,36 @@ export const GrinderBottomSheet = forwardRef<
 
 GrinderBottomSheet.displayName = "GrinderBottomSheet";
 
+*/
+
+// 그라인더 기능 비활성화로 인해 임시 더미 컴포넌트 제공
+import React, { forwardRef } from "react";
+
+export interface BottomSheetRef {
+  expand: () => void;
+  close: () => void;
+}
+
+interface GrinderBottomSheetProps {
+  selectedValue?: string;
+  onSelect: (value: string) => void;
+}
+
+export const GrinderBottomSheet = forwardRef<
+  BottomSheetRef,
+  GrinderBottomSheetProps
+>((props, ref) => {
+  React.useImperativeHandle(ref, () => ({
+    expand: () => {},
+    close: () => {},
+  }));
+
+  return null;
+});
+
+GrinderBottomSheet.displayName = "GrinderBottomSheet";
+
+/*
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -293,4 +303,16 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 14,
+    color: "#666",
+  },
 });
+*/

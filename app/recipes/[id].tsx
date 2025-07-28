@@ -208,14 +208,14 @@ export default function RecipeDetail() {
               </Text>
             </View>
             {recipe.micron ? (
-              <TouchableOpacity
-                onPress={openBottomSheet}
+              <View
+                // onPress={openBottomSheet}
                 style={styles.infoCard}
               >
                 <Ionicons color="#8B4513" name="cog-outline" size={20} />
                 <Text style={styles.infoLabel}>분쇄도</Text>
                 <Text style={styles.infoValue}>{recipe.micron}μm</Text>
-              </TouchableOpacity>
+              </View>
             ) : (
               <View style={styles.infoCard}>
                 <Ionicons color="#999" name="cog-outline" size={20} />

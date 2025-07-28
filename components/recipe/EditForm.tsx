@@ -402,6 +402,43 @@ export const EditForm: React.FC<EditFormProps> = ({
           </View>
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>분쇄도 (선택사항)</Text>
+            <Controller
+              control={control}
+              name="recipe.micron"
+              render={({ field: { onChange, onBlur, value } }) => (
+                <>
+                  <View
+                    style={[
+                      styles.inputWithSuffix,
+                      errors.recipe?.micron && styles.inputError,
+                    ]}
+                  >
+                    <TextInput
+                      keyboardType="numeric"
+                      onBlur={onBlur}
+                      onChangeText={(text) => {
+                        const numValue = Number(text);
+                        onChange(isNaN(numValue) ? null : numValue);
+                      }}
+                      placeholder="600"
+                      placeholderTextColor="#999"
+                      style={styles.numberInput}
+                      value={value?.toString() || ''}
+                    />
+                    <Text style={styles.suffix}>μm</Text>
+                  </View>
+                  {errors.recipe?.micron && (
+                    <Text style={styles.errorText}>
+                      {errors.recipe.micron.message}
+                    </Text>
+                  )}
+                </>
+              )}
+            />
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>YouTube URL</Text>
             <Controller
               control={control}

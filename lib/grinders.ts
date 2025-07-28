@@ -2,7 +2,7 @@ export interface GrinderInfo {
   id: string;
   name: string;
   displayName: string;
-  type: 'manual' | 'electric';
+  type: "manual" | "electric";
   clickRange: {
     min: number;
     max: number;
@@ -30,10 +30,10 @@ export interface GrinderInfo {
 
 export const grinders: GrinderInfo[] = [
   {
-    id: 'comandante_c40',
-    name: 'comandante_c40',
-    displayName: '코만단테 C40',
-    type: 'manual',
+    id: "comandante_c40",
+    name: "comandante_c40",
+    displayName: "코만단테 C40",
+    type: "manual",
     clickRange: {
       min: 0,
       max: 40,
@@ -47,7 +47,7 @@ export const grinders: GrinderInfo[] = [
       espresso: 8,
       french_press: 35,
     },
-    description: '독일제 수동 그라인더, 정밀한 분쇄 조절이 가능합니다.',
+    description: "독일제 수동 그라인더, 정밀한 분쇄 조절이 가능합니다.",
     conversionProfile: {
       correctionFactor: 0.95, // 실제보다 약간 굵게 나오는 경향
       curveFactor: 1.2, // 로그 곡선 특성 (세밀한 조절이 가능한 부분이 더 넓음)
@@ -59,10 +59,10 @@ export const grinders: GrinderInfo[] = [
     },
   },
   {
-    id: 'ek43s',
-    name: 'ek43s',
-    displayName: '말코닉 EK43s',
-    type: 'electric',
+    id: "ek43s",
+    name: "ek43s",
+    displayName: "말코닉 EK43s",
+    type: "electric",
     clickRange: {
       min: 1,
       max: 11,
@@ -76,7 +76,7 @@ export const grinders: GrinderInfo[] = [
       espresso: 2,
       french_press: 9,
     },
-    description: '프로용 전동 그라인더, 카페에서 많이 사용되는 모델입니다.',
+    description: "프로용 전동 그라인더, 카페에서 많이 사용되는 모델입니다.",
     conversionProfile: {
       correctionFactor: 1.05, // 비교적 정확한 변환
       curveFactor: 1.0, // 선형에 가까운 특성
@@ -88,10 +88,10 @@ export const grinders: GrinderInfo[] = [
     },
   },
   {
-    id: 'fellow_ode2',
-    name: 'fellow_ode2',
-    displayName: '펠로우 오드 2세대',
-    type: 'electric',
+    id: "fellow_ode2",
+    name: "fellow_ode2",
+    displayName: "펠로우 오드 2세대",
+    type: "electric",
     clickRange: {
       min: 1,
       max: 11,
@@ -105,7 +105,7 @@ export const grinders: GrinderInfo[] = [
       espresso: 2,
       french_press: 9,
     },
-    description: '가정용 전동 그라인더, 핸드드립에 최적화된 모델입니다.',
+    description: "가정용 전동 그라인더, 핸드드립에 최적화된 모델입니다.",
     conversionProfile: {
       correctionFactor: 0.98, // 약간 보정 필요
       curveFactor: 1.1, // 약간의 곡선 특성
@@ -129,18 +129,17 @@ export const getGrinderByName = (name: string): GrinderInfo | undefined => {
 export const getAllGrinders = (): GrinderInfo[] => {
   return grinders;
 };
-
 /**
  * 안전한 숫자 변환 유틸리티
  */
 export const safeParseInt = (value: string): number | null => {
-  if (!value || value.trim() === '') return null;
+  if (!value || value.trim() === "") return null;
   const parsed = Number.parseInt(value, 10);
   return isNaN(parsed) ? null : parsed;
 };
 
 export const safeParseFloat = (value: string): number | null => {
-  if (!value || value.trim() === '') return null;
+  if (!value || value.trim() === "") return null;
   const parsed = Number.parseFloat(value);
   return isNaN(parsed) ? null : parsed;
 };

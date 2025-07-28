@@ -1,4 +1,6 @@
-import { getAllGrinders } from "@/lib/grinders";
+// 그라인더 기능 비활성화로 인해 전체 컴포넌트 주석처리
+/*
+import { useGrinders } from "@/hooks/useGrinders";
 import { createRecipeStyles } from "@/styles/create-recipe.styles";
 import type { RecipeFormData } from "@/types/recipe-form";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,14 +25,15 @@ export const GrinderSelector: React.FC<GrinderSelectorProps> = ({
   } = useFormContext<RecipeFormData>();
 
   const grindGrinder = watch("grindGrinder");
-  const grinders = useMemo(() => getAllGrinders(), []);
+  const { data: grinders = [], isLoading } = useGrinders();
 
   const selectedGrinderLabel = useMemo(() => {
     if (!grindGrinder) return "그라인더를 선택하세요";
+    if (isLoading) return "로딩 중...";
 
     const selectedGrinder = grinders.find((g) => g.id === grindGrinder);
-    return selectedGrinder ? selectedGrinder.displayName : grindGrinder;
-  }, [grindGrinder, grinders]);
+    return selectedGrinder ? `${selectedGrinder.brand} ${selectedGrinder.name}` : grindGrinder;
+  }, [grindGrinder, grinders, isLoading]);
 
   return (
     <Controller
@@ -70,4 +73,17 @@ export const GrinderSelector: React.FC<GrinderSelectorProps> = ({
       )}
     />
   );
+};
+*/
+
+// 그라인더 기능 비활성화로 인해 임시 더미 컴포넌트 제공
+import type React from "react";
+
+interface GrinderSelectorProps {
+  hasAttemptedNext?: boolean;
+  onGrinderPress?: () => void;
+}
+
+export const GrinderSelector: React.FC<GrinderSelectorProps> = () => {
+  return null;
 };

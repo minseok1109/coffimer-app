@@ -6,6 +6,16 @@ export interface RecipeStep {
   totalWater?: number;
 }
 
+export interface Grinder {
+  id: string;
+  name: string;
+  brand: string;
+  minClicks: number;
+  maxClicks: number;
+  micronRangeMin?: number;
+  micronRangeMax?: number;
+}
+
 export interface Recipe {
   id: number;
   name: string;
@@ -20,6 +30,8 @@ export interface Recipe {
   image: string;
   youtubeUrl?: string;
   steps?: RecipeStep[];
+  grinderModel?: string;
+  grinderClicks?: number;
 }
 
 export const recipes: Recipe[] = [

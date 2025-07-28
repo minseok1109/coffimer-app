@@ -21,6 +21,22 @@ export function transformFormDataToRecipe(
   const waterAmount = Number.parseInt(formData.waterAmount);
   const ratio = waterAmount / coffeeAmount;
 
+  // 그라인더 정보 처리
+  let micron = null;
+  let grinderModel = null;
+  let grinderClicks = null;
+
+  if (formData.grindInputMode === 'micron' && formData.grindMicrons) {
+    micron = Number.parseInt(formData.grindMicrons);
+  } else if (formData.grindInputMode === 'grinder') {
+    if (formData.grindGrinder) {
+      grinderModel = formData.grindGrinder;
+    }
+    if (formData.grindClicks) {
+      grinderClicks = Number.parseInt(formData.grindClicks);
+    }
+  }
+
   const recipe: Omit<Recipe, 'id' | 'created_at' | 'updated_at'> = {
     owner_id: userId,
     name: formData.title,
@@ -32,8 +48,10 @@ export function transformFormDataToRecipe(
     filter: formData.filter || null,
     ratio,
     description: formData.description || null,
-    micron: null, // 미크론 정보가 폼에 없으므로 null로 설정
-    youtube_url: formData.youtubeUrl || null, // YouTube URL 추가
+    micron,
+    grinder_model: grinderModel,
+    grinder_clicks: grinderClicks,
+    youtube_url: formData.youtubeUrl || null,
     is_public: formData.isPublic,
     brewing_type: 'hot', // 기본값: 핫 브루잉
   };

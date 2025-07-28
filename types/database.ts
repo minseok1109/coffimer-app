@@ -65,6 +65,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      grinders: {
+        Row: {
+          brand: string;
+          created_at: string | null;
+          id: string;
+          max_clicks: number;
+          micron_range_max: number | null;
+          micron_range_min: number | null;
+          min_clicks: number;
+          name: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          brand: string;
+          created_at?: string | null;
+          id?: string;
+          max_clicks: number;
+          micron_range_max?: number | null;
+          micron_range_min?: number | null;
+          min_clicks: number;
+          name: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          brand?: string;
+          created_at?: string | null;
+          id?: string;
+          max_clicks?: number;
+          micron_range_max?: number | null;
+          micron_range_min?: number | null;
+          min_clicks?: number;
+          name?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
       likes: {
         Row: {
           created_at: string;
@@ -473,6 +509,8 @@ export type Database = {
           description: string | null;
           dripper: string | null;
           filter: string | null;
+          grinder_clicks: number | null;
+          grinder_model: string | null;
           id: string;
           is_public: boolean | null;
           micron: number | null;
@@ -492,6 +530,8 @@ export type Database = {
           description?: string | null;
           dripper?: string | null;
           filter?: string | null;
+          grinder_clicks?: number | null;
+          grinder_model?: string | null;
           id?: string;
           is_public?: boolean | null;
           micron?: number | null;
@@ -511,6 +551,8 @@ export type Database = {
           description?: string | null;
           dripper?: string | null;
           filter?: string | null;
+          grinder_clicks?: number | null;
+          grinder_model?: string | null;
           id?: string;
           is_public?: boolean | null;
           micron?: number | null;
