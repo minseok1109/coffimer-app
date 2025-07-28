@@ -1,10 +1,5 @@
-import { CompactFilterChipsContainer } from "@/components/filter";
-import RecipeCard from "@/components/RecipeCard";
-import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
-import { useFilterState } from "@/hooks/useFilterState";
-import { useAnalytics } from "@/hooks/useAnalytics";
-import { StatusBar } from "expo-status-bar";
-import React from "react";
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -12,8 +7,13 @@ import {
   StyleSheet,
   Text,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { CompactFilterChipsContainer } from '@/components/filter';
+import RecipeCard from '@/components/RecipeCard';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { useFilteredRecipes } from '@/hooks/useFilteredRecipes';
+import { useFilterState } from '@/hooks/useFilterState';
 
 export default function HomeScreen() {
   const filterState = useFilterState();
@@ -28,7 +28,7 @@ export default function HomeScreen() {
   // Test analytics connection and track screen view on mount
   React.useEffect(() => {
     testConnection();
-    screen("HomeScreen");
+    screen('HomeScreen');
   }, [testConnection, screen]);
 
   // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
@@ -36,7 +36,7 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
-          <ActivityIndicator size="large" color="#8B4513" />
+          <ActivityIndicator color="#8B4513" size="large" />
           <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
         </View>
       </SafeAreaView>
@@ -62,7 +62,7 @@ export default function HomeScreen() {
 
       <View style={styles.header}>
         <Image
-          source={require("@/assets/images/logo.png")}
+          source={require('@/assets/images/logo.png')}
           style={styles.logo}
         />
         <Text style={styles.title}>Coffimer</Text>
@@ -70,11 +70,11 @@ export default function HomeScreen() {
 
       <CompactFilterChipsContainer
         filterState={filterState.filterState}
+        isLoading={isFetching}
         onBrewingTypeChange={filterState.setBrewingType}
         onDripperToggle={filterState.toggleDripper}
         onFilterToggle={filterState.toggleFilter}
         onReset={filterState.resetFilters}
-        isLoading={isFetching}
       />
 
       <ScrollView contentContainerStyle={styles.scrollView}>
@@ -91,20 +91,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   centered: {
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
-    flexDirection: "row",
-    alignItems: "center",
+    borderBottomColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logo: {
     width: 24,
@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#8B4513",
+    fontWeight: 'bold',
+    color: '#8B4513',
   },
   scrollView: {
     flexGrow: 1,
@@ -126,23 +126,23 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
   errorText: {
     fontSize: 18,
-    color: "#d32f2f",
-    textAlign: "center",
+    color: '#d32f2f',
+    textAlign: 'center',
     marginBottom: 10,
   },
   errorDetail: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
   },
   noDataText: {
     fontSize: 16,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginTop: 50,
   },
 });

@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
+  Animated,
+  Dimensions,
   Modal,
   ScrollView,
-  Dimensions,
-  Animated,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { FilterState, dripperOptions, filterOptions } from '@/constants/filterConstants';
+import {
+  dripperOptions,
+  type FilterState,
+  filterOptions,
+} from '@/constants/filterConstants';
 
 interface FilterBottomSheetProps {
   isVisible: boolean;
@@ -33,7 +37,8 @@ export default function FilterBottomSheet({
 }: FilterBottomSheetProps) {
   if (!isVisible) return null;
 
-  const hasActiveFilters = filterState.dripper.length > 0 || filterState.filter.length > 0;
+  const hasActiveFilters =
+    filterState.dripper.length > 0 || filterState.filter.length > 0;
 
   const handleReset = () => {
     onReset();
@@ -41,30 +46,33 @@ export default function FilterBottomSheet({
 
   return (
     <Modal
-      transparent
-      visible={isVisible}
       animationType="slide"
       onRequestClose={onClose}
+      transparent
+      visible={isVisible}
     >
       <View style={styles.overlay}>
         <TouchableOpacity
-          style={styles.backdrop}
           activeOpacity={1}
           onPress={onClose}
+          style={styles.backdrop}
         />
         <View style={styles.bottomSheet}>
           {/* 핸들 */}
           <View style={styles.handle} />
-          
+
           {/* 헤더 */}
           <View style={styles.header}>
             <Text style={styles.title}>필터</Text>
             <TouchableOpacity onPress={onClose}>
-              <Ionicons name="close" size={24} color="#666" />
+              <Ionicons color="#666" name="close" size={24} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            style={styles.content}
+          >
             {/* 드리퍼 섹션 */}
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>드리퍼</Text>
@@ -72,24 +80,28 @@ export default function FilterBottomSheet({
                 {dripperOptions.map((option) => (
                   <TouchableOpacity
                     key={option.value}
+                    onPress={() => onDripperToggle(option.value)}
                     style={[
                       styles.optionChip,
-                      filterState.dripper.includes(option.value) && styles.selectedChip,
+                      filterState.dripper.includes(option.value) &&
+                        styles.selectedChip,
                     ]}
-                    onPress={() => onDripperToggle(option.value)}
                   >
                     <Ionicons
+                      color={
+                        filterState.dripper.includes(option.value)
+                          ? '#fff'
+                          : '#666'
+                      }
                       name={option.icon as any}
                       size={16}
-                      color={
-                        filterState.dripper.includes(option.value) ? '#fff' : '#666'
-                      }
                       style={styles.optionIcon}
                     />
                     <Text
                       style={[
                         styles.optionText,
-                        filterState.dripper.includes(option.value) && styles.selectedText,
+                        filterState.dripper.includes(option.value) &&
+                          styles.selectedText,
                       ]}
                     >
                       {option.label}
@@ -106,24 +118,28 @@ export default function FilterBottomSheet({
                 {filterOptions.map((option) => (
                   <TouchableOpacity
                     key={option.value}
+                    onPress={() => onFilterToggle(option.value)}
                     style={[
                       styles.optionChip,
-                      filterState.filter.includes(option.value) && styles.selectedChip,
+                      filterState.filter.includes(option.value) &&
+                        styles.selectedChip,
                     ]}
-                    onPress={() => onFilterToggle(option.value)}
                   >
                     <Ionicons
+                      color={
+                        filterState.filter.includes(option.value)
+                          ? '#fff'
+                          : '#666'
+                      }
                       name={option.icon as any}
                       size={16}
-                      color={
-                        filterState.filter.includes(option.value) ? '#fff' : '#666'
-                      }
                       style={styles.optionIcon}
                     />
                     <Text
                       style={[
                         styles.optionText,
-                        filterState.filter.includes(option.value) && styles.selectedText,
+                        filterState.filter.includes(option.value) &&
+                          styles.selectedText,
                       ]}
                     >
                       {option.label}
@@ -137,17 +153,17 @@ export default function FilterBottomSheet({
           {/* 하단 버튼 */}
           <View style={styles.footer}>
             <TouchableOpacity
-              style={[styles.button, styles.resetButton]}
-              onPress={handleReset}
               disabled={!hasActiveFilters}
+              onPress={handleReset}
+              style={[styles.button, styles.resetButton]}
             >
               <Text style={[styles.buttonText, styles.resetButtonText]}>
                 초기화
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.button, styles.applyButton]}
               onPress={onClose}
+              style={[styles.button, styles.applyButton]}
             >
               <Text style={[styles.buttonText, styles.applyButtonText]}>
                 적용

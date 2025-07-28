@@ -1,6 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 type MessageType = 'error' | 'success' | 'warning' | 'info';
 
@@ -10,10 +10,13 @@ interface ErrorMessageProps {
   showIcon?: boolean;
 }
 
-const MESSAGE_CONFIG: Record<MessageType, {
-  icon: keyof typeof Ionicons.glyphMap;
-  color: string;
-}> = {
+const MESSAGE_CONFIG: Record<
+  MessageType,
+  {
+    icon: keyof typeof Ionicons.glyphMap;
+    color: string;
+  }
+> = {
   error: {
     icon: 'alert-circle',
     color: '#dc3545',
@@ -32,28 +35,26 @@ const MESSAGE_CONFIG: Record<MessageType, {
   },
 };
 
-export function ErrorMessage({ 
-  message, 
-  type = 'error', 
-  showIcon = true 
+export function ErrorMessage({
+  message,
+  type = 'error',
+  showIcon = true,
 }: ErrorMessageProps) {
   const config = MESSAGE_CONFIG[type];
-  
+
   if (!message) return null;
-  
+
   return (
     <View style={styles.container}>
       {showIcon && (
         <Ionicons
+          color={config.color}
           name={config.icon}
           size={14}
-          color={config.color}
           style={styles.icon}
         />
       )}
-      <Text style={[styles.message, { color: config.color }]}>
-        {message}
-      </Text>
+      <Text style={[styles.message, { color: config.color }]}>{message}</Text>
     </View>
   );
 }

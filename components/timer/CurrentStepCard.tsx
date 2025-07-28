@@ -1,9 +1,9 @@
-import { RecipeWithSteps } from "@/types/recipe";
-import { StepInfo } from "@/types/timer";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { WaterInfo } from "../../lib/timer/types";
-import { WaterProgressBar } from "./WaterProgressBar";
+import type React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import type { RecipeWithSteps } from '@/types/recipe';
+import type { StepInfo } from '@/types/timer';
+import type { WaterInfo } from '../../lib/timer/types';
+import { WaterProgressBar } from './WaterProgressBar';
 
 interface CurrentStepCardProps {
   currentStepInfo: StepInfo;
@@ -24,8 +24,8 @@ export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
 
       <WaterProgressBar
         currentStepInfo={currentStepInfo}
-        waterInfo={waterInfo}
         recipe={recipe}
+        waterInfo={waterInfo}
       />
     </View>
   );
@@ -33,14 +33,14 @@ export const CurrentStepCard: React.FC<CurrentStepCardProps> = ({
 
 const styles = StyleSheet.create({
   currentStepCard: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     marginHorizontal: 20,
     borderRadius: 20,
     padding: 24,
     marginBottom: 20,
     borderWidth: 2,
-    borderColor: "#FF6B35",
-    shadowColor: "#000",
+    borderColor: '#FF6B35',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -50,34 +50,34 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   currentStepHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 20,
   },
   currentStepLabel: {
     fontSize: 16,
-    color: "#FF6B35",
-    fontWeight: "700",
-    textTransform: "uppercase",
+    color: '#FF6B35',
+    fontWeight: '700',
+    textTransform: 'uppercase',
     letterSpacing: 1,
   },
   stepCounter: {
     fontSize: 14,
-    color: "#6c757d",
-    fontWeight: "600",
+    color: '#6c757d',
+    fontWeight: '600',
   },
   descriptionContainer: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
     borderRadius: 12,
     padding: 16,
-    flexDirection: "row",
-    alignItems: "flex-start",
+    flexDirection: 'row',
+    alignItems: 'flex-start',
     gap: 12,
   },
   descriptionText: {
     fontSize: 14,
-    color: "#495057",
+    color: '#495057',
     lineHeight: 20,
     flex: 1,
   },

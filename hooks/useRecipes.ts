@@ -1,20 +1,20 @@
-import { RecipeAPI } from "@/lib/api/recipes";
-import { RecipeService } from "@/services/recipeService";
-import { Recipe, RecipeWithSteps } from "@/types/recipe";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from '@tanstack/react-query';
+import { RecipeAPI } from '@/lib/api/recipes';
+import { RecipeService } from '@/services/recipeService';
+import type { Recipe, RecipeWithSteps } from '@/types/recipe';
 
 export const recipeKeys = {
-  all: ["recipes"] as const,
-  lists: () => [...recipeKeys.all, "list"] as const,
+  all: ['recipes'] as const,
+  lists: () => [...recipeKeys.all, 'list'] as const,
   list: (filters: {
     includeSteps?: boolean;
     dripper?: string;
     search?: string;
   }) => [...recipeKeys.lists(), filters] as const,
-  details: () => [...recipeKeys.all, "detail"] as const,
+  details: () => [...recipeKeys.all, 'detail'] as const,
   detail: (id: string) => [...recipeKeys.details(), id] as const,
-  drippers: () => [...recipeKeys.all, "drippers"] as const,
-  userRecipes: (userId: string) => [...recipeKeys.all, "user", userId] as const,
+  drippers: () => [...recipeKeys.all, 'drippers'] as const,
+  userRecipes: (userId: string) => [...recipeKeys.all, 'user', userId] as const,
 };
 
 // 특정 레시피 조회 (단계 포함)
@@ -27,7 +27,7 @@ export const useRecipe = (recipeId: string) => {
 };
 
 // 모든 레시피 조회
-export const useRecipes = (includeSteps: boolean = false) => {
+export const useRecipes = (includeSteps = false) => {
   return useQuery<Recipe[] | RecipeWithSteps[], Error>({
     queryKey: recipeKeys.list({ includeSteps }),
     queryFn: () => RecipeService.getAllRecipes(includeSteps),
@@ -35,10 +35,7 @@ export const useRecipes = (includeSteps: boolean = false) => {
 };
 
 // 레시피 검색
-export const useSearchRecipes = (
-  searchTerm: string,
-  includeSteps: boolean = false
-) => {
+export const useSearchRecipes = (searchTerm: string, includeSteps = false) => {
   return useQuery<Recipe[] | RecipeWithSteps[], Error>({
     queryKey: recipeKeys.list({ search: searchTerm, includeSteps }),
     queryFn: () => RecipeService.searchRecipes(searchTerm, includeSteps),
@@ -74,14 +71,14 @@ export const useAvailableDrippers = () => {
 
 // 페이지네이션된 레시피 조회
 export const useRecipesPaginated = (
-  page: number = 0,
-  pageSize: number = 10,
-  includeSteps: boolean = false
+  page = 0,
+  pageSize = 10,
+  includeSteps = false
 ) => {
   return useQuery({
     queryKey: [
       ...recipeKeys.lists(),
-      "paginated",
+      'paginated',
       page,
       pageSize,
       includeSteps,

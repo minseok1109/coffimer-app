@@ -1,6 +1,6 @@
-import { StepInfo } from "@/types/timer";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import type React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import type { StepInfo } from '@/types/timer';
 
 interface StepTitleProps {
   currentStepInfo: StepInfo;
@@ -19,21 +19,21 @@ export const StepTitle: React.FC<StepTitleProps> = ({ currentStepInfo }) => {
 
 const styles = StyleSheet.create({
   currentStepTitleContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingHorizontal: 20,
     marginBottom: 32,
     marginTop: 16,
   },
   currentStepTitle: {
     fontSize: 24,
-    fontWeight: "800",
-    color: "#333",
-    textAlign: "center",
+    fontWeight: '800',
+    color: '#333',
+    textAlign: 'center',
     marginBottom: 8,
   },
   stepCounter: {
     fontSize: 16,
-    color: "#FF6B35",
-    fontWeight: "600",
+    color: '#FF6B35',
+    fontWeight: '600',
   },
 });

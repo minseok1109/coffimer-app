@@ -1,6 +1,6 @@
-import { RecipeWithSteps } from "@/types/recipe";
-import { NextStepInfo, StepInfo } from "@/types/timer";
-import { useMemo } from "react";
+import { useMemo } from 'react';
+import type { RecipeWithSteps } from '@/types/recipe';
+import type { NextStepInfo, StepInfo } from '@/types/timer';
 
 export const useStepInfo = (
   recipe: RecipeWithSteps | null,

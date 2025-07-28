@@ -1,16 +1,17 @@
-import { useRecipe } from "@/hooks/useRecipes";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React from "react";
-import { ScrollView, StyleSheet, View } from "react-native";
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useRecipe } from '@/hooks/useRecipes';
 import {
   ErrorState,
   ProgressBars,
   StepCard,
   TimerControls,
   TimerHeader,
-} from "../../../components/timer";
-import { useStepInfo, useWaterCalculation } from "../../../hooks/timer";
-import { useRecipeTimer } from "../../../hooks/useRecipeTimer";
+} from '../../../components/timer';
+import { useStepInfo, useWaterCalculation } from '../../../hooks/timer';
+import { useRecipeTimer } from '../../../hooks/useRecipeTimer';
+import { calculateActualTotalTime } from '../../../lib/timer/formatters';
 
 export default function RecipeTimer() {
   const { id } = useLocalSearchParams();
@@ -37,7 +38,7 @@ export default function RecipeTimer() {
   if (!recipe) {
     return (
       <View style={styles.container}>
-        <TimerHeader title="레시피 타이머" onBack={() => router.back()} />
+        <TimerHeader onBack={() => router.back()} title="레시피 타이머" />
         <ErrorState message="레시피를 찾을 수 없습니다." />
       </View>
     );
@@ -45,37 +46,37 @@ export default function RecipeTimer() {
 
   return (
     <View style={styles.container}>
-      <TimerHeader title={recipe.name} onBack={() => router.back()} />
+      <TimerHeader onBack={() => router.back()} title={recipe.name} />
       <ScrollView
-        style={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollContainer}
       >
         {currentStepInfo && recipe.recipe_steps && (
           <ProgressBars
+            canGoToNext={currentStep < recipe.recipe_steps.length - 1}
+            canGoToPrevious={currentStep > 0}
             currentStepInfo={currentStepInfo}
             currentTime={currentTime}
-            totalTime={recipe.total_time}
-            onPreviousStep={goToPreviousStep}
             onNextStep={goToNextStep}
-            canGoToPrevious={currentStep > 0}
-            canGoToNext={currentStep < recipe.recipe_steps.length - 1}
+            onPreviousStep={goToPreviousStep}
+            totalTime={calculateActualTotalTime(recipe.recipe_steps)}
           />
         )}
         {currentStepInfo && (
           <StepCard
             currentStepInfo={currentStepInfo}
             nextStepInfo={nextStepInfo}
-            waterInfo={waterInfo}
             recipe={recipe}
+            waterInfo={waterInfo}
           />
         )}
       </ScrollView>
       {recipe.recipe_steps && (
         <TimerControls
           isRunning={isRunning}
-          onToggleTimer={toggleTimer}
           onReset={resetTimer}
+          onToggleTimer={toggleTimer}
         />
       )}
     </View>
@@ -85,7 +86,7 @@ export default function RecipeTimer() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
   },
   scrollContainer: {
     flex: 1,

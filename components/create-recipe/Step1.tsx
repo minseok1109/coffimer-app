@@ -1,10 +1,10 @@
-import { createRecipeStyles } from "@/styles/create-recipe.styles";
-import { RecipeFormData } from "@/types/recipe-form";
-import React from "react";
-import { Controller, useFormContext } from "react-hook-form";
-import { Switch, Text, TextInput, View } from "react-native";
-import { YouTubePreview } from "./YouTubePreview";
-import { isValidYouTubeUrl } from "@/lib/youtube";
+import type React from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
+import { Switch, Text, TextInput, View } from 'react-native';
+import { isValidYouTubeUrl } from '@/lib/youtube';
+import { createRecipeStyles } from '@/styles/create-recipe.styles';
+import type { RecipeFormData } from '@/types/recipe-form';
+import { YouTubePreview } from './YouTubePreview';
 
 interface Step1Props {
   hasAttemptedNext?: boolean;
@@ -17,7 +17,7 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
     watch,
   } = useFormContext<RecipeFormData>();
 
-  const youtubeUrl = watch("youtubeUrl");
+  const youtubeUrl = watch('youtubeUrl');
 
   return (
     <View style={createRecipeStyles.stepContent}>
@@ -29,16 +29,16 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
           render={({ field: { onChange, onBlur, value } }) => (
             <>
               <TextInput
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder="예) 케냐 AA 핸드드립"
+                placeholderTextColor="#999"
                 style={[
                   createRecipeStyles.input,
                   hasAttemptedNext &&
                     errors.title &&
                     createRecipeStyles.inputError,
                 ]}
-                placeholder="예) 케냐 AA 핸드드립"
-                placeholderTextColor="#999"
-                onBlur={onBlur}
-                onChangeText={onChange}
                 value={value}
               />
               {hasAttemptedNext && errors.title && (
@@ -58,14 +58,14 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
           name="description"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              style={[createRecipeStyles.input, createRecipeStyles.textArea]}
-              placeholder="이 레시피의 특징이나 맛의 포인트를 적어주세요"
-              placeholderTextColor="#999"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value}
               multiline
               numberOfLines={4}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              placeholder="이 레시피의 특징이나 맛의 포인트를 적어주세요"
+              placeholderTextColor="#999"
+              style={[createRecipeStyles.input, createRecipeStyles.textArea]}
+              value={value}
             />
           )}
         />
@@ -79,16 +79,16 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
           render={({ field: { onChange, onBlur, value } }) => (
             <>
               <TextInput
+                onBlur={onBlur}
+                onChangeText={onChange}
+                placeholder="https://youtube.com/watch?v=..."
+                placeholderTextColor="#999"
                 style={[
                   createRecipeStyles.input,
                   hasAttemptedNext &&
                     errors.youtubeUrl &&
                     createRecipeStyles.inputError,
                 ]}
-                placeholder="https://youtube.com/watch?v=..."
-                placeholderTextColor="#999"
-                onBlur={onBlur}
-                onChangeText={onChange}
                 value={value}
               />
               {hasAttemptedNext && errors.youtubeUrl && (
@@ -111,10 +111,10 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
           name="isPublic"
           render={({ field: { onChange, value } }) => (
             <Switch
-              value={value}
               onValueChange={onChange}
-              trackColor={{ false: "#ddd", true: "#8B4513" }}
               thumbColor="#fff"
+              trackColor={{ false: '#ddd', true: '#8B4513' }}
+              value={value}
             />
           )}
         />

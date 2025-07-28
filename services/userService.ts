@@ -1,5 +1,5 @@
-import { supabase } from "@/lib/supabaseClient";
-import {
+import { supabase } from '@/lib/supabaseClient';
+import type {
   User,
   UserBasicInfo,
   UserExistsResponse,
@@ -7,7 +7,7 @@ import {
   UserListResponse,
   UserServiceResponse,
   UserUpdate,
-} from "@/types/user";
+} from '@/types/user';
 
 /**
  * 사용자 관련 API 서비스
@@ -28,15 +28,15 @@ export class UserService {
       if (authError || !user) {
         return {
           data: null,
-          error: authError || new Error("인증되지 않은 사용자입니다."),
+          error: authError || new Error('인증되지 않은 사용자입니다.'),
         };
       }
 
       // 사용자 프로필 정보 조회
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", user.id)
+        .from('users')
+        .select('*')
+        .eq('id', user.id)
         .single();
 
       return { data, error };
@@ -55,9 +55,9 @@ export class UserService {
   ): Promise<UserServiceResponse<User>> {
     try {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("id", userId)
+        .from('users')
+        .select('*')
+        .eq('id', userId)
         .single();
 
       return { data, error };
@@ -76,9 +76,9 @@ export class UserService {
   ): Promise<UserServiceResponse<User>> {
     try {
       const { data, error } = await supabase
-        .from("users")
-        .select("*")
-        .eq("email", email)
+        .from('users')
+        .select('*')
+        .eq('email', email)
         .single();
 
       return { data, error };
@@ -105,17 +105,17 @@ export class UserService {
       if (authError || !user) {
         return {
           data: null,
-          error: authError || new Error("인증되지 않은 사용자입니다."),
+          error: authError || new Error('인증되지 않은 사용자입니다.'),
         };
       }
 
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .update({
           ...updates,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", user.id)
+        .eq('id', user.id)
         .select()
         .single();
 
@@ -135,7 +135,7 @@ export class UserService {
   ): Promise<UserServiceResponse<User>> {
     try {
       const { data, error } = await supabase
-        .from("users")
+        .from('users')
         .insert(userProfile)
         .select()
         .single();
@@ -154,10 +154,10 @@ export class UserService {
    */
   static async searchUsers(
     searchTerm?: string,
-    limit: number = 10
+    limit = 10
   ): Promise<UserListResponse> {
     try {
-      let query = supabase.from("users").select("*").limit(limit);
+      let query = supabase.from('users').select('*').limit(limit);
 
       if (searchTerm) {
         query = query.or(
@@ -190,15 +190,15 @@ export class UserService {
       if (authError || !user) {
         return {
           data: null,
-          error: authError || new Error("인증되지 않은 사용자입니다."),
+          error: authError || new Error('인증되지 않은 사용자입니다.'),
         };
       }
 
       // 필요한 필드만 선택해서 조회
       const { data, error } = await supabase
-        .from("users")
-        .select("id, email, display_name, profile_image")
-        .eq("id", user.id)
+        .from('users')
+        .select('id, email, display_name, profile_image')
+        .eq('id', user.id)
         .single();
 
       return { data, error };
@@ -215,7 +215,7 @@ export class UserService {
   static async updateProfileImage(
     imageUrl: string
   ): Promise<UserServiceResponse<User>> {
-    return this.updateUserProfile({ profile_image: imageUrl });
+    return UserService.updateUserProfile({ profile_image: imageUrl });
   }
 
   /**
@@ -226,9 +226,9 @@ export class UserService {
   static async checkUserExists(userId: string): Promise<UserExistsResponse> {
     try {
       const { data, error } = await supabase
-        .from("users")
-        .select("id")
-        .eq("id", userId)
+        .from('users')
+        .select('id')
+        .eq('id', userId)
         .single();
 
       return { exists: !!data, error };

@@ -1,10 +1,12 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { StepIndicatorProps } from "@/types/recipe-form";
-import { createRecipeStyles } from "@/styles/create-recipe.styles";
+import type React from 'react';
+import { Text, View } from 'react-native';
+import { createRecipeStyles } from '@/styles/create-recipe.styles';
+import type { StepIndicatorProps } from '@/types/recipe-form';
 
-export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => {
-  const steps = ["기본 정보", "커피 정보", "추출 가이드", "검토"];
+export const StepIndicator: React.FC<StepIndicatorProps> = ({
+  currentStep,
+}) => {
+  const steps = ['기본 정보', '커피 정보', '추출 가이드', '검토'];
 
   return (
     <View style={createRecipeStyles.stepIndicatorContainer}>
@@ -24,7 +26,7 @@ export const StepIndicator: React.FC<StepIndicatorProps> = ({ currentStep }) => 
                   createRecipeStyles.activeStepText,
               ]}
             >
-              {currentStep > index + 1 ? "✓" : index + 1}
+              {currentStep > index + 1 ? '✓' : index + 1}
             </Text>
           </View>
           <Text

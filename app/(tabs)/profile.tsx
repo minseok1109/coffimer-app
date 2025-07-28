@@ -1,19 +1,19 @@
-import { useAuth } from "@/hooks/useAuth";
-import { useCurrentUserProfile } from "@/hooks/useUser";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import React from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import React from 'react';
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
   TouchableOpacity,
   View,
-  Linking,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuth } from '@/hooks/useAuth';
+import { useCurrentUserProfile } from '@/hooks/useUser';
 
 interface ProfileSetting {
   id: string;
@@ -28,20 +28,20 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { data: userProfile } = useCurrentUserProfile();
   const supportSettings: ProfileSetting[] = [
-    { id: "contact", title: "문의하기", icon: "mail-outline", hasArrow: true },
+    { id: 'contact', title: '문의하기', icon: 'mail-outline', hasArrow: true },
     {
-      id: "version",
-      title: "앱 정보",
-      icon: "information-circle-outline",
+      id: 'version',
+      title: '앱 정보',
+      icon: 'information-circle-outline',
       hasArrow: true,
     },
   ];
 
   const handleSettingPress = (item: ProfileSetting) => {
-    if (item.id === "contact") {
-      Linking.openURL("mailto:minseok32@gmail.com");
-    } else if (item.id === "version") {
-      router.push("/info");
+    if (item.id === 'contact') {
+      Linking.openURL('mailto:minseok32@gmail.com');
+    } else if (item.id === 'version') {
+      router.push('/info');
     }
   };
 
@@ -50,22 +50,26 @@ export default function ProfileScreen() {
     onToggle?: (value: boolean) => void,
     toggleValue?: boolean
   ) => (
-    <TouchableOpacity key={item.id} style={styles.settingItem} onPress={() => handleSettingPress(item)}>
+    <TouchableOpacity
+      key={item.id}
+      onPress={() => handleSettingPress(item)}
+      style={styles.settingItem}
+    >
       <View style={styles.settingLeft}>
-        <Ionicons name={item.icon} size={24} color="#666" />
+        <Ionicons color="#666" name={item.icon} size={24} />
         <Text style={styles.settingTitle}>{item.title}</Text>
       </View>
       <View style={styles.settingRight}>
         {item.hasToggle && onToggle && (
           <Switch
-            value={toggleValue}
             onValueChange={onToggle}
-            trackColor={{ false: "#E0E0E0", true: "#8B4513" }}
-            thumbColor={toggleValue ? "#fff" : "#fff"}
+            thumbColor={toggleValue ? '#fff' : '#fff'}
+            trackColor={{ false: '#E0E0E0', true: '#8B4513' }}
+            value={toggleValue}
           />
         )}
         {item.hasArrow && (
-          <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          <Ionicons color="#ccc" name="chevron-forward" size={20} />
         )}
       </View>
     </TouchableOpacity>
@@ -152,7 +156,6 @@ export default function ProfileScreen() {
 
         {/* Logout Button */}
         <TouchableOpacity
-          style={styles.logoutButton}
           onPress={async () => {
             try {
               // Option 1: Use the standard signOut (already includes supabase.auth.token cleanup)
@@ -161,13 +164,14 @@ export default function ProfileScreen() {
               // Option 2: Use the new clearSupabaseStorage utility for explicit clarity
               // await clearSupabaseStorage();
 
-              router.replace("/auth/login");
+              router.replace('/auth/login');
             } catch (error) {
-              console.error("로그아웃 오류:", error);
+              console.error('로그아웃 오류:', error);
             }
           }}
+          style={styles.logoutButton}
         >
-          <Ionicons name="log-out-outline" size={20} color="#F44336" />
+          <Ionicons color="#F44336" name="log-out-outline" size={20} />
           <Text style={styles.logoutText}>로그아웃</Text>
         </TouchableOpacity>
       </ScrollView>
@@ -178,19 +182,19 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   scrollView: {
     paddingBottom: 30,
   },
   profileHeader: {
-    alignItems: "center",
-    backgroundColor: "white",
+    alignItems: 'center',
+    backgroundColor: 'white',
     paddingVertical: 30,
     marginBottom: 20,
   },
   avatarContainer: {
-    position: "relative",
+    position: 'relative',
     marginBottom: 16,
   },
   avatar: {
@@ -199,48 +203,48 @@ const styles = StyleSheet.create({
     borderRadius: 40,
   },
   editAvatarButton: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     right: 0,
-    backgroundColor: "#8B4513",
+    backgroundColor: '#8B4513',
     width: 28,
     height: 28,
     borderRadius: 14,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
     borderWidth: 2,
-    borderColor: "white",
+    borderColor: 'white',
   },
   userName: {
     fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 4,
   },
   userEmail: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     marginBottom: 16,
   },
   editProfileButton: {
-    backgroundColor: "#8B4513",
+    backgroundColor: '#8B4513',
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
   },
   editProfileText: {
-    color: "white",
-    fontWeight: "bold",
+    color: 'white',
+    fontWeight: 'bold',
     fontSize: 14,
   },
   statsContainer: {
-    flexDirection: "row",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    backgroundColor: 'white',
     marginHorizontal: 20,
     borderRadius: 12,
     paddingVertical: 20,
     marginBottom: 20,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -251,39 +255,39 @@ const styles = StyleSheet.create({
   },
   statItem: {
     flex: 1,
-    alignItems: "center",
+    alignItems: 'center',
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#8B4513",
+    fontWeight: 'bold',
+    color: '#8B4513',
     marginBottom: 4,
   },
   statLabel: {
     fontSize: 12,
-    color: "#666",
+    color: '#666',
   },
   statDivider: {
     width: 1,
-    backgroundColor: "#E0E0E0",
-    height: "60%",
-    alignSelf: "center",
+    backgroundColor: '#E0E0E0',
+    height: '60%',
+    alignSelf: 'center',
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
     marginLeft: 20,
     marginBottom: 12,
   },
   settingsContainer: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     marginHorizontal: 20,
     borderRadius: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -293,38 +297,38 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   settingItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: '#f0f0f0',
   },
   settingLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   settingTitle: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
     marginLeft: 12,
   },
   settingRight: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
     marginTop: 10,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -335,8 +339,8 @@ const styles = StyleSheet.create({
   },
   logoutText: {
     fontSize: 16,
-    color: "#F44336",
-    fontWeight: "bold",
+    color: '#F44336',
+    fontWeight: 'bold',
     marginLeft: 8,
   },
 });

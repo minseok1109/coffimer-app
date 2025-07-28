@@ -1,14 +1,21 @@
-import React, { useState } from 'react';
-import { ScrollView, StyleSheet, View, ActivityIndicator, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { 
-  brewingTypeOptions, 
-  FilterState,
+import React, { useState } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  brewingTypeOptions,
   dripperOptions,
+  type FilterState,
   filterOptions,
 } from '@/constants/filterConstants';
-import FilterChip from './FilterChip';
 import FilterBottomSheet from './FilterBottomSheet';
+import FilterChip from './FilterChip';
 
 interface CompactFilterChipsContainerProps {
   filterState: FilterState;
@@ -29,9 +36,10 @@ export default function CompactFilterChipsContainer({
 }: CompactFilterChipsContainerProps) {
   const [showBottomSheet, setShowBottomSheet] = useState(false);
 
-  const hasActiveFilters = filterState.brewingType !== 'all' || 
-                          filterState.dripper.length > 0 || 
-                          filterState.filter.length > 0;
+  const hasActiveFilters =
+    filterState.brewingType !== 'all' ||
+    filterState.dripper.length > 0 ||
+    filterState.filter.length > 0;
 
   const activeDripperCount = filterState.dripper.length;
   const activeFilterCount = filterState.filter.length;
@@ -40,11 +48,11 @@ export default function CompactFilterChipsContainer({
     if (activeDripperCount === 0 && activeFilterCount === 0) {
       return '드리퍼·필터';
     }
-    
+
     const parts = [];
     if (activeDripperCount > 0) {
       if (activeDripperCount === 1) {
-        const selectedDripper = dripperOptions.find(d => 
+        const selectedDripper = dripperOptions.find((d) =>
           filterState.dripper.includes(d.value)
         );
         parts.push(selectedDripper?.label || '드리퍼');
@@ -52,10 +60,10 @@ export default function CompactFilterChipsContainer({
         parts.push(`드리퍼 ${activeDripperCount}개`);
       }
     }
-    
+
     if (activeFilterCount > 0) {
       if (activeFilterCount === 1) {
-        const selectedFilter = filterOptions.find(f => 
+        const selectedFilter = filterOptions.find((f) =>
           filterState.filter.includes(f.value)
         );
         parts.push(selectedFilter?.label || '필터');
@@ -63,66 +71,77 @@ export default function CompactFilterChipsContainer({
         parts.push(`필터 ${activeFilterCount}개`);
       }
     }
-    
+
     return parts.join('·');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
         >
           {/* 초기화 버튼 */}
           {hasActiveFilters && (
             <FilterChip
-              label="전체"
-              isSelected={false}
-              onPress={onReset}
               icon="refresh-outline"
+              isSelected={false}
+              label="전체"
+              onPress={onReset}
             />
           )}
 
           {/* 추출 타입 필터 (전체 제외) */}
-          {brewingTypeOptions.filter(option => option.value !== 'all').map((option) => (
-            <FilterChip
-              key={option.value}
-              label={option.label}
-              isSelected={filterState.brewingType === option.value}
-              onPress={() => onBrewingTypeChange(option.value as FilterState['brewingType'])}
-              icon={option.icon as any}
-            />
-          ))}
+          {brewingTypeOptions
+            .filter((option) => option.value !== 'all')
+            .map((option) => (
+              <FilterChip
+                icon={option.icon as any}
+                isSelected={filterState.brewingType === option.value}
+                key={option.value}
+                label={option.label}
+                onPress={() =>
+                  onBrewingTypeChange(
+                    option.value as FilterState['brewingType']
+                  )
+                }
+              />
+            ))}
 
           {/* 드리퍼·필터 통합 칩 */}
           <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={() => setShowBottomSheet(true)}
             style={[
               styles.combinedChip,
-              (activeDripperCount > 0 || activeFilterCount > 0) && styles.selectedCombinedChip
+              (activeDripperCount > 0 || activeFilterCount > 0) &&
+                styles.selectedCombinedChip,
             ]}
-            onPress={() => setShowBottomSheet(true)}
-            activeOpacity={0.7}
           >
             <View style={styles.combinedChipContent}>
               <Ionicons
+                color={
+                  activeDripperCount > 0 || activeFilterCount > 0
+                    ? '#fff'
+                    : '#666'
+                }
                 name="funnel-outline"
                 size={16}
-                color={(activeDripperCount > 0 || activeFilterCount > 0) ? '#fff' : '#666'}
                 style={styles.icon}
               />
-              <Text style={[
-                styles.combinedChipText,
-                (activeDripperCount > 0 || activeFilterCount > 0) && styles.selectedCombinedChipText
-              ]}>
+              <Text
+                style={[
+                  styles.combinedChipText,
+                  (activeDripperCount > 0 || activeFilterCount > 0) &&
+                    styles.selectedCombinedChipText,
+                ]}
+              >
                 {getDripperFilterText()}
               </Text>
               {(activeDripperCount > 0 || activeFilterCount > 0) && (
-                <View style={[
-                  styles.countBadge,
-                  styles.selectedCountBadge
-                ]}>
+                <View style={[styles.countBadge, styles.selectedCountBadge]}>
                   <Text style={styles.selectedCountText}>
                     {activeDripperCount + activeFilterCount}
                   </Text>
@@ -131,20 +150,20 @@ export default function CompactFilterChipsContainer({
             </View>
           </TouchableOpacity>
         </ScrollView>
-        
+
         {/* 로딩 인디케이터 */}
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#8B4513" />
+            <ActivityIndicator color="#8B4513" size="small" />
           </View>
         )}
       </View>
 
       {/* 바텀시트 */}
       <FilterBottomSheet
+        filterState={filterState}
         isVisible={showBottomSheet}
         onClose={() => setShowBottomSheet(false)}
-        filterState={filterState}
         onDripperToggle={onDripperToggle}
         onFilterToggle={onFilterToggle}
         onReset={onReset}

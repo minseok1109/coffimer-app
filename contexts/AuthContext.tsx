@@ -1,5 +1,5 @@
-import { useAuth } from "@/hooks/useAuth";
-import React, { createContext, ReactNode, useContext } from "react";
+import React, { createContext, type ReactNode, useContext } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 type AuthContextType = ReturnType<typeof useAuth>;
 
@@ -19,7 +19,7 @@ export function useAuthContext() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error(
-      "useAuthContext는 AuthProvider 내에서만 사용할 수 있습니다"
+      'useAuthContext는 AuthProvider 내에서만 사용할 수 있습니다'
     );
   }
   return context;

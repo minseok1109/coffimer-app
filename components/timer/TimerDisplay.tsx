@@ -1,6 +1,6 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { TimerDisplayData } from "../../lib/timer/types";
+import type React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import type { TimerDisplayData } from '../../lib/timer/types';
 
 interface TimerDisplayProps {
   timerDisplay: TimerDisplayData;
@@ -24,34 +24,34 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({ timerDisplay }) => {
 
 const styles = StyleSheet.create({
   timerContainer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingHorizontal: 20,
     marginTop: 40,
   },
   timerDisplay: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   timerDigitGroup: {
-    alignItems: "center",
+    alignItems: 'center',
   },
   timerDigit: {
     fontSize: 80,
-    fontWeight: "900",
-    color: "#333",
+    fontWeight: '900',
+    color: '#333',
     lineHeight: 80,
     includeFontPadding: false,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
   },
   timerSeparator: {
     fontSize: 80,
-    fontWeight: "900",
-    color: "#FF6B35",
+    fontWeight: '900',
+    color: '#FF6B35',
     marginHorizontal: 16,
     lineHeight: 80,
     includeFontPadding: false,
-    textAlignVertical: "center",
+    textAlignVertical: 'center',
   },
 });

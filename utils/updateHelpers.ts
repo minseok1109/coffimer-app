@@ -1,13 +1,13 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as Network from "expo-network";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as Network from 'expo-network';
 import {
-  debugLog,
   DEFAULT_USER_SETTINGS,
+  debugLog,
   UPDATE_CONFIG,
-  UpdateError,
-  UpdateMetadata,
-  UpdateUserSettings,
-} from "./updateConfig";
+  type UpdateError,
+  type UpdateMetadata,
+  type UpdateUserSettings,
+} from './updateConfig';
 
 /**
  * 마지막 업데이트 체크 시간을 저장합니다
@@ -20,9 +20,9 @@ export const setLastCheckTime = async (
       UPDATE_CONFIG.STORAGE_KEYS.LAST_CHECK,
       time.toISOString()
     );
-    debugLog("Last check time saved", time.toISOString());
+    debugLog('Last check time saved', time.toISOString());
   } catch (error) {
-    debugLog("Failed to save last check time", error);
+    debugLog('Failed to save last check time', error);
   }
 };
 
@@ -39,7 +39,7 @@ export const getLastCheckTime = async (): Promise<Date | null> => {
     }
     return null;
   } catch (error) {
-    debugLog("Failed to get last check time", error);
+    debugLog('Failed to get last check time', error);
     return null;
   }
 };
@@ -58,7 +58,7 @@ export const shouldCheckForUpdates = async (): Promise<boolean> => {
     const timeDifference = now.getTime() - lastCheck.getTime();
     const shouldCheck = timeDifference >= UPDATE_CONFIG.CHECK_INTERVAL;
 
-    debugLog("Should check for updates", {
+    debugLog('Should check for updates', {
       lastCheck: lastCheck.toISOString(),
       timeDifference,
       shouldCheck,
@@ -66,7 +66,7 @@ export const shouldCheckForUpdates = async (): Promise<boolean> => {
 
     return shouldCheck;
   } catch (error) {
-    debugLog("Error checking if should update", error);
+    debugLog('Error checking if should update', error);
     return true; // 에러 시 체크하도록 설정
   }
 };
@@ -82,9 +82,9 @@ export const saveUserSettings = async (
       UPDATE_CONFIG.STORAGE_KEYS.USER_SETTINGS,
       JSON.stringify(settings)
     );
-    debugLog("User settings saved", settings);
+    debugLog('User settings saved', settings);
   } catch (error) {
-    debugLog("Failed to save user settings", error);
+    debugLog('Failed to save user settings', error);
   }
 };
 
@@ -102,7 +102,7 @@ export const getUserSettings = async (): Promise<UpdateUserSettings> => {
     }
     return DEFAULT_USER_SETTINGS;
   } catch (error) {
-    debugLog("Failed to get user settings, using defaults", error);
+    debugLog('Failed to get user settings, using defaults', error);
     return DEFAULT_USER_SETTINGS;
   }
 };
@@ -123,7 +123,7 @@ export const checkNetworkConnection = async (): Promise<{
       return {
         isConnected: false,
         isWifi: false,
-        connectionType: "none",
+        connectionType: 'none',
       };
     }
 
@@ -132,28 +132,28 @@ export const checkNetworkConnection = async (): Promise<{
     const isWifi = networkType === Network.NetworkStateType.WIFI;
 
     // 연결 타입 문자열 변환
-    let connectionType = "unknown";
+    let connectionType = 'unknown';
     switch (networkType) {
       case Network.NetworkStateType.WIFI:
-        connectionType = "wifi";
+        connectionType = 'wifi';
         break;
       case Network.NetworkStateType.CELLULAR:
-        connectionType = "cellular";
+        connectionType = 'cellular';
         break;
       case Network.NetworkStateType.ETHERNET:
-        connectionType = "ethernet";
+        connectionType = 'ethernet';
         break;
       case Network.NetworkStateType.BLUETOOTH:
-        connectionType = "bluetooth";
+        connectionType = 'bluetooth';
         break;
       case Network.NetworkStateType.VPN:
-        connectionType = "vpn";
+        connectionType = 'vpn';
         break;
       default:
-        connectionType = "unknown";
+        connectionType = 'unknown';
     }
 
-    debugLog("Network state", {
+    debugLog('Network state', {
       isConnected: networkState.isConnected,
       isWifi,
       connectionType,
@@ -166,12 +166,12 @@ export const checkNetworkConnection = async (): Promise<{
       connectionType,
     };
   } catch (error) {
-    debugLog("Failed to check network connection", error);
+    debugLog('Failed to check network connection', error);
     // 에러 발생 시 보수적으로 접근 (연결되지 않은 것으로 간주)
     return {
       isConnected: false,
       isWifi: false,
-      connectionType: "unknown",
+      connectionType: 'unknown',
     };
   }
 };
@@ -218,7 +218,7 @@ export const retryWithBackoff = async <T>(
       }
 
       // 지수 백오프 (2^attempt * baseDelay)
-      const delay = Math.pow(2, attempt - 1) * baseDelay;
+      const delay = 2 ** (attempt - 1) * baseDelay;
       debugLog(`Retrying in ${delay}ms`);
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -231,12 +231,12 @@ export const retryWithBackoff = async <T>(
  * 업데이트 에러를 사용자 친화적 메시지로 변환합니다
  */
 export const formatUpdateError = (error: Error): UpdateError => {
-  const errorCode = (error as any)?.code || "UNKNOWN";
+  const errorCode = (error as any)?.code || 'UNKNOWN';
 
   // 네트워크 관련 에러
-  if (errorCode.includes("NETWORK") || error.message.includes("network")) {
+  if (errorCode.includes('NETWORK') || error.message.includes('network')) {
     return {
-      code: "NETWORK_ERROR",
+      code: 'NETWORK_ERROR',
       message: UPDATE_CONFIG.MESSAGES.ERROR_NETWORK,
       originalError: error,
     };
@@ -254,13 +254,13 @@ export const formatUpdateError = (error: Error): UpdateError => {
  * 업데이트 크기를 사람이 읽기 쉬운 형태로 변환합니다
  */
 export const formatUpdateSize = (bytes: number): string => {
-  if (bytes === 0) return "0 B";
+  if (bytes === 0) return '0 B';
 
   const k = 1024;
-  const sizes = ["B", "KB", "MB", "GB"];
+  const sizes = ['B', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  return `${Number.parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
 };
 
 /**
@@ -293,27 +293,27 @@ export const getUpdateMessage = (
 
   // 우선순위에 따른 메시지 조정
   switch (priority) {
-    case "critical":
-      title = "중요한 업데이트가 있어요!";
-      description = "보안 및 안정성 개선을 위한 필수 업데이트입니다.";
+    case 'critical':
+      title = '중요한 업데이트가 있어요!';
+      description = '보안 및 안정성 개선을 위한 필수 업데이트입니다.';
       break;
-    case "high":
-      title = "새로운 기능이 추가되었어요!";
+    case 'high':
+      title = '새로운 기능이 추가되었어요!';
       if (features.length > 0) {
         description = `${features
           .slice(0, 2)
-          .join(", ")} 등의 새로운 기능을 만나보세요.`;
+          .join(', ')} 등의 새로운 기능을 만나보세요.`;
       }
       break;
-    case "medium":
-      title = "앱이 더 좋아졌어요!";
+    case 'medium':
+      title = '앱이 더 좋아졌어요!';
       if (bugFixes.length > 0) {
-        description = "여러 개선사항과 버그 수정이 포함되어 있어요.";
+        description = '여러 개선사항과 버그 수정이 포함되어 있어요.';
       }
       break;
-    case "low":
-      title = "작은 업데이트가 있어요";
-      description = "사용 경험 개선을 위한 작은 변경사항입니다.";
+    case 'low':
+      title = '작은 업데이트가 있어요';
+      description = '사용 경험 개선을 위한 작은 변경사항입니다.';
       break;
   }
 
@@ -332,7 +332,7 @@ export const getRelativeTimeString = (date: Date): string => {
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return "방금 전";
+    return '방금 전';
   }
 
   const diffInMinutes = Math.floor(diffInSeconds / 60);
@@ -350,7 +350,7 @@ export const getRelativeTimeString = (date: Date): string => {
     return `${diffInDays}일 전`;
   }
 
-  return date.toLocaleDateString("ko-KR");
+  return date.toLocaleDateString('ko-KR');
 };
 
 /**

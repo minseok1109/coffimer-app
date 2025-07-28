@@ -1,10 +1,10 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { UserService } from '@/services/userService';
 import {
   User,
   UserBasicInfo,
-  UserUpdate,
-  UserInsert,
+  type UserInsert,
+  type UserUpdate,
 } from '@/types/user';
 
 // Query Keys
@@ -13,8 +13,9 @@ export const userQueryKeys = {
   currentUser: () => [...userQueryKeys.all, 'current'] as const,
   currentUserBasic: () => [...userQueryKeys.all, 'current', 'basic'] as const,
   userById: (id: string) => [...userQueryKeys.all, 'by-id', id] as const,
-  userByEmail: (email: string) => [...userQueryKeys.all, 'by-email', email] as const,
-  searchUsers: (searchTerm?: string, limit?: number) => 
+  userByEmail: (email: string) =>
+    [...userQueryKeys.all, 'by-email', email] as const,
+  searchUsers: (searchTerm?: string, limit?: number) =>
     [...userQueryKeys.all, 'search', { searchTerm, limit }] as const,
   userExists: (id: string) => [...userQueryKeys.all, 'exists', id] as const,
 };
@@ -48,7 +49,7 @@ export const useCurrentUserBasicInfo = () => {
   });
 };
 
-export const useUserProfileById = (userId: string, enabled: boolean = true) => {
+export const useUserProfileById = (userId: string, enabled = true) => {
   return useQuery({
     queryKey: userQueryKeys.userById(userId),
     queryFn: async () => {
@@ -63,7 +64,7 @@ export const useUserProfileById = (userId: string, enabled: boolean = true) => {
   });
 };
 
-export const useUserByEmail = (email: string, enabled: boolean = true) => {
+export const useUserByEmail = (email: string, enabled = true) => {
   return useQuery({
     queryKey: userQueryKeys.userByEmail(email),
     queryFn: async () => {
@@ -78,7 +79,7 @@ export const useUserByEmail = (email: string, enabled: boolean = true) => {
   });
 };
 
-export const useSearchUsers = (searchTerm?: string, limit: number = 10) => {
+export const useSearchUsers = (searchTerm?: string, limit = 10) => {
   return useQuery({
     queryKey: userQueryKeys.searchUsers(searchTerm, limit),
     queryFn: async () => {
@@ -92,7 +93,7 @@ export const useSearchUsers = (searchTerm?: string, limit: number = 10) => {
   });
 };
 
-export const useUserExists = (userId: string, enabled: boolean = true) => {
+export const useUserExists = (userId: string, enabled = true) => {
   return useQuery({
     queryKey: userQueryKeys.userExists(userId),
     queryFn: async () => {
@@ -122,8 +123,10 @@ export const useUpdateUserProfile = () => {
     onSuccess: (data) => {
       // Invalidate and refetch user queries
       queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUser() });
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUserBasic() });
-      
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.currentUserBasic(),
+      });
+
       // Update cache with new data
       if (data) {
         queryClient.setQueryData(userQueryKeys.currentUser(), data);
@@ -147,7 +150,7 @@ export const useCreateUserProfile = () => {
     onSuccess: (data) => {
       // Invalidate user queries
       queryClient.invalidateQueries({ queryKey: userQueryKeys.all });
-      
+
       // Set cache for new user
       if (data) {
         queryClient.setQueryData(userQueryKeys.userById(data.id), data);
@@ -170,8 +173,10 @@ export const useUpdateProfileImage = () => {
     onSuccess: (data) => {
       // Invalidate and refetch user queries
       queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUser() });
-      queryClient.invalidateQueries({ queryKey: userQueryKeys.currentUserBasic() });
-      
+      queryClient.invalidateQueries({
+        queryKey: userQueryKeys.currentUserBasic(),
+      });
+
       // Update cache with new data
       if (data) {
         queryClient.setQueryData(userQueryKeys.currentUser(), data);

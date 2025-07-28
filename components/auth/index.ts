@@ -1,2 +1,2 @@
-export { PasswordRulesGuide } from './PasswordRulesGuide';
 export { ErrorMessage } from './ErrorMessage';
+export { PasswordRulesGuide } from './PasswordRulesGuide';

@@ -1,16 +1,12 @@
+import { Ionicons } from '@expo/vector-icons';
+import React, { useCallback, useMemo } from 'react';
 import {
-  RecipeEditFormData,
-  getDefaultRecipeStep,
-} from "@/lib/validation/recipeSchema";
-import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useMemo } from "react";
-import {
-  Control,
+  type Control,
   Controller,
   FieldErrors,
   useFieldArray,
   useWatch,
-} from "react-hook-form";
+} from 'react-hook-form';
 import {
   Alert,
   ScrollView,
@@ -19,17 +15,21 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
+import {
+  getDefaultRecipeStep,
+  type RecipeEditFormData,
+} from '@/lib/validation/recipeSchema';
 
 interface StepEditorProps {
   control: Control<RecipeEditFormData>;
-  errors?: FieldErrors<RecipeEditFormData["steps"]>;
+  errors?: any; // 배열 에러 타입이 복잡하므로 any 사용
 }
 
 export const StepEditor: React.FC<StepEditorProps> = ({ control, errors }) => {
   const { fields, append, remove, move } = useFieldArray({
     control,
-    name: "steps",
+    name: 'steps',
   });
 
   const addStep = useCallback(() => {
@@ -41,15 +41,15 @@ export const StepEditor: React.FC<StepEditorProps> = ({ control, errors }) => {
   const removeStep = useCallback(
     (index: number) => {
       if (fields.length <= 1) {
-        Alert.alert("알림", "최소 1개의 단계는 있어야 합니다.");
+        Alert.alert('알림', '최소 1개의 단계는 있어야 합니다.');
         return;
       }
 
-      Alert.alert("단계 삭제", `${index + 1}단계를 삭제하시겠습니까?`, [
-        { text: "취소", style: "cancel" },
+      Alert.alert('단계 삭제', `${index + 1}단계를 삭제하시겠습니까?`, [
+        { text: '취소', style: 'cancel' },
         {
-          text: "삭제",
-          style: "destructive",
+          text: '삭제',
+          style: 'destructive',
           onPress: () => remove(index),
         },
       ]);
@@ -67,25 +67,25 @@ export const StepEditor: React.FC<StepEditorProps> = ({ control, errors }) => {
   return (
     <View style={styles.container}>
       <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
         nestedScrollEnabled={true}
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
       >
         {fields.map((field, index) => (
           <StepCard
-            key={field.id}
             control={control}
-            index={index}
-            fieldsLength={fields.length}
-            onRemove={removeStep}
-            onMove={moveStep}
             errors={errors}
+            fieldsLength={fields.length}
+            index={index}
+            key={field.id}
+            onMove={moveStep}
+            onRemove={removeStep}
           />
         ))}
 
         {/* 단계 추가 버튼 */}
-        <TouchableOpacity style={styles.addButton} onPress={addStep}>
-          <Ionicons name="add-circle-outline" size={20} color="#8B4513" />
+        <TouchableOpacity onPress={addStep} style={styles.addButton}>
+          <Ionicons color="#8B4513" name="add-circle-outline" size={20} />
           <Text style={styles.addButtonText}>단계 추가</Text>
         </TouchableOpacity>
 
@@ -109,7 +109,7 @@ const StepCard: React.FC<{
   fieldsLength: number;
   onRemove: (index: number) => void;
   onMove: (fromIndex: number, toIndex: number) => void;
-  errors?: FieldErrors<RecipeEditFormData["steps"]>;
+  errors?: any;
 }> = React.memo(function StepCard({
   control,
   index,
@@ -138,30 +138,30 @@ const StepCard: React.FC<{
           {/* 위로 이동 버튼 */}
           {index > 0 && (
             <TouchableOpacity
-              style={styles.actionButton}
               onPress={handleMoveUp}
+              style={styles.actionButton}
             >
-              <Ionicons name="chevron-up" size={20} color="#666" />
+              <Ionicons color="#666" name="chevron-up" size={20} />
             </TouchableOpacity>
           )}
 
           {/* 아래로 이동 버튼 */}
           {index < fieldsLength - 1 && (
             <TouchableOpacity
-              style={styles.actionButton}
               onPress={handleMoveDown}
+              style={styles.actionButton}
             >
-              <Ionicons name="chevron-down" size={20} color="#666" />
+              <Ionicons color="#666" name="chevron-down" size={20} />
             </TouchableOpacity>
           )}
 
           {/* 삭제 버튼 */}
           {fieldsLength > 1 && (
             <TouchableOpacity
-              style={styles.deleteButton}
               onPress={handleRemove}
+              style={styles.deleteButton}
             >
-              <Ionicons name="trash-outline" size={20} color="#ff4444" />
+              <Ionicons color="#ff4444" name="trash-outline" size={20} />
             </TouchableOpacity>
           )}
         </View>
@@ -183,13 +183,13 @@ const StepCard: React.FC<{
                   ]}
                 >
                   <TextInput
-                    style={styles.numberInput}
-                    placeholder="30"
-                    placeholderTextColor="#999"
+                    keyboardType="numeric"
                     onBlur={onBlur}
                     onChangeText={(text) => onChange(Number(text) || 0)}
-                    value={value?.toString() || ""}
-                    keyboardType="numeric"
+                    placeholder="30"
+                    placeholderTextColor="#999"
+                    style={styles.numberInput}
+                    value={value?.toString() || ''}
                   />
                   <Text style={styles.suffix}>초</Text>
                 </View>
@@ -215,13 +215,13 @@ const StepCard: React.FC<{
                   ]}
                 >
                   <TextInput
-                    style={styles.numberInput}
-                    placeholder="50"
-                    placeholderTextColor="#999"
+                    keyboardType="numeric"
                     onBlur={onBlur}
                     onChangeText={(text) => onChange(Number(text) || 0)}
-                    value={value?.toString() || ""}
-                    keyboardType="numeric"
+                    placeholder="50"
+                    placeholderTextColor="#999"
+                    style={styles.numberInput}
+                    value={value?.toString() || ''}
                   />
                   <Text style={styles.suffix}>ml</Text>
                 </View>
@@ -242,12 +242,12 @@ const StepCard: React.FC<{
           name={`steps.${index}.title`}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              style={styles.input}
-              placeholder="뜸들이기, 1차 추출, 완료 등"
-              placeholderTextColor="#999"
               onBlur={onBlur}
               onChangeText={onChange}
-              value={value || ""}
+              placeholder="뜸들이기, 1차 추출, 완료 등"
+              placeholderTextColor="#999"
+              style={styles.input}
+              value={value || ''}
             />
           )}
         />
@@ -261,14 +261,14 @@ const StepCard: React.FC<{
           name={`steps.${index}.description`}
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="이 단계에서 수행할 작업을 설명해주세요"
-              placeholderTextColor="#999"
-              onBlur={onBlur}
-              onChangeText={onChange}
-              value={value || ""}
               multiline
               numberOfLines={3}
+              onBlur={onBlur}
+              onChangeText={onChange}
+              placeholder="이 단계에서 수행할 작업을 설명해주세요"
+              placeholderTextColor="#999"
+              style={[styles.input, styles.textArea]}
+              value={value || ''}
             />
           )}
         />
@@ -286,10 +286,11 @@ const TotalWaterDisplay: React.FC<{
   stepIndex: number;
 }> = React.memo(function TotalWaterDisplay({ control, stepIndex }) {
   // useWatch로 steps만 감시하여 불필요한 re-render 방지
-  const steps = useWatch({ control, name: "steps" });
+  const steps = useWatch({ control, name: 'steps' });
 
   const { totalTime, totalWater } = useMemo(() => {
-    if (!steps || !Array.isArray(steps)) return { totalTime: 0, totalWater: 0 };
+    if (!(steps && Array.isArray(steps)))
+      return { totalTime: 0, totalWater: 0 };
 
     let totalTime = 0;
     let totalWater = 0;
@@ -327,8 +328,8 @@ const styles = StyleSheet.create({
   },
   helperText: {
     fontSize: 14,
-    color: "#666",
-    backgroundColor: "#fff3cd",
+    color: '#666',
+    backgroundColor: '#fff3cd',
     padding: 12,
     borderRadius: 8,
     lineHeight: 20,
@@ -337,44 +338,44 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   stepCard: {
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#e9ecef",
+    borderColor: '#e9ecef',
   },
   stepHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 16,
   },
   stepTitle: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#8B4513",
+    fontWeight: 'bold',
+    color: '#8B4513',
   },
   stepActions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 8,
   },
   actionButton: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
   },
   deleteButton: {
     padding: 4,
     borderRadius: 6,
-    backgroundColor: "#fff5f5",
+    backgroundColor: '#fff5f5',
     borderWidth: 1,
-    borderColor: "#fecaca",
+    borderColor: '#fecaca',
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
   },
@@ -386,76 +387,76 @@ const styles = StyleSheet.create({
   },
   inputLabel: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 6,
   },
   input: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   textArea: {
     minHeight: 80,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   inputWithSuffix: {
-    flexDirection: "row",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   numberInput: {
     flex: 1,
     paddingHorizontal: 12,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   suffix: {
     paddingRight: 12,
     fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    color: '#666',
+    fontWeight: '500',
   },
   totalContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
   },
   totalTimeContainer: {
-    backgroundColor: "#fff3cd",
+    backgroundColor: '#fff3cd',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   totalTimeLabel: {
     fontSize: 12,
-    color: "#856404",
-    fontWeight: "600",
+    color: '#856404',
+    fontWeight: '600',
   },
   totalWaterContainer: {
-    backgroundColor: "#e8f5e8",
+    backgroundColor: '#e8f5e8',
     borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 8,
   },
   totalWaterLabel: {
     fontSize: 12,
-    color: "#2d7d32",
-    fontWeight: "600",
+    color: '#2d7d32',
+    fontWeight: '600',
   },
   addButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 16,
     marginBottom: 20,
     paddingVertical: 12,
@@ -463,21 +464,21 @@ const styles = StyleSheet.create({
   },
   addButtonText: {
     fontSize: 14,
-    fontWeight: "500",
-    color: "#8B4513",
+    fontWeight: '500',
+    color: '#8B4513',
     marginLeft: 6,
   },
   inputError: {
-    borderColor: "#ff4444",
+    borderColor: '#ff4444',
     borderWidth: 2,
   },
   errorText: {
-    color: "#ff4444",
+    color: '#ff4444',
     fontSize: 12,
     marginTop: 4,
   },
   errorContainer: {
-    backgroundColor: "#ffebee",
+    backgroundColor: '#ffebee',
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,

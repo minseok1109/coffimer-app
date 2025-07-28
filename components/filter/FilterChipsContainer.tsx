@@ -1,11 +1,11 @@
 import React from 'react';
-import { ScrollView, StyleSheet, View, ActivityIndicator } from 'react-native';
-import { 
-  brewingTypeOptions, 
-  dripperOptions, 
-  filterOptions, 
-  FilterState,
-  getFilterLabel
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  brewingTypeOptions,
+  dripperOptions,
+  type FilterState,
+  filterOptions,
+  getFilterLabel,
 } from '@/constants/filterConstants';
 import FilterChip from './FilterChip';
 
@@ -26,66 +26,69 @@ export default function FilterChipsContainer({
   onReset,
   isLoading = false,
 }: FilterChipsContainerProps) {
-  const hasActiveFilters = filterState.brewingType !== 'all' || 
-                          filterState.dripper.length > 0 || 
-                          filterState.filter.length > 0;
+  const hasActiveFilters =
+    filterState.brewingType !== 'all' ||
+    filterState.dripper.length > 0 ||
+    filterState.filter.length > 0;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
+        <ScrollView
           contentContainerStyle={styles.scrollContent}
+          horizontal
+          showsHorizontalScrollIndicator={false}
         >
-        {/* 초기화 버튼 */}
-        {hasActiveFilters && (
-          <FilterChip
-            label="전체"
-            isSelected={false}
-            onPress={onReset}
-            icon="refresh-outline"
-          />
-        )}
+          {/* 초기화 버튼 */}
+          {hasActiveFilters && (
+            <FilterChip
+              icon="refresh-outline"
+              isSelected={false}
+              label="전체"
+              onPress={onReset}
+            />
+          )}
 
-        {/* 추출 타입 필터 */}
-        {brewingTypeOptions.map((option) => (
-          <FilterChip
-            key={option.value}
-            label={option.label}
-            isSelected={filterState.brewingType === option.value}
-            onPress={() => onBrewingTypeChange(option.value as FilterState['brewingType'])}
-            icon={option.icon as any}
-          />
-        ))}
+          {/* 추출 타입 필터 */}
+          {brewingTypeOptions.map((option) => (
+            <FilterChip
+              icon={option.icon as any}
+              isSelected={filterState.brewingType === option.value}
+              key={option.value}
+              label={option.label}
+              onPress={() =>
+                onBrewingTypeChange(option.value as FilterState['brewingType'])
+              }
+            />
+          ))}
 
-        {/* 드리퍼 필터 */}
-        {dripperOptions.map((option) => (
-          <FilterChip
-            key={option.value}
-            label={option.label}
-            isSelected={filterState.dripper.includes(option.value)}
-            onPress={() => onDripperToggle(option.value)}
-            icon={option.icon as any}
-          />
-        ))}
+          {/* 드리퍼 필터 */}
+          {dripperOptions.map((option) => (
+            <FilterChip
+              icon={option.icon as any}
+              isSelected={filterState.dripper.includes(option.value)}
+              key={option.value}
+              label={option.label}
+              onPress={() => onDripperToggle(option.value)}
+            />
+          ))}
 
-        {/* 필터 필터 */}
-        {filterOptions.map((option) => (
-          <FilterChip
-            key={option.value}
-            label={option.label}
-            isSelected={filterState.filter.includes(option.value)}
-            onPress={() => onFilterToggle(option.value)}
-            icon={option.icon as any}
-          />
-        ))}
+          {/* 필터 필터 */}
+          {filterOptions.map((option) => (
+            <FilterChip
+              icon={option.icon as any}
+              isSelected={filterState.filter.includes(option.value)}
+              key={option.value}
+              label={option.label}
+              onPress={() => onFilterToggle(option.value)}
+            />
+          ))}
         </ScrollView>
-        
+
         {/* 로딩 인디케이터 */}
         {isLoading && (
           <View style={styles.loadingContainer}>
-            <ActivityIndicator size="small" color="#8B4513" />
+            <ActivityIndicator color="#8B4513" size="small" />
           </View>
         )}
       </View>

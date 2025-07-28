@@ -1,8 +1,6 @@
-import { useDeleteRecipeMutation } from "@/hooks/useCreateRecipeMutation";
-import { useFavoriteStatus, useFavoriteToggle } from "@/hooks/useFavorites";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import React, { memo, useEffect, useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { memo, useEffect, useState } from 'react';
 import {
   Alert,
   Animated,
@@ -11,13 +9,15 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { useAuth } from "../hooks/useAuth";
-import { formatTimeKorean } from "../lib/timer/formatters";
-import { Recipe } from "../types/recipe";
+} from 'react-native';
+import { useDeleteRecipeMutation } from '@/hooks/useCreateRecipeMutation';
+import { useFavoriteStatus, useFavoriteToggle } from '@/hooks/useFavorites';
+import { useAuth } from '../hooks/useAuth';
+import { formatTimeKorean, calculateActualTotalTime } from '../lib/timer/formatters';
+import type { Recipe, RecipeWithSteps } from '../types/recipe';
 
 interface RecipeCardProps {
-  recipe: Recipe;
+  recipe: Recipe | RecipeWithSteps;
   showMenu?: boolean;
   showFavorite?: boolean;
 }
@@ -36,7 +36,7 @@ const RecipeCard = memo(function RecipeCard({
 
   // 즐겨찾기 관련 hooks
   const { data: isFavorited, isLoading: isFavoriteLoading } = useFavoriteStatus(
-    user?.id || "",
+    user?.id || '',
     recipe.id
   );
   const { mutate: toggleFavorite, isPending: isToggling } = useFavoriteToggle();
@@ -54,7 +54,7 @@ const RecipeCard = memo(function RecipeCard({
 
   const handleFavoriteToggle = () => {
     if (!user?.id) {
-      Alert.alert("로그인 필요", "즐겨찾기를 사용하려면 로그인이 필요합니다.");
+      Alert.alert('로그인 필요', '즐겨찾기를 사용하려면 로그인이 필요합니다.');
       return;
     }
 
@@ -62,8 +62,8 @@ const RecipeCard = memo(function RecipeCard({
       { userId: user.id, recipeId: recipe.id },
       {
         onError: (error) => {
-          console.error("즐겨찾기 토글 오류:", error);
-          Alert.alert("오류", "즐겨찾기 설정 중 오류가 발생했습니다.");
+          console.error('즐겨찾기 토글 오류:', error);
+          Alert.alert('오류', '즐겨찾기 설정 중 오류가 발생했습니다.');
         },
       }
     );
@@ -111,37 +111,37 @@ const RecipeCard = memo(function RecipeCard({
   const handleDelete = () => {
     closeActionSheet();
     Alert.alert(
-      "레시피 삭제",
-      "정말로 이 레시피를 삭제하시겠습니까? 삭제된 레시피는 복구할 수 없습니다.",
+      '레시피 삭제',
+      '정말로 이 레시피를 삭제하시겠습니까? 삭제된 레시피는 복구할 수 없습니다.',
       [
-        { text: "취소", style: "cancel" },
+        { text: '취소', style: 'cancel' },
         {
-          text: "삭제",
-          style: "destructive",
+          text: '삭제',
+          style: 'destructive',
           onPress: async () => {
             try {
               if (!user?.id) {
-                Alert.alert("오류", "로그인이 필요합니다.");
+                Alert.alert('오류', '로그인이 필요합니다.');
                 return;
               }
 
               deleteRecipe(recipe.id);
-              Alert.alert("성공", "레시피가 삭제되었습니다.", [
+              Alert.alert('성공', '레시피가 삭제되었습니다.', [
                 {
-                  text: "확인",
+                  text: '확인',
                   onPress: () => {
                     // 레시피 목록 페이지로 이동
-                    router.push("/(tabs)/recipes");
+                    router.push('/(tabs)/recipes');
                   },
                 },
               ]);
             } catch (error) {
-              console.error("레시피 삭제 오류:", error);
+              console.error('레시피 삭제 오류:', error);
               Alert.alert(
-                "삭제 실패",
+                '삭제 실패',
                 error instanceof Error
                   ? error.message
-                  : "레시피 삭제 중 오류가 발생했습니다."
+                  : '레시피 삭제 중 오류가 발생했습니다.'
               );
             }
           },
@@ -158,24 +158,24 @@ const RecipeCard = memo(function RecipeCard({
           {/* 즐겨찾기 버튼 */}
           {user && showFavorite && (
             <TouchableOpacity
-              style={styles.favoriteButton}
-              onPress={handleFavoriteToggle}
               disabled={isToggling || isFavoriteLoading}
+              onPress={handleFavoriteToggle}
+              style={styles.favoriteButton}
             >
               <Ionicons
-                name={isFavorited ? "star" : "star-outline"}
+                color={isFavorited ? '#FFD700' : '#666'}
+                name={isFavorited ? 'star' : 'star-outline'}
                 size={20}
-                color={isFavorited ? "#FFD700" : "#666"}
               />
             </TouchableOpacity>
           )}
           {/* 메뉴 버튼 (소유자만) */}
           {isOwner && showMenu && (
             <TouchableOpacity
-              style={styles.menuButton}
               onPress={handleMenuPress}
+              style={styles.menuButton}
             >
-              <Ionicons name="ellipsis-vertical" size={20} color="#666" />
+              <Ionicons color="#666" name="ellipsis-vertical" size={20} />
             </TouchableOpacity>
           )}
         </View>
@@ -185,33 +185,37 @@ const RecipeCard = memo(function RecipeCard({
 
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
-          <Ionicons name="cafe-outline" size={16} color="#8B4513" />
+          <Ionicons color="#8B4513" name="cafe-outline" size={16} />
           <Text style={styles.infoText}>{recipe.coffee}g</Text>
         </View>
         <View style={styles.infoItem}>
-          <Ionicons name="time-outline" size={16} color="#666" />
+          <Ionicons color="#666" name="time-outline" size={16} />
           <Text style={styles.infoText}>
-            {formatTimeKorean(recipe.total_time)}
+            {formatTimeKorean(
+              'recipe_steps' in recipe && recipe.recipe_steps
+                ? calculateActualTotalTime(recipe.recipe_steps)
+                : recipe.total_time
+            )}
           </Text>
         </View>
       </View>
 
-      <TouchableOpacity style={styles.startButton} onPress={handlePress}>
+      <TouchableOpacity onPress={handlePress} style={styles.startButton}>
         <Text style={styles.startButtonText}>레시피 시작하기</Text>
       </TouchableOpacity>
 
       {/* BottomSheet Modal */}
       <Modal
-        visible={showActionSheet}
-        transparent
         animationType="none"
         onRequestClose={closeActionSheet}
+        transparent
+        visible={showActionSheet}
       >
         <Animated.View style={[styles.overlay, { opacity: overlayOpacity }]}>
           <TouchableOpacity
-            style={styles.overlayTouchable}
             activeOpacity={1}
             onPress={closeActionSheet}
+            style={styles.overlayTouchable}
           >
             <Animated.View
               style={[
@@ -222,26 +226,26 @@ const RecipeCard = memo(function RecipeCard({
               ]}
             >
               <TouchableOpacity
-                style={styles.actionButton}
                 onPress={handleEdit}
+                style={styles.actionButton}
               >
-                <Ionicons name="create-outline" size={20} color="#8B4513" />
+                <Ionicons color="#8B4513" name="create-outline" size={20} />
                 <Text style={styles.actionButtonText}>레시피 수정</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.actionButton}
                 onPress={handleDelete}
+                style={styles.actionButton}
               >
-                <Ionicons name="trash-outline" size={20} color="#ff4444" />
-                <Text style={[styles.actionButtonText, { color: "#ff4444" }]}>
+                <Ionicons color="#ff4444" name="trash-outline" size={20} />
+                <Text style={[styles.actionButtonText, { color: '#ff4444' }]}>
                   레시피 삭제
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={styles.cancelButton}
                 onPress={closeActionSheet}
+                style={styles.cancelButton}
               >
                 <Text style={styles.cancelButtonText}>취소</Text>
               </TouchableOpacity>
@@ -255,11 +259,11 @@ const RecipeCard = memo(function RecipeCard({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -269,20 +273,20 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 12,
   },
   headerButtons: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 1,
   },
   title: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
     flex: 1,
   },
   favoriteButton: {
@@ -293,49 +297,49 @@ const styles = StyleSheet.create({
   },
   description: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     lineHeight: 20,
     marginBottom: 16,
   },
   infoContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 20,
-    justifyContent: "space-between",
+    justifyContent: 'space-between',
     marginBottom: 16,
   },
   infoItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 6,
   },
   infoText: {
     fontSize: 14,
-    color: "#666",
-    fontWeight: "500",
+    color: '#666',
+    fontWeight: '500',
   },
   startButton: {
-    backgroundColor: "#D2691E",
+    backgroundColor: '#D2691E',
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   startButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 14,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   overlay: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-end",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
   },
   overlayTouchable: {
     flex: 1,
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
   },
   bottomSheetContent: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingHorizontal: 20,
@@ -344,34 +348,34 @@ const styles = StyleSheet.create({
     minHeight: 200,
   },
   actionButton: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 20,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: '#f8f9fa',
     borderRadius: 12,
     marginBottom: 12,
     gap: 12,
   },
   actionButtonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
   },
   cancelButton: {
     paddingVertical: 16,
     paddingHorizontal: 20,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: "#ddd",
-    alignItems: "center",
+    borderColor: '#ddd',
+    alignItems: 'center',
     marginTop: 8,
   },
   cancelButtonText: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#666",
+    fontWeight: '600',
+    color: '#666',
   },
 });
 

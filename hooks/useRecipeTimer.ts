@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 
-import { RecipeWithSteps } from "@/types/recipe";
-import { INITIAL_STEP, INITIAL_TIME, TIMER_INTERVAL_MS } from "../constants";
-import { useNotification } from "./useNotification";
-import { useAnalytics } from "./useAnalytics";
+import type { RecipeWithSteps } from '@/types/recipe';
+import { INITIAL_STEP, INITIAL_TIME, TIMER_INTERVAL_MS } from '../constants';
+import { useAnalytics } from './useAnalytics';
+import { useNotification } from './useNotification';
 
 interface UseRecipeTimerReturn {
   currentTime: number;
@@ -22,7 +22,12 @@ export const useRecipeTimer = (
   const [isRunning, setIsRunning] = useState(false);
   const [currentStep, setCurrentStep] = useState(INITIAL_STEP);
   const { sendNotification, initializeAudio } = useNotification();
-  const { trackRecipeStart, trackTimerPause, trackTimerResume, trackStepComplete } = useAnalytics();
+  const {
+    trackRecipeStart,
+    trackTimerPause,
+    trackTimerResume,
+    trackStepComplete,
+  } = useAnalytics();
   const [hasStartedRecipe, setHasStartedRecipe] = useState(false);
 
   // 레시피 변경 시 초기화
@@ -35,7 +40,7 @@ export const useRecipeTimer = (
 
   // 타이머 로직
   useEffect(() => {
-    if (!isRunning || !recipe.recipe_steps) {
+    if (!(isRunning && recipe.recipe_steps)) {
       return;
     }
 
@@ -59,20 +64,21 @@ export const useRecipeTimer = (
 
         // 단계가 변경될 때 알림 발송 및 analytics 추적
         if (newCurrentStep !== currentStep && recipe.recipe_steps) {
-          const completedStepIndex = newCurrentStep > 0 ? newCurrentStep - 1 : 0;
+          const completedStepIndex =
+            newCurrentStep > 0 ? newCurrentStep - 1 : 0;
           const completedStep = recipe.recipe_steps[completedStepIndex];
-          
+
           if (completedStep && newCurrentStep > currentStep) {
             sendNotification(
               `${completedStep.title} 완료`,
               `다음 단계를 진행하세요: ${completedStep.description}`
             );
-            
+
             // Track step completion - use time as step duration
             const stepDuration = completedStep.time || 0;
             trackStepComplete(recipe.id, completedStepIndex, stepDuration);
           }
-          
+
           setCurrentStep(newCurrentStep);
         }
 
@@ -85,23 +91,33 @@ export const useRecipeTimer = (
 
   const toggleTimer = useCallback(() => {
     // 타이머 시작 시 오디오 초기화
-    if (!isRunning) {
-      initializeAudio();
-      
-      // Track recipe start (only on first start)
-      if (!hasStartedRecipe) {
-        trackRecipeStart(recipe.id, recipe.name, recipe.total_time || 0);
-        setHasStartedRecipe(true);
-      } else {
-        // Track resume
-        trackTimerResume(recipe.id, currentTime, currentStep);
-      }
-    } else {
+    if (isRunning) {
       // Track pause
       trackTimerPause(recipe.id, currentTime, currentStep);
+    } else {
+      initializeAudio();
+
+      // Track recipe start (only on first start)
+      if (hasStartedRecipe) {
+        // Track resume
+        trackTimerResume(recipe.id, currentTime, currentStep);
+      } else {
+        trackRecipeStart(recipe.id, recipe.name, recipe.total_time || 0);
+        setHasStartedRecipe(true);
+      }
     }
     setIsRunning((prev) => !prev);
-  }, [isRunning, initializeAudio, hasStartedRecipe, recipe, currentTime, currentStep, trackRecipeStart, trackTimerPause, trackTimerResume]);
+  }, [
+    isRunning,
+    initializeAudio,
+    hasStartedRecipe,
+    recipe,
+    currentTime,
+    currentStep,
+    trackRecipeStart,
+    trackTimerPause,
+    trackTimerResume,
+  ]);
 
   const resetTimer = useCallback(() => {
     setCurrentTime(INITIAL_TIME);

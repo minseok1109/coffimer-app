@@ -1,46 +1,46 @@
-import { PASSWORD_RULES, checkPasswordStrength } from "@/lib/validation/authSchema";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import {
+  checkPasswordStrength,
+  PASSWORD_RULES,
+} from '@/lib/validation/authSchema';
 
 interface PasswordRulesGuideProps {
   password?: string;
   showStrength?: boolean;
 }
 
-export function PasswordRulesGuide({ 
-  password = "", 
-  showStrength = true 
+export function PasswordRulesGuide({
+  password = '',
+  showStrength = true,
 }: PasswordRulesGuideProps) {
   const strength = checkPasswordStrength(password);
-  
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>비밀번호 규칙</Text>
-      
+
       <View style={styles.rulesContainer}>
         {PASSWORD_RULES.DESCRIPTION.map((rule, index) => {
           const isValid = getValidationForRule(index, strength);
-          
+
           return (
             <View key={index} style={styles.ruleItem}>
               <Ionicons
-                name={isValid ? "checkmark-circle" : "ellipse-outline"}
+                color={isValid ? '#22c55e' : '#9ca3af'}
+                name={isValid ? 'checkmark-circle' : 'ellipse-outline'}
                 size={16}
-                color={isValid ? "#22c55e" : "#9ca3af"}
                 style={styles.ruleIcon}
               />
-              <Text style={[
-                styles.ruleText,
-                isValid && styles.validRuleText
-              ]}>
+              <Text style={[styles.ruleText, isValid && styles.validRuleText]}>
                 {rule}
               </Text>
             </View>
           );
         })}
       </View>
-      
+
       {showStrength && password.length > 0 && (
         <View style={styles.strengthContainer}>
           <Text style={styles.strengthLabel}>강도:</Text>
@@ -50,12 +50,18 @@ export function PasswordRulesGuide({
                 key={index}
                 style={[
                   styles.strengthSegment,
-                  index < strength.strength && styles[`strength${strength.level.replace('-', '')}`]
+                  index < strength.strength &&
+                    styles[`strength${strength.level.replace('-', '')}`],
                 ]}
               />
             ))}
           </View>
-          <Text style={[styles.strengthText, styles[`strength${strength.level.replace('-', '')}Text`]]}>
+          <Text
+            style={[
+              styles.strengthText,
+              styles[`strength${strength.level.replace('-', '')}Text`],
+            ]}
+          >
             {getStrengthText(strength.level)}
           </Text>
         </View>
@@ -64,7 +70,10 @@ export function PasswordRulesGuide({
   );
 }
 
-function getValidationForRule(ruleIndex: number, strength: ReturnType<typeof checkPasswordStrength>): boolean {
+function getValidationForRule(
+  ruleIndex: number,
+  strength: ReturnType<typeof checkPasswordStrength>
+): boolean {
   switch (ruleIndex) {
     case 0: // 6자 이상
       return strength.length;

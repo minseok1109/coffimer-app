@@ -1,27 +1,8 @@
-import {
-  BottomSheetRef,
-  DripperBottomSheet,
-} from "@/components/create-recipe/DripperBottomSheet";
-import { FilterBottomSheet } from "@/components/create-recipe/FilterBottomSheet";
-import {
-  defaultDripperOptions,
-  getDripperLabel,
-} from "@/constants/dripperOptions";
-import {
-  defaultFilterOptions,
-  getFilterLabel,
-} from "@/constants/filterOptions";
-import {
-  RecipeEditFormData,
-  getDefaultRecipe,
-  getDefaultRecipeStep,
-  recipeEditSchema,
-} from "@/lib/validation/recipeSchema";
-import { RecipeWithSteps } from "@/types/recipe";
-import { Ionicons } from "@expo/vector-icons";
-import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useEffect, useRef } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { Ionicons } from '@expo/vector-icons';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type React from 'react';
+import { useEffect, useRef } from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
   ScrollView,
@@ -31,12 +12,34 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
-import { StepEditor } from "./StepEditor";
+} from 'react-native';
+import {
+  type BottomSheetRef,
+  DripperBottomSheet,
+} from '@/components/create-recipe/DripperBottomSheet';
+import { FilterBottomSheet } from '@/components/create-recipe/FilterBottomSheet';
+import {
+  defaultDripperOptions,
+  getDripperLabel,
+} from '@/constants/dripperOptions';
+import {
+  defaultFilterOptions,
+  getFilterLabel,
+} from '@/constants/filterOptions';
+import {
+  getDefaultRecipe,
+  getDefaultRecipeStep,
+  type RecipeEditFormData,
+  recipeEditSchema,
+} from '@/lib/validation/recipeSchema';
+import { transformEditFormDataToRecipe } from '@/lib/recipeApi';
+import { smartTimeConversion } from '@/lib/timer/formatters';
+import type { RecipeWithSteps } from '@/types/recipe';
+import { StepEditor } from './StepEditor';
 
 interface EditFormProps {
   recipe: RecipeWithSteps;
-  onSave: (data: RecipeEditFormData) => Promise<void>;
+  onSave: (data: any) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -68,63 +71,77 @@ export const EditForm: React.FC<EditFormProps> = ({
   // 기존 레시피 데이터로 폼 초기화
   useEffect(() => {
     if (recipe) {
+      // 원본 스텝 데이터
+      const originalSteps = recipe.recipe_steps.map((step) => ({
+        title: step.title || '',
+        description: step.description || '',
+        time: step.time,
+        water: step.water || 0,
+        total_water: step.total_water || null,
+        step_index: step.step_index,
+      }));
+
+      // 스마트 변환: 자동으로 누적/개별 시간 감지하여 개별 시간으로 정규화
+      const { steps: normalizedSteps, wasCumulative } = smartTimeConversion(originalSteps);
+
       const formData: RecipeEditFormData = {
         recipe: {
           name: recipe.name,
-          description: recipe.description || "",
+          description: recipe.description || '',
           coffee: recipe.coffee,
           water: recipe.water,
           water_temperature: recipe.water_temperature,
-          dripper: recipe.dripper || "",
-          filter: recipe.filter || "",
+          dripper: recipe.dripper || '',
+          filter: recipe.filter || '',
           ratio: recipe.ratio || 15,
           micron: recipe.micron || null,
-          youtube_url: recipe.youtube_url || "",
-          is_public: recipe.is_public || false,
+          youtube_url: recipe.youtube_url || '',
+          is_public: recipe.is_public,
           total_time: recipe.total_time,
         },
-        steps: recipe.recipe_steps.map((step) => ({
-          title: step.title || "",
-          description: step.description || "",
-          time: step.time,
-          water: step.water || 0,
-          total_water: step.total_water || null,
-          step_index: step.step_index,
-        })),
+        steps: normalizedSteps,
       };
       reset(formData);
+
+      // 개발 환경에서 변환 정보 로깅
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`[EditForm] 시간 데이터 형태: ${wasCumulative ? '누적 시간' : '개별 시간'}`);
+      }
     }
   }, [recipe, reset]);
 
-  const coffeeAmount = watch("recipe.coffee");
-  const waterAmount = watch("recipe.water");
-  const steps = watch("steps");
+  const coffeeAmount = watch('recipe.coffee');
+  const waterAmount = watch('recipe.water');
+  const steps = watch('steps');
 
   // 비율 자동 계산
   useEffect(() => {
     if (coffeeAmount && waterAmount && coffeeAmount > 0) {
       const ratio = waterAmount / coffeeAmount;
-      setValue("recipe.ratio", Math.round(ratio * 10) / 10);
+      setValue('recipe.ratio', Math.round(ratio * 10) / 10);
     }
   }, [coffeeAmount, waterAmount, setValue]);
 
-  // 총 시간 자동 계산 (마지막 단계의 시간이 전체 시간)
+  // 총 시간 자동 계산 (모든 단계의 시간 합계)
   useEffect(() => {
     if (steps && Array.isArray(steps) && steps.length > 0) {
-      // 마지막 단계의 시간이 전체 레시피의 총 시간
-      const lastStep = steps[steps.length - 1];
-      const totalTime = lastStep?.time || 0;
-      setValue("recipe.total_time", totalTime);
+      // 모든 단계의 시간을 합산하여 총 시간 계산
+      const totalTime = steps.reduce((sum, step) => {
+        return sum + (step?.time || 0);
+      }, 0);
+      setValue('recipe.total_time', totalTime);
     }
   }, [steps, setValue]);
 
   const handleSavePress = async (data: RecipeEditFormData) => {
     try {
-      await onSave(data);
+      // 수정 데이터를 생성과 동일한 형식으로 변환 (누적 시간 적용)
+      const transformedData = transformEditFormDataToRecipe(data);
+      await onSave(transformedData as any);
     } catch (error) {
       Alert.alert(
-        "저장 실패",
-        "레시피 저장 중 오류가 발생했습니다. 다시 시도해주세요."
+        '저장 실패',
+        '레시피 저장 중 오류가 발생했습니다. 다시 시도해주세요.'
       );
     }
   };
@@ -132,11 +149,11 @@ export const EditForm: React.FC<EditFormProps> = ({
   const handleCancelPress = () => {
     if (isDirty) {
       Alert.alert(
-        "변경사항이 있습니다",
-        "저장하지 않은 변경사항이 있습니다. 정말 취소하시겠습니까?",
+        '변경사항이 있습니다',
+        '저장하지 않은 변경사항이 있습니다. 정말 취소하시겠습니까?',
         [
-          { text: "계속 수정", style: "cancel" },
-          { text: "취소", style: "destructive", onPress: onCancel },
+          { text: '계속 수정', style: 'cancel' },
+          { text: '취소', style: 'destructive', onPress: onCancel },
         ]
       );
     } else {
@@ -147,9 +164,9 @@ export const EditForm: React.FC<EditFormProps> = ({
   return (
     <View style={styles.container}>
       <ScrollView
-        style={styles.scrollView}
-        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        style={styles.scrollView}
       >
         {/* 레시피 기본 정보 */}
         <View style={styles.section}>
@@ -163,14 +180,14 @@ export const EditForm: React.FC<EditFormProps> = ({
               render={({ field: { onChange, onBlur, value } }) => (
                 <>
                   <TextInput
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    placeholder="레시피 이름을 입력하세요"
+                    placeholderTextColor="#999"
                     style={[
                       styles.input,
                       errors.recipe?.name && styles.inputError,
                     ]}
-                    placeholder="레시피 이름을 입력하세요"
-                    placeholderTextColor="#999"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
                     value={value}
                   />
                   {errors.recipe?.name && (
@@ -190,14 +207,14 @@ export const EditForm: React.FC<EditFormProps> = ({
               name="recipe.description"
               render={({ field: { onChange, onBlur, value } }) => (
                 <TextInput
-                  style={[styles.input, styles.textArea]}
-                  placeholder="레시피에 대한 설명을 입력하세요"
-                  placeholderTextColor="#999"
-                  onBlur={onBlur}
-                  onChangeText={onChange}
-                  value={value || ""}
                   multiline
                   numberOfLines={3}
+                  onBlur={onBlur}
+                  onChangeText={onChange}
+                  placeholder="레시피에 대한 설명을 입력하세요"
+                  placeholderTextColor="#999"
+                  style={[styles.input, styles.textArea]}
+                  value={value || ''}
                 />
               )}
             />
@@ -223,13 +240,13 @@ export const EditForm: React.FC<EditFormProps> = ({
                       ]}
                     >
                       <TextInput
-                        style={styles.numberInput}
-                        placeholder="20"
-                        placeholderTextColor="#999"
+                        keyboardType="numeric"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
-                        value={value?.toString() || ""}
-                        keyboardType="numeric"
+                        placeholder="20"
+                        placeholderTextColor="#999"
+                        style={styles.numberInput}
+                        value={value?.toString() || ''}
                       />
                       <Text style={styles.suffix}>g</Text>
                     </View>
@@ -257,13 +274,13 @@ export const EditForm: React.FC<EditFormProps> = ({
                       ]}
                     >
                       <TextInput
-                        style={styles.numberInput}
-                        placeholder="300"
-                        placeholderTextColor="#999"
+                        keyboardType="numeric"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
-                        value={value?.toString() || ""}
-                        keyboardType="numeric"
+                        placeholder="300"
+                        placeholderTextColor="#999"
+                        style={styles.numberInput}
+                        value={value?.toString() || ''}
                       />
                       <Text style={styles.suffix}>ml</Text>
                     </View>
@@ -293,13 +310,13 @@ export const EditForm: React.FC<EditFormProps> = ({
                       ]}
                     >
                       <TextInput
-                        style={styles.numberInput}
-                        placeholder="92"
-                        placeholderTextColor="#999"
+                        keyboardType="numeric"
                         onBlur={onBlur}
                         onChangeText={(text) => onChange(Number(text) || 0)}
-                        value={value?.toString() || ""}
-                        keyboardType="numeric"
+                        placeholder="92"
+                        placeholderTextColor="#999"
+                        style={styles.numberInput}
+                        value={value?.toString() || ''}
                       />
                       <Text style={styles.suffix}>°C</Text>
                     </View>
@@ -322,13 +339,13 @@ export const EditForm: React.FC<EditFormProps> = ({
                   <View style={styles.inputWithSuffix}>
                     <Text style={styles.ratioPrefix}>1:</Text>
                     <TextInput
-                      style={styles.numberInput}
-                      placeholder="15"
-                      placeholderTextColor="#999"
+                      keyboardType="numeric"
                       onBlur={onBlur}
                       onChangeText={(text) => onChange(Number(text) || 0)}
-                      value={value?.toString() || ""}
-                      keyboardType="numeric"
+                      placeholder="15"
+                      placeholderTextColor="#999"
+                      style={styles.numberInput}
+                      value={value?.toString() || ''}
                     />
                   </View>
                 )}
@@ -343,8 +360,8 @@ export const EditForm: React.FC<EditFormProps> = ({
               name="recipe.dripper"
               render={({ field: { onChange, value } }) => (
                 <TouchableOpacity
-                  style={styles.selector}
                   onPress={() => dripperBottomSheetRef.current?.expand()}
+                  style={styles.selector}
                 >
                   <Text
                     style={[
@@ -352,9 +369,9 @@ export const EditForm: React.FC<EditFormProps> = ({
                       !value && styles.selectorPlaceholder,
                     ]}
                   >
-                    {value ? getDripperLabel(value) : "드리퍼를 선택하세요"}
+                    {value ? getDripperLabel(value) : '드리퍼를 선택하세요'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                  <Ionicons color="#8B4513" name="chevron-down" size={20} />
                 </TouchableOpacity>
               )}
             />
@@ -367,8 +384,8 @@ export const EditForm: React.FC<EditFormProps> = ({
               name="recipe.filter"
               render={({ field: { onChange, value } }) => (
                 <TouchableOpacity
-                  style={styles.selector}
                   onPress={() => filterBottomSheetRef.current?.expand()}
+                  style={styles.selector}
                 >
                   <Text
                     style={[
@@ -376,9 +393,9 @@ export const EditForm: React.FC<EditFormProps> = ({
                       !value && styles.selectorPlaceholder,
                     ]}
                   >
-                    {value ? getFilterLabel(value) : "필터를 선택하세요"}
+                    {value ? getFilterLabel(value) : '필터를 선택하세요'}
                   </Text>
-                  <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                  <Ionicons color="#8B4513" name="chevron-down" size={20} />
                 </TouchableOpacity>
               )}
             />
@@ -392,16 +409,16 @@ export const EditForm: React.FC<EditFormProps> = ({
               render={({ field: { onChange, onBlur, value } }) => (
                 <>
                   <TextInput
+                    keyboardType="url"
+                    onBlur={onBlur}
+                    onChangeText={onChange}
+                    placeholder="https://youtube.com/watch?v=..."
+                    placeholderTextColor="#999"
                     style={[
                       styles.input,
                       errors.recipe?.youtube_url && styles.inputError,
                     ]}
-                    placeholder="https://youtube.com/watch?v=..."
-                    placeholderTextColor="#999"
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value || ""}
-                    keyboardType="url"
+                    value={value || ''}
                   />
                   {errors.recipe?.youtube_url && (
                     <Text style={styles.errorText}>
@@ -420,10 +437,10 @@ export const EditForm: React.FC<EditFormProps> = ({
               name="recipe.is_public"
               render={({ field: { onChange, value } }) => (
                 <Switch
-                  value={value}
                   onValueChange={onChange}
-                  trackColor={{ false: "#ddd", true: "#8B4513" }}
                   thumbColor="#fff"
+                  trackColor={{ false: '#ddd', true: '#8B4513' }}
+                  value={value}
                 />
               )}
             />
@@ -440,17 +457,17 @@ export const EditForm: React.FC<EditFormProps> = ({
       {/* 하단 버튼 */}
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          style={styles.cancelButton}
-          onPress={handleCancelPress}
           disabled={isLoading}
+          onPress={handleCancelPress}
+          style={styles.cancelButton}
         >
           <Text style={styles.cancelButtonText}>취소</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.saveButton, isLoading && styles.disabledButton]}
-          onPress={handleSubmit(handleSavePress)}
           disabled={isLoading}
+          onPress={handleSubmit(handleSavePress)}
+          style={[styles.saveButton, isLoading && styles.disabledButton]}
         >
           {isLoading ? (
             <Text style={styles.saveButtonText}>저장 중...</Text>
@@ -462,17 +479,17 @@ export const EditForm: React.FC<EditFormProps> = ({
 
       {/* BottomSheets */}
       <DripperBottomSheet
-        ref={dripperBottomSheetRef}
-        onSelect={(value) => setValue("recipe.dripper", value)}
-        selectedValue={watch("recipe.dripper")}
+        onSelect={(value) => setValue('recipe.dripper', value)}
         options={defaultDripperOptions}
+        ref={dripperBottomSheetRef}
+        selectedValue={watch('recipe.dripper') || undefined}
       />
 
       <FilterBottomSheet
-        ref={filterBottomSheetRef}
-        onSelect={(value) => setValue("recipe.filter", value)}
-        selectedValue={watch("recipe.filter")}
+        onSelect={(value) => setValue('recipe.filter', value)}
         options={defaultFilterOptions}
+        ref={filterBottomSheetRef}
+        selectedValue={watch('recipe.filter') || undefined}
       />
     </View>
   );
@@ -486,11 +503,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     marginBottom: 12,
     padding: 20,
     borderRadius: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -501,15 +518,15 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
     marginBottom: 16,
   },
   inputGroup: {
     marginBottom: 16,
   },
   row: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
     marginBottom: 16,
   },
@@ -518,123 +535,123 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
     marginBottom: 8,
   },
   input: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   textArea: {
     minHeight: 80,
-    textAlignVertical: "top",
+    textAlignVertical: 'top',
   },
   inputWithSuffix: {
-    flexDirection: "row",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
   },
   numberInput: {
     flex: 1,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#333",
+    color: '#333',
   },
   suffix: {
     paddingRight: 16,
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
   ratioPrefix: {
     paddingLeft: 16,
     fontSize: 16,
-    color: "#666",
+    color: '#666',
   },
   switchGroup: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f8f9fa',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
   buttonContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 12,
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderTopWidth: 1,
-    borderTopColor: "#e9ecef",
+    borderTopColor: '#e9ecef',
   },
   cancelButton: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#8B4513",
+    borderColor: '#8B4513',
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   cancelButtonText: {
-    color: "#8B4513",
+    color: '#8B4513',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   saveButton: {
     flex: 2,
-    backgroundColor: "#8B4513",
+    backgroundColor: '#8B4513',
     borderRadius: 12,
     paddingVertical: 16,
-    alignItems: "center",
+    alignItems: 'center',
   },
   saveButtonText: {
-    color: "white",
+    color: 'white',
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: '600',
   },
   disabledButton: {
     opacity: 0.6,
   },
   inputError: {
-    borderColor: "#ff4444",
+    borderColor: '#ff4444',
     borderWidth: 2,
   },
   errorText: {
-    color: "#ff4444",
+    color: '#ff4444',
     fontSize: 12,
     marginTop: 4,
     marginLeft: 4,
   },
   selector: {
-    flexDirection: "row",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    backgroundColor: 'white',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 8,
     paddingHorizontal: 16,
     paddingVertical: 12,
-    alignItems: "center",
-    justifyContent: "space-between",
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   selectorText: {
     fontSize: 16,
-    color: "#333",
+    color: '#333',
     flex: 1,
   },
   selectorPlaceholder: {
-    color: "#999",
+    color: '#999',
   },
 });

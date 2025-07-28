@@ -4,22 +4,22 @@ import Constants from 'expo-constants';
 export const UPDATE_CONFIG = {
   // 체크 간격 (24시간)
   CHECK_INTERVAL: 24 * 60 * 60 * 1000,
-  
+
   // 재시도 설정
   MAX_RETRY_ATTEMPTS: 3,
   RETRY_DELAY: 5000, // 5초
-  
+
   // UI 설정
-  MODAL_AUTO_DISMISS_DELAY: 10000, // 10초 후 자동 닫기
+  MODAL_AUTO_DISMISS_DELAY: 10_000, // 10초 후 자동 닫기
   SNACKBAR_DURATION: 5000, // 5초
-  
+
   // 스토리지 키
   STORAGE_KEYS: {
     LAST_CHECK: 'update_last_check',
     USER_SETTINGS: 'update_user_settings',
     DISMISSED_UPDATES: 'update_dismissed',
   },
-  
+
   // 업데이트 메시지
   MESSAGES: {
     UPDATE_AVAILABLE: '새로운 기능이 추가되었어요!',
@@ -59,7 +59,7 @@ export interface UpdateInfo {
 }
 
 // 업데이트 상태 타입
-export type UpdateStatus = 
+export type UpdateStatus =
   | 'idle'
   | 'checking'
   | 'available'
@@ -80,12 +80,12 @@ export const isUpdateEnabled = (): boolean => {
   if (__DEV__) {
     return false;
   }
-  
+
   // Expo Go에서는 업데이트 비활성화
   if (Constants.expoConfig?.extra?.eas?.projectId === undefined) {
     return false;
   }
-  
+
   return true;
 };
 

@@ -1,6 +1,6 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TimerControlsProps {
   isRunning: boolean;
@@ -17,23 +17,23 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
     <View style={styles.controlsContainer}>
       <View style={styles.mainControls}>
         <TouchableOpacity
+          onPress={onToggleTimer}
           style={[
             styles.timerButton,
             isRunning ? styles.timerButtonRunning : styles.timerButtonPaused,
           ]}
-          onPress={onToggleTimer}
         >
           <Ionicons
-            name={isRunning ? "pause" : "play"}
-            size={32}
             color="white"
+            name={isRunning ? 'pause' : 'play'}
+            size={32}
           />
           <Text style={styles.timerButtonText}>
-            {isRunning ? "일시정지" : "시작"}
+            {isRunning ? '일시정지' : '시작'}
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.resetButton} onPress={onReset}>
-          <Ionicons name="refresh" size={24} color="#666" />
+        <TouchableOpacity onPress={onReset} style={styles.resetButton}>
+          <Ionicons color="#666" name="refresh" size={24} />
           <Text style={styles.resetButtonText}>리셋</Text>
         </TouchableOpacity>
       </View>
@@ -47,21 +47,21 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   mainControls: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 16,
   },
   resetButton: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "white",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
     borderRadius: 16,
     padding: 20,
     gap: 8,
     borderWidth: 1,
-    borderColor: "#dee2e6",
-    shadowColor: "#000",
+    borderColor: '#dee2e6',
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -72,18 +72,18 @@ const styles = StyleSheet.create({
   },
   resetButtonText: {
     fontSize: 16,
-    color: "#6c757d",
-    fontWeight: "600",
+    color: '#6c757d',
+    fontWeight: '600',
   },
   timerButton: {
     flex: 2,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 16,
     padding: 20,
     gap: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -93,14 +93,14 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   timerButtonRunning: {
-    backgroundColor: "#F44336",
+    backgroundColor: '#F44336',
   },
   timerButtonPaused: {
-    backgroundColor: "#A0522D",
+    backgroundColor: '#A0522D',
   },
   timerButtonText: {
     fontSize: 18,
-    color: "white",
-    fontWeight: "bold",
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

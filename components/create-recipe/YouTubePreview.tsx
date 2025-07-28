@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, Linking } from 'react-native';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import {
+  Image,
+  Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { extractYouTubeVideoId, getYouTubeVideoInfo } from '@/lib/youtube';
 
 interface YouTubePreviewProps {
@@ -56,7 +64,7 @@ export const YouTubePreview: React.FC<YouTubePreviewProps> = ({ url }) => {
     }
   };
 
-  if (!url || (!loading && !videoInfo && !error)) {
+  if (!(url && (loading || videoInfo || error))) {
     return null;
   }
 
@@ -74,19 +82,21 @@ export const YouTubePreview: React.FC<YouTubePreviewProps> = ({ url }) => {
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>올바른 YouTube URL을 입력해주세요</Text>
+          <Text style={styles.errorText}>
+            올바른 YouTube URL을 입력해주세요
+          </Text>
         </View>
       </View>
     );
   }
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handlePress}>
+    <TouchableOpacity onPress={handlePress} style={styles.container}>
       <View style={styles.previewContainer}>
-        <Image 
-          source={{ uri: videoInfo.thumbnail }} 
-          style={styles.thumbnail}
+        <Image
           resizeMode="cover"
+          source={{ uri: videoInfo.thumbnail }}
+          style={styles.thumbnail}
         />
         <View style={styles.overlay}>
           <View style={styles.playButton}>
@@ -94,10 +104,10 @@ export const YouTubePreview: React.FC<YouTubePreviewProps> = ({ url }) => {
           </View>
         </View>
         <View style={styles.infoContainer}>
-          <Text style={styles.title} numberOfLines={2}>
+          <Text numberOfLines={2} style={styles.title}>
             {videoInfo.title}
           </Text>
-          <Text style={styles.author} numberOfLines={1}>
+          <Text numberOfLines={1} style={styles.author}>
             {videoInfo.author}
           </Text>
         </View>

@@ -38,33 +38,56 @@ export const filterOptions: FilterOption[] = [
 // DB 값을 필터 옵션으로 매핑하는 함수
 export const mapDripperToFilter = (dripper: string | null): string => {
   if (!dripper) return 'other';
-  
+
   const lowerDripper = dripper.toLowerCase();
-  
+
   if (lowerDripper.includes('v60')) return 'v60';
-  if (lowerDripper.includes('오리가미') || lowerDripper.includes('origami')) return 'origami';
+  if (lowerDripper.includes('오리가미') || lowerDripper.includes('origami'))
+    return 'origami';
   if (lowerDripper.includes('솔로')) return 'solo';
-  if (lowerDripper.includes('하리오') || lowerDripper.includes('hario')) return 'hario';
-  
+  if (lowerDripper.includes('하리오') || lowerDripper.includes('hario'))
+    return 'hario';
+
   return 'other';
 };
 
 export const mapFilterToFilter = (filter: string | null): string => {
   if (!filter) return 'none';
-  
+
   const lowerFilter = filter.toLowerCase();
-  
-  if (lowerFilter.includes('카펙') || lowerFilter.includes('cafec') || lowerFilter.includes('아바카') || lowerFilter.includes('abaca')) return 'cafec_abaca';
-  if (lowerFilter.includes('칼리타') || lowerFilter.includes('kalita') || lowerFilter.includes('웨이브') || lowerFilter.includes('wave')) return 'kalita_wave';
-  if (lowerFilter.includes('v60') || lowerFilter.includes('전용')) return 'v60_paper';
-  if (lowerFilter.includes('오리가미') || lowerFilter.includes('origami') || lowerFilter.includes('콘')) return 'origami_cone';
-  
+
+  if (
+    lowerFilter.includes('카펙') ||
+    lowerFilter.includes('cafec') ||
+    lowerFilter.includes('아바카') ||
+    lowerFilter.includes('abaca')
+  )
+    return 'cafec_abaca';
+  if (
+    lowerFilter.includes('칼리타') ||
+    lowerFilter.includes('kalita') ||
+    lowerFilter.includes('웨이브') ||
+    lowerFilter.includes('wave')
+  )
+    return 'kalita_wave';
+  if (lowerFilter.includes('v60') || lowerFilter.includes('전용'))
+    return 'v60_paper';
+  if (
+    lowerFilter.includes('오리가미') ||
+    lowerFilter.includes('origami') ||
+    lowerFilter.includes('콘')
+  )
+    return 'origami_cone';
+
   return 'none';
 };
 
 // 필터 옵션에서 라벨 가져오기
-export const getFilterLabel = (options: FilterOption[], value: string): string => {
-  const option = options.find(opt => opt.value === value);
+export const getFilterLabel = (
+  options: FilterOption[],
+  value: string
+): string => {
+  const option = options.find((opt) => opt.value === value);
   return option ? option.label : value;
 };
 

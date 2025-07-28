@@ -1,17 +1,17 @@
-import { useAuth } from "@/hooks/useAuth";
-import { RecipeFormData, recipeFormSchema } from "@/types/recipe-form";
-import { useCreateRecipeMutation } from "./useCreateRecipeMutation";
-import { transformFormDataToRecipe } from "@/lib/recipeApi";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "expo-router";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { Alert } from "react-native";
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { Alert } from 'react-native';
 import {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
-} from "react-native-reanimated";
+} from 'react-native-reanimated';
+import { useAuth } from '@/hooks/useAuth';
+import { transformFormDataToRecipe } from '@/lib/recipeApi';
+import { type RecipeFormData, recipeFormSchema } from '@/types/recipe-form';
+import { useCreateRecipeMutation } from './useCreateRecipeMutation';
 
 export const useCreateRecipe = () => {
   const router = useRouter();
@@ -25,35 +25,35 @@ export const useCreateRecipe = () => {
 
   const methods = useForm<RecipeFormData>({
     resolver: zodResolver(recipeFormSchema as any),
-    mode: "onChange",
+    mode: 'onChange',
     defaultValues: {
-      title: "",
-      description: "",
+      title: '',
+      description: '',
       isPublic: false,
-      coffeeAmount: "",
-      waterAmount: "",
-      ratio: "",
-      dripper: "",
-      filter: "",
-      steps: [{ title: "", time: "", waterAmount: "", description: "" }],
+      coffeeAmount: '',
+      waterAmount: '',
+      ratio: '',
+      dripper: '',
+      filter: '',
+      steps: [{ title: '', time: '', waterAmount: '', description: '' }],
     },
   });
 
   const { handleSubmit, trigger } = methods;
 
-  const animateStepTransition = async (direction: "next" | "prev") => {
+  const animateStepTransition = async (direction: 'next' | 'prev') => {
     setIsTransitioning(true);
 
     // 페이드 아웃 + 슬라이드 아웃
     opacity.value = withTiming(0, { duration: 200 });
-    translateX.value = withTiming(direction === "next" ? -30 : 30, {
+    translateX.value = withTiming(direction === 'next' ? -30 : 30, {
       duration: 200,
     });
 
     // 애니메이션 완료 후 Step 변경
     setTimeout(() => {
       // 새로운 Step으로 변경 후 페이드 인 + 슬라이드 인
-      translateX.value = direction === "next" ? 30 : -30;
+      translateX.value = direction === 'next' ? 30 : -30;
       opacity.value = withTiming(1, { duration: 200 });
       translateX.value = withTiming(0, { duration: 200 });
       setIsTransitioning(false);
@@ -74,13 +74,13 @@ export const useCreateRecipe = () => {
 
     switch (currentStep) {
       case 1:
-        fieldsToValidate = ["title"];
+        fieldsToValidate = ['title'];
         break;
       case 2:
-        fieldsToValidate = ["coffeeAmount", "waterAmount", "dripper"];
+        fieldsToValidate = ['coffeeAmount', 'waterAmount', 'dripper'];
         break;
       case 3:
-        fieldsToValidate = ["steps"];
+        fieldsToValidate = ['steps'];
         break;
     }
 
@@ -88,7 +88,7 @@ export const useCreateRecipe = () => {
 
     if (isValid && currentStep < 4) {
       setHasAttemptedNext(false);
-      await animateStepTransition("next");
+      await animateStepTransition('next');
       setCurrentStep(currentStep + 1);
     } else if (currentStep === 4) {
       await onSubmit(methods.getValues());
@@ -98,7 +98,7 @@ export const useCreateRecipe = () => {
   const handlePrevious = async () => {
     if (currentStep > 1) {
       setHasAttemptedNext(false);
-      await animateStepTransition("prev");
+      await animateStepTransition('prev');
       setCurrentStep(currentStep - 1);
     }
   };
@@ -106,9 +106,9 @@ export const useCreateRecipe = () => {
   // 새로운 뮤테이션 훅 사용
   const createRecipeMutation = useCreateRecipeMutation({
     onSuccess: (recipe) => {
-      Alert.alert("성공", "레시피가 성공적으로 저장되었습니다!", [
+      Alert.alert('성공', '레시피가 성공적으로 저장되었습니다!', [
         {
-          text: "확인",
+          text: '확인',
           onPress: () => {
             router.back();
           },
@@ -116,13 +116,13 @@ export const useCreateRecipe = () => {
       ]);
     },
     onError: (error) => {
-      Alert.alert("오류", error.message || "레시피 저장에 실패했습니다.");
-    }
+      Alert.alert('오류', error.message || '레시피 저장에 실패했습니다.');
+    },
   });
 
   const onSubmit = async (data: RecipeFormData) => {
     if (!user) {
-      Alert.alert("오류", "로그인이 필요합니다.");
+      Alert.alert('오류', '로그인이 필요합니다.');
       return;
     }
 
@@ -131,7 +131,7 @@ export const useCreateRecipe = () => {
 
       // 폼 데이터를 CreateRecipeInput 형태로 변환
       const { recipe, steps } = transformFormDataToRecipe(data, user.id);
-      
+
       // CreateRecipeInput 타입으로 변환
       const input = {
         recipe: {
@@ -146,22 +146,22 @@ export const useCreateRecipe = () => {
           description: recipe.description,
           micron: recipe.micron,
           youtube_url: recipe.youtube_url,
-          is_public: recipe.is_public
+          is_public: recipe.is_public,
         },
-        steps: steps.map(step => ({
+        steps: steps.map((step) => ({
           step_index: step.step_index,
           time: step.time,
           title: step.title,
           description: step.description,
           water: step.water,
-          total_water: step.total_water
-        }))
+          total_water: step.total_water,
+        })),
       };
 
       await createRecipeMutation.mutateAsync(input);
     } catch (error) {
-      console.error("레시피 저장 오류:", error);
-      Alert.alert("오류", "레시피 저장 중 예상치 못한 오류가 발생했습니다.");
+      console.error('레시피 저장 오류:', error);
+      Alert.alert('오류', '레시피 저장 중 예상치 못한 오류가 발생했습니다.');
     } finally {
       setIsSaving(false);
     }

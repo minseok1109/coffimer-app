@@ -1,6 +1,6 @@
-import { RecipeWithSteps } from "@/types/recipe";
-import { useMemo } from "react";
-import { WaterInfo } from "../../lib/timer/types";
+import { useMemo } from 'react';
+import type { RecipeWithSteps } from '@/types/recipe';
+import type { WaterInfo } from '../../lib/timer/types';
 
 const WATER_AMOUNT_EXTRACTION_REGEX = /[^\d]/g;
 
@@ -13,10 +13,10 @@ export const useWaterCalculation = (
 
     let total = 0;
     for (let i = 0; i <= currentStep && i < recipe.recipe_steps.length; i++) {
-      const waterAmount = parseInt(
+      const waterAmount = Number.parseInt(
         recipe.recipe_steps[i].water
           .toString()
-          .replace(WATER_AMOUNT_EXTRACTION_REGEX, "")
+          .replace(WATER_AMOUNT_EXTRACTION_REGEX, '')
       );
       if (!isNaN(waterAmount)) {
         total += waterAmount;
@@ -30,10 +30,10 @@ export const useWaterCalculation = (
 
     let total = 0;
     for (let i = 0; i < recipe.recipe_steps.length; i++) {
-      const waterAmount = parseInt(
+      const waterAmount = Number.parseInt(
         recipe.recipe_steps[i].water
           .toString()
-          .replace(WATER_AMOUNT_EXTRACTION_REGEX, "")
+          .replace(WATER_AMOUNT_EXTRACTION_REGEX, '')
       );
       if (!isNaN(waterAmount)) {
         total += waterAmount;

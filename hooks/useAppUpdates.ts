@@ -1,12 +1,12 @@
-import * as Updates from "expo-updates";
-import { useCallback, useEffect, useState } from "react";
+import * as Updates from 'expo-updates';
+import { useCallback, useEffect, useState } from 'react';
 import {
   debugLog,
   isUpdateEnabled,
-  UpdateError,
-  UpdateInfo,
-  UpdateStatus,
-} from "../utils/updateConfig";
+  type UpdateError,
+  type UpdateInfo,
+  type UpdateStatus,
+} from '../utils/updateConfig';
 import {
   canDownloadUpdate,
   formatUpdateError,
@@ -15,7 +15,7 @@ import {
   retryWithBackoff,
   setLastCheckTime,
   shouldCheckForUpdates,
-} from "../utils/updateHelpers";
+} from '../utils/updateHelpers';
 
 interface UseAppUpdatesReturn {
   // 상태
@@ -43,7 +43,7 @@ interface UseAppUpdatesReturn {
 }
 
 export const useAppUpdates = (): UseAppUpdatesReturn => {
-  const [status, setStatus] = useState<UpdateStatus>("idle");
+  const [status, setStatus] = useState<UpdateStatus>('idle');
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [error, setError] = useState<UpdateError | null>(null);
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
@@ -66,21 +66,21 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
   const canUpdate = isUpdateEnabled();
 
   // 상태 계산
-  const isUpdateAvailable = nativeIsUpdateAvailable || false;
-  const isDownloading = nativeIsDownloading || false;
-  const isPending = nativeIsUpdatePending || false;
-  const isChecking = nativeIsChecking || false;
+  const isUpdateAvailable = nativeIsUpdateAvailable;
+  const isDownloading = nativeIsDownloading;
+  const isPending = nativeIsUpdatePending;
+  const isChecking = nativeIsChecking;
 
   // 에러 처리
   useEffect(() => {
     if (downloadError) {
       setError(formatUpdateError(downloadError));
-      setStatus("error");
-      logUpdateEvent("update_download_error", { error: downloadError.message });
+      setStatus('error');
+      logUpdateEvent('update_download_error', { error: downloadError.message });
     } else if (checkError) {
       setError(formatUpdateError(checkError));
-      setStatus("error");
-      logUpdateEvent("update_check_error", { error: checkError.message });
+      setStatus('error');
+      logUpdateEvent('update_check_error', { error: checkError.message });
     } else {
       setError(null);
     }
@@ -89,17 +89,17 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
   // 상태 업데이트
   useEffect(() => {
     if (isChecking) {
-      setStatus("checking");
+      setStatus('checking');
     } else if (isUpdateAvailable) {
-      setStatus("available");
+      setStatus('available');
     } else if (isDownloading) {
-      setStatus("downloading");
+      setStatus('downloading');
     } else if (isPending) {
-      setStatus("pending");
+      setStatus('pending');
     } else if (error) {
-      setStatus("error");
+      setStatus('error');
     } else {
-      setStatus("idle");
+      setStatus('idle');
     }
   }, [isChecking, isUpdateAvailable, isDownloading, isPending, error]);
 
@@ -127,24 +127,24 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
 
   // 업데이트 다운로드 함수
   const downloadUpdate = useCallback(async (): Promise<void> => {
-    if (!canUpdate || !isUpdateAvailable) {
-      debugLog("Cannot download update");
+    if (!(canUpdate && isUpdateAvailable)) {
+      debugLog('Cannot download update');
       return;
     }
 
     try {
-      debugLog("Downloading update...");
-      logUpdateEvent("update_download_started");
+      debugLog('Downloading update...');
+      logUpdateEvent('update_download_started');
 
       const userSettings = await getUserSettings();
       const canDownload = await canDownloadUpdate(userSettings);
 
       if (!canDownload) {
-        debugLog("Cannot download update due to network restrictions");
+        debugLog('Cannot download update due to network restrictions');
         return;
       }
 
-      setStatus("downloading");
+      setStatus('downloading');
       setError(null);
       setDownloadProgress(0);
 
@@ -167,21 +167,21 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
       setDownloadProgress(100);
 
       if (result.isNew) {
-        debugLog("Update downloaded successfully");
-        logUpdateEvent("update_downloaded", {
+        debugLog('Update downloaded successfully');
+        logUpdateEvent('update_downloaded', {
           manifest: result.manifest,
         });
-        setStatus("pending");
+        setStatus('pending');
       } else {
-        debugLog("Update was already downloaded");
-        setStatus("pending");
+        debugLog('Update was already downloaded');
+        setStatus('pending');
       }
     } catch (err) {
       const updateError = formatUpdateError(err as Error);
       setError(updateError);
-      setStatus("error");
-      debugLog("Download update failed", err);
-      logUpdateEvent("update_download_failed", {
+      setStatus('error');
+      debugLog('Download update failed', err);
+      logUpdateEvent('update_download_failed', {
         error: (err as Error).message,
       });
     }
@@ -190,27 +190,27 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
   // 업데이트 체크 함수
   const checkForUpdate = useCallback(async (): Promise<void> => {
     if (!canUpdate) {
-      debugLog("Updates are disabled");
+      debugLog('Updates are disabled');
       return;
     }
 
     try {
-      debugLog("Checking for updates...");
-      logUpdateEvent("update_check_started");
+      debugLog('Checking for updates...');
+      logUpdateEvent('update_check_started');
 
       const userSettings = await getUserSettings();
       if (!userSettings.autoCheck) {
-        debugLog("Auto check is disabled");
+        debugLog('Auto check is disabled');
         return;
       }
 
       const shouldCheck = await shouldCheckForUpdates();
       if (!shouldCheck) {
-        debugLog("Too soon to check for updates");
+        debugLog('Too soon to check for updates');
         return;
       }
 
-      setStatus("checking");
+      setStatus('checking');
       setError(null);
 
       // 재시도 로직과 함께 업데이트 체크
@@ -221,8 +221,8 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
       await setLastCheckTime();
 
       if (result.isAvailable) {
-        debugLog("Update is available", result);
-        logUpdateEvent("update_available", {
+        debugLog('Update is available', result);
+        logUpdateEvent('update_available', {
           manifest: result.manifest,
         });
 
@@ -234,58 +234,58 @@ export const useAppUpdates = (): UseAppUpdatesReturn => {
           runtimeVersion: currentlyRunning.runtimeVersion,
         });
 
-        setStatus("available");
+        setStatus('available');
 
         // 자동 다운로드 설정이 활성화되어 있으면 다운로드 시작
         if (userSettings.autoDownload) {
           const canDownload = await canDownloadUpdate(userSettings);
           if (canDownload) {
-            debugLog("Auto-downloading update...");
+            debugLog('Auto-downloading update...');
             await downloadUpdate();
           }
         }
       } else {
-        debugLog("No update available");
-        logUpdateEvent("update_not_available");
-        setStatus("idle");
+        debugLog('No update available');
+        logUpdateEvent('update_not_available');
+        setStatus('idle');
       }
     } catch (err) {
       const updateError = formatUpdateError(err as Error);
       setError(updateError);
-      setStatus("error");
-      debugLog("Check for update failed", err);
-      logUpdateEvent("update_check_failed", { error: (err as Error).message });
+      setStatus('error');
+      debugLog('Check for update failed', err);
+      logUpdateEvent('update_check_failed', { error: (err as Error).message });
     }
   }, [canUpdate, currentlyRunning.runtimeVersion, downloadUpdate]);
 
   // 업데이트 적용 함수
   const applyUpdate = useCallback(async (): Promise<void> => {
-    if (!canUpdate || !isPending) {
-      debugLog("Cannot apply update");
+    if (!(canUpdate && isPending)) {
+      debugLog('Cannot apply update');
       return;
     }
 
     try {
-      debugLog("Applying update...");
-      logUpdateEvent("update_apply_started");
+      debugLog('Applying update...');
+      logUpdateEvent('update_apply_started');
 
       await Updates.reloadAsync();
 
-      logUpdateEvent("update_applied");
+      logUpdateEvent('update_applied');
     } catch (err) {
       const updateError = formatUpdateError(err as Error);
       setError(updateError);
-      setStatus("error");
-      debugLog("Apply update failed", err);
-      logUpdateEvent("update_apply_failed", { error: (err as Error).message });
+      setStatus('error');
+      debugLog('Apply update failed', err);
+      logUpdateEvent('update_apply_failed', { error: (err as Error).message });
     }
   }, [canUpdate, isPending]);
 
   // 업데이트 무시 함수
   const dismissUpdate = useCallback((): void => {
-    debugLog("Update dismissed");
-    logUpdateEvent("update_dismissed");
-    setStatus("idle");
+    debugLog('Update dismissed');
+    logUpdateEvent('update_dismissed');
+    setStatus('idle');
     setUpdateInfo(null);
     setError(null);
   }, []);

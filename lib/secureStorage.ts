@@ -1,14 +1,14 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
 // 보안 저장소 키 상수
 const STORAGE_KEYS = {
-  SESSION_TOKEN: "user_session_token",
-  REFRESH_TOKEN: "user_refresh_token",
-  USER_CREDENTIALS: "user_credentials",
-  BIOMETRIC_ENABLED: "biometric_enabled",
-  AUTO_LOGIN_ENABLED: "auto_login_enabled",
+  SESSION_TOKEN: 'user_session_token',
+  REFRESH_TOKEN: 'user_refresh_token',
+  USER_CREDENTIALS: 'user_credentials',
+  BIOMETRIC_ENABLED: 'biometric_enabled',
+  AUTO_LOGIN_ENABLED: 'auto_login_enabled',
 } as const;
 
 /**
@@ -22,19 +22,19 @@ class SecureStorage {
    */
   async setSecureItem(key: string, value: string): Promise<void> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         // Web에서는 AsyncStorage 사용 (실제 운영에서는 추가 암호화 권장)
         await AsyncStorage.setItem(key, value);
       } else {
         // Native에서는 Keychain/Keystore 사용
         await SecureStore.setItemAsync(key, value, {
           requireAuthentication: false, // 생체 인증 필요 시 true로 설정
-          authenticationPrompt: "보안 인증이 필요합니다",
+          authenticationPrompt: '보안 인증이 필요합니다',
         });
       }
     } catch (error) {
-      console.error("보안 저장 실패:", error);
-      throw new Error("보안 저장에 실패했습니다");
+      console.error('보안 저장 실패:', error);
+      throw new Error('보안 저장에 실패했습니다');
     }
   }
 
@@ -43,16 +43,15 @@ class SecureStorage {
    */
   async getSecureItem(key: string): Promise<string | null> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         return await AsyncStorage.getItem(key);
-      } else {
-        return await SecureStore.getItemAsync(key, {
-          requireAuthentication: false,
-          authenticationPrompt: "보안 인증이 필요합니다",
-        });
       }
+      return await SecureStore.getItemAsync(key, {
+        requireAuthentication: false,
+        authenticationPrompt: '보안 인증이 필요합니다',
+      });
     } catch (error) {
-      console.error("보안 조회 실패:", error);
+      console.error('보안 조회 실패:', error);
       return null;
     }
   }
@@ -62,13 +61,13 @@ class SecureStorage {
    */
   async deleteSecureItem(key: string): Promise<void> {
     try {
-      if (Platform.OS === "web") {
+      if (Platform.OS === 'web') {
         await AsyncStorage.removeItem(key);
       } else {
         await SecureStore.deleteItemAsync(key);
       }
     } catch (error) {
-      console.error("보안 삭제 실패:", error);
+      console.error('보안 삭제 실패:', error);
     }
   }
 
@@ -127,7 +126,7 @@ class SecureStorage {
   async getAutoLoginEnabled(): Promise<boolean> {
     try {
       const value = await AsyncStorage.getItem(STORAGE_KEYS.AUTO_LOGIN_ENABLED);
-      return value === "true";
+      return value === 'true';
     } catch {
       return false;
     }
@@ -149,7 +148,7 @@ class SecureStorage {
   async getBiometricEnabled(): Promise<boolean> {
     try {
       const value = await AsyncStorage.getItem(STORAGE_KEYS.BIOMETRIC_ENABLED);
-      return value === "true";
+      return value === 'true';
     } catch {
       return false;
     }

@@ -1,4 +1,4 @@
-import { RecipeStep } from "./recipe";
+import type { RecipeStep } from './recipe';
 
 export interface StepInfo {
   step: RecipeStep;

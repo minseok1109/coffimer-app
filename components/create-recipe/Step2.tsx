@@ -1,20 +1,28 @@
-import { createRecipeStyles } from "@/styles/create-recipe.styles";
-import { RecipeFormData } from "@/types/recipe-form";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Controller, useFormContext } from "react-hook-form";
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Ionicons } from '@expo/vector-icons';
+import React, { useMemo } from 'react';
+import { Controller, useFormContext } from 'react-hook-form';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { createRecipeStyles } from '@/styles/create-recipe.styles';
+import type { RecipeFormData } from '@/types/recipe-form';
+import {
+  DRIPPER_OPTIONS,
+  FILTER_OPTIONS,
+  getSelectedOptionLabel,
+} from '@/utils/selectorUtils';
+import { GrindSizeInput } from './GrindSizeInput';
 
 interface Step2Props {
   hasAttemptedNext?: boolean;
   onDripperPress?: () => void;
   onFilterPress?: () => void;
+  onGrinderPress?: () => void;
 }
 
 export const Step2: React.FC<Step2Props> = ({
   hasAttemptedNext = false,
   onDripperPress,
   onFilterPress,
+  onGrinderPress,
 }) => {
   const {
     control,
@@ -23,71 +31,40 @@ export const Step2: React.FC<Step2Props> = ({
     formState: { errors },
   } = useFormContext<RecipeFormData>();
 
-  const coffeeAmount = watch("coffeeAmount");
-  const waterAmount = watch("waterAmount");
-  const dripper = watch("dripper");
-  const filter = watch("filter");
+  const coffeeAmount = watch('coffeeAmount');
+  const waterAmount = watch('waterAmount');
+  const dripper = watch('dripper');
+  const filter = watch('filter');
 
-  React.useEffect(() => {
+  // 비율 자동 계산 메모이제이션
+  const calculatedRatio = useMemo(() => {
     if (coffeeAmount && waterAmount) {
-      const coffee = parseFloat(coffeeAmount);
-      const water = parseFloat(waterAmount);
-      if (!isNaN(coffee) && !isNaN(water) && coffee > 0) {
-        const ratioValue = (water / coffee).toFixed(2);
-        setValue("ratio", ratioValue);
+      const coffee = Number.parseFloat(coffeeAmount);
+      const water = Number.parseFloat(waterAmount);
+      if (!(isNaN(coffee) || isNaN(water)) && coffee > 0) {
+        return (water / coffee).toFixed(2);
       }
     }
-  }, [coffeeAmount, waterAmount, setValue]);
+    return '';
+  }, [coffeeAmount, waterAmount]);
 
-  const getSelectedDripperLabel = () => {
-    const dripperOptions = [
-      { label: "V60", value: "v60" },
-      { label: "칼리타", value: "kalita" },
-      { label: "케멕스", value: "chemex" },
-      { label: "하리오", value: "hario" },
-      { label: "오리가미", value: "origami" },
-      { label: "솔로 드리퍼", value: "solo" },
-    ];
-    const selected = dripperOptions.find((option) => option.value === dripper);
-
-    // 미리 정의된 옵션에서 찾은 경우 해당 label 반환
-    if (selected) {
-      return selected.label;
+  React.useEffect(() => {
+    if (calculatedRatio) {
+      setValue('ratio', calculatedRatio);
     }
+  }, [calculatedRatio, setValue]);
 
-    // 미리 정의된 옵션에 없지만 dripper 값이 있는 경우 (사용자 직접 입력) 그 값을 그대로 반환
-    if (dripper) {
-      return dripper;
-    }
+  // 선택된 라벨 메모이제이션
+  const selectedDripperLabel = useMemo(
+    () =>
+      getSelectedOptionLabel(DRIPPER_OPTIONS, dripper, '드리퍼를 선택하세요'),
+    [dripper]
+  );
 
-    // dripper 값이 없는 경우 placeholder 반환
-    return "드리퍼를 선택하세요";
-  };
-
-  const getSelectedFilterLabel = () => {
-    const filterOptions = [
-      { label: "V60 종이 필터", value: "v60_paper" },
-      { label: "카펙 아바카 필터", value: "cafec_abaca" },
-      { label: "오리가미 콘 필터", value: "origami_cone" },
-      { label: "칼리타 웨이브 185 필터", value: "kalita_wave_185" },
-      { label: "칼리타 웨이브 155", value: "kalita_wave_155" },
-      { label: "V60 전용 필터", value: "v60_exclusive" },
-    ];
-    const selected = filterOptions.find((option) => option.value === filter);
-
-    // 미리 정의된 옵션에서 찾은 경우 해당 label 반환
-    if (selected) {
-      return selected.label;
-    }
-
-    // 미리 정의된 옵션에 없지만 filter 값이 있는 경우 (사용자 직접 입력) 그 값을 그대로 반환
-    if (filter) {
-      return filter;
-    }
-
-    // filter 값이 없는 경우 placeholder 반환
-    return "필터를 선택하세요";
-  };
+  const selectedFilterLabel = useMemo(
+    () => getSelectedOptionLabel(FILTER_OPTIONS, filter, '필터를 선택하세요'),
+    [filter]
+  );
 
   return (
     <View style={createRecipeStyles.stepContent}>
@@ -107,13 +84,13 @@ export const Step2: React.FC<Step2Props> = ({
                 ]}
               >
                 <TextInput
-                  style={createRecipeStyles.numberInput}
-                  placeholder="0"
-                  placeholderTextColor="#999"
+                  keyboardType="numeric"
                   onBlur={onBlur}
                   onChangeText={onChange}
+                  placeholder="0"
+                  placeholderTextColor="#999"
+                  style={createRecipeStyles.numberInput}
                   value={value}
-                  keyboardType="numeric"
                 />
                 <Text style={createRecipeStyles.suffix}>g</Text>
               </View>
@@ -143,13 +120,13 @@ export const Step2: React.FC<Step2Props> = ({
                 ]}
               >
                 <TextInput
-                  style={createRecipeStyles.numberInput}
-                  placeholder="0"
-                  placeholderTextColor="#999"
+                  keyboardType="numeric"
                   onBlur={onBlur}
                   onChangeText={onChange}
+                  placeholder="0"
+                  placeholderTextColor="#999"
+                  style={createRecipeStyles.numberInput}
                   value={value}
-                  keyboardType="numeric"
                 />
                 <Text style={createRecipeStyles.suffix}>ml</Text>
               </View>
@@ -170,13 +147,13 @@ export const Step2: React.FC<Step2Props> = ({
           name="ratio"
           render={({ field: { onChange, onBlur, value } }) => (
             <TextInput
-              style={createRecipeStyles.input}
-              placeholder="자동 계산됨"
-              placeholderTextColor="#999"
+              keyboardType="numeric"
               onBlur={onBlur}
               onChangeText={onChange}
+              placeholder="자동 계산됨"
+              placeholderTextColor="#999"
+              style={createRecipeStyles.input}
               value={value}
-              keyboardType="numeric"
             />
           )}
         />
@@ -190,13 +167,13 @@ export const Step2: React.FC<Step2Props> = ({
           render={({ field: { value } }) => (
             <>
               <TouchableOpacity
+                onPress={onDripperPress}
                 style={[
                   createRecipeStyles.dripperSelector,
                   hasAttemptedNext &&
                     errors.dripper &&
                     createRecipeStyles.inputError,
                 ]}
-                onPress={onDripperPress}
               >
                 <Text
                   style={[
@@ -204,9 +181,9 @@ export const Step2: React.FC<Step2Props> = ({
                     !value && createRecipeStyles.dripperPlaceholderText,
                   ]}
                 >
-                  {getSelectedDripperLabel()}
+                  {selectedDripperLabel}
                 </Text>
-                <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                <Ionicons color="#8B4513" name="chevron-down" size={20} />
               </TouchableOpacity>
               {hasAttemptedNext && errors.dripper && (
                 <Text style={createRecipeStyles.errorText}>
@@ -226,13 +203,13 @@ export const Step2: React.FC<Step2Props> = ({
           render={({ field: { value } }) => (
             <>
               <TouchableOpacity
+                onPress={onFilterPress}
                 style={[
                   createRecipeStyles.dripperSelector,
                   hasAttemptedNext &&
                     errors.filter &&
                     createRecipeStyles.inputError,
                 ]}
-                onPress={onFilterPress}
               >
                 <Text
                   style={[
@@ -240,9 +217,9 @@ export const Step2: React.FC<Step2Props> = ({
                     !value && createRecipeStyles.dripperPlaceholderText,
                   ]}
                 >
-                  {getSelectedFilterLabel()}
+                  {selectedFilterLabel}
                 </Text>
-                <Ionicons name="chevron-down" size={20} color="#8B4513" />
+                <Ionicons color="#8B4513" name="chevron-down" size={20} />
               </TouchableOpacity>
               {hasAttemptedNext && errors.filter && (
                 <Text style={createRecipeStyles.errorText}>
@@ -253,6 +230,12 @@ export const Step2: React.FC<Step2Props> = ({
           )}
         />
       </View>
+
+      {/* 분쇄도 입력 섹션 */}
+      <GrindSizeInput
+        hasAttemptedNext={hasAttemptedNext}
+        onGrinderPress={onGrinderPress}
+      />
     </View>
   );
 };

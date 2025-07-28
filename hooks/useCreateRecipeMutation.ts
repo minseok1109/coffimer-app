@@ -1,8 +1,8 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { RecipeAPI } from "../lib/api/recipes";
-import type { CreateRecipeInput, RecipeWithSteps } from "../types/recipe";
-import { useAuth } from "./useAuth"; // 인증 훅
-import { recipeKeys } from "./useRecipes";
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { RecipeAPI } from '../lib/api/recipes';
+import type { CreateRecipeInput, RecipeWithSteps } from '../types/recipe';
+import { useAuth } from './useAuth'; // 인증 훅
+import { recipeKeys } from './useRecipes';
 
 interface UseCreateRecipeOptions {
   onSuccess?: (recipe: RecipeWithSteps) => void;
@@ -15,7 +15,7 @@ export const useCreateRecipeMutation = (options?: UseCreateRecipeOptions) => {
 
   return useMutation({
     mutationFn: async (input: CreateRecipeInput): Promise<RecipeWithSteps> => {
-      if (!user) throw new Error("사용자 인증이 필요합니다.");
+      if (!user) throw new Error('사용자 인증이 필요합니다.');
       return RecipeAPI.createRecipe(input, user.id);
     },
     onSuccess: async (data) => {
@@ -23,9 +23,9 @@ export const useCreateRecipeMutation = (options?: UseCreateRecipeOptions) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: recipeKeys.lists() }),
         queryClient.invalidateQueries({
-          queryKey: recipeKeys.userRecipes(user?.id || ""),
+          queryKey: recipeKeys.userRecipes(user?.id || ''),
         }),
-        queryClient.invalidateQueries({ queryKey: ["user"] }),
+        queryClient.invalidateQueries({ queryKey: ['user'] }),
         // 새로 생성된 레시피를 캐시에 추가합니다. setQueryData는 동기적으로 작동하지만,
         // 일관성을 위해 다른 비동기 작업들과 함께 묶습니다.
         queryClient.setQueryData(recipeKeys.detail(data.id), data),
@@ -37,7 +37,7 @@ export const useCreateRecipeMutation = (options?: UseCreateRecipeOptions) => {
       }
     },
     onError: (error: Error) => {
-      console.error("레시피 생성 오류:", error);
+      console.error('레시피 생성 오류:', error);
       options?.onError?.(error);
     },
   });
@@ -56,14 +56,14 @@ export const useUpdateRecipeMutation = (options?: UseCreateRecipeOptions) => {
       recipeId: string;
       input: Partial<CreateRecipeInput>;
     }): Promise<RecipeWithSteps> => {
-      if (!user) throw new Error("사용자 인증이 필요합니다.");
+      if (!user) throw new Error('사용자 인증이 필요합니다.');
       return RecipeAPI.updateRecipe(recipeId, input, user.id);
     },
     onSuccess: (data) => {
       // 캐시 무효화 및 업데이트
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
       queryClient.invalidateQueries({
-        queryKey: recipeKeys.userRecipes(user?.id || ""),
+        queryKey: recipeKeys.userRecipes(user?.id || ''),
       });
 
       // 업데이트된 레시피를 캐시에 설정
@@ -72,7 +72,7 @@ export const useUpdateRecipeMutation = (options?: UseCreateRecipeOptions) => {
       options?.onSuccess?.(data);
     },
     onError: (error: Error) => {
-      console.error("레시피 수정 오류:", error);
+      console.error('레시피 수정 오류:', error);
       options?.onError?.(error);
     },
   });
@@ -88,7 +88,7 @@ export const useDeleteRecipeMutation = (options?: {
 
   return useMutation({
     mutationFn: async (recipeId: string): Promise<void> => {
-      if (!user) throw new Error("사용자 인증이 필요합니다.");
+      if (!user) throw new Error('사용자 인증이 필요합니다.');
       return RecipeAPI.deleteRecipe(recipeId, user.id);
     },
     onSuccess: (_, recipeId) => {
@@ -98,13 +98,13 @@ export const useDeleteRecipeMutation = (options?: {
       // 목록 캐시 무효화
       queryClient.invalidateQueries({ queryKey: recipeKeys.lists() });
       queryClient.invalidateQueries({
-        queryKey: recipeKeys.userRecipes(user?.id || ""),
+        queryKey: recipeKeys.userRecipes(user?.id || ''),
       });
 
       options?.onSuccess?.();
     },
     onError: (error: Error) => {
-      console.error("레시피 삭제 오류:", error);
+      console.error('레시피 삭제 오류:', error);
       options?.onError?.(error);
     },
   });

@@ -1,9 +1,9 @@
-import { TablesInsert, Tables, TablesUpdate } from "./database";
+import type { Tables, TablesInsert, TablesUpdate } from './database';
 
-export type User = Tables<"users">;
+export type User = Tables<'users'>;
 
-export type UserInsert = TablesInsert<"users">;
-export type UserUpdate = TablesUpdate<"users">;
+export type UserInsert = TablesInsert<'users'>;
+export type UserUpdate = TablesUpdate<'users'>;
 
 /**
  * 사용자 관련 추가 타입 정의
@@ -12,28 +12,28 @@ export type UserUpdate = TablesUpdate<"users">;
 // 사용자 기본 정보 (자주 사용되는 필드만)
 export type UserBasicInfo = Pick<
   User,
-  "id" | "email" | "display_name" | "profile_image"
+  'id' | 'email' | 'display_name' | 'profile_image'
 >;
 
 // 사용자 공개 정보 (다른 사용자에게 보여줄 정보)
 export type UserPublicInfo = Pick<
   User,
-  "id" | "display_name" | "profile_image"
+  'id' | 'display_name' | 'profile_image'
 >;
 
 // 사용자 검색 결과 타입
 export type UserSearchResult = Pick<
   User,
-  "id" | "email" | "display_name" | "profile_image"
+  'id' | 'email' | 'display_name' | 'profile_image'
 >;
 
 // 사용자 프로필 업데이트용 타입 (email과 id는 제외)
-export type UserProfileUpdate = Omit<UserUpdate, "id" | "email" | "created_at">;
+export type UserProfileUpdate = Omit<UserUpdate, 'id' | 'email' | 'created_at'>;
 
 // 사용자 생성 시 필수 정보
 export type UserCreateRequired = Pick<
   UserInsert,
-  "id" | "email" | "display_name"
+  'id' | 'email' | 'display_name'
 >;
 
 // API 응답 타입들
@@ -90,10 +90,10 @@ export type OptionalUserFields = Exclude<UserField, RequiredUserFields>;
 
 // 사용자 상태 enum
 export enum UserStatus {
-  LOADING = "loading",
-  AUTHENTICATED = "authenticated",
-  UNAUTHENTICATED = "unauthenticated",
-  ERROR = "error",
+  LOADING = 'loading',
+  AUTHENTICATED = 'authenticated',
+  UNAUTHENTICATED = 'unauthenticated',
+  ERROR = 'error',
 }
 
 // 사용자 관련 상수
@@ -115,8 +115,8 @@ export interface UserFilterOptions {
   searchTerm?: string;
   limit?: number;
   offset?: number;
-  sortBy?: "created_at" | "updated_at" | "display_name" | "email";
-  sortOrder?: "asc" | "desc";
+  sortBy?: 'created_at' | 'updated_at' | 'display_name' | 'email';
+  sortOrder?: 'asc' | 'desc';
 }
 
 // 사용자 통계 타입 (확장 가능)

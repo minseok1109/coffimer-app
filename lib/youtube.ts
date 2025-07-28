@@ -7,8 +7,9 @@
  */
 export const isValidYouTubeUrl = (url: string): boolean => {
   if (!url || url.trim() === '') return false;
-  
-  const youtubeRegex = /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/)[\w-]+/i;
+
+  const youtubeRegex =
+    /^(https?:\/\/)?(www\.)?(youtube\.com\/(watch\?v=|embed\/|v\/)|youtu\.be\/)[\w-]+/i;
   return youtubeRegex.test(url);
 };
 
@@ -17,19 +18,19 @@ export const isValidYouTubeUrl = (url: string): boolean => {
  */
 export const extractYouTubeVideoId = (url: string): string | null => {
   if (!isValidYouTubeUrl(url)) return null;
-  
+
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
-    /youtube\.com\/v\/([^&\n?#]+)/
+    /youtube\.com\/v\/([^&\n?#]+)/,
   ];
-  
+
   for (const pattern of patterns) {
     const match = url.match(pattern);
     if (match && match[1]) {
       return match[1];
     }
   }
-  
+
   return null;
 };
 
@@ -46,14 +47,16 @@ export const getYouTubeThumbnail = (videoId: string): string => {
 export const getYouTubeVideoInfo = async (videoId: string) => {
   try {
     // Using YouTube oEmbed API for basic video info
-    const response = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`);
-    
+    const response = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+    );
+
     if (!response.ok) {
       throw new Error('Video not found');
     }
-    
+
     const data = await response.json();
-    
+
     return {
       title: data.title,
       thumbnail: data.thumbnail_url,

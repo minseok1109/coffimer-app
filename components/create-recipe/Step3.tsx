@@ -1,15 +1,15 @@
-import { createRecipeStyles } from "@/styles/create-recipe.styles";
-import { RecipeFormData } from "@/types/recipe-form";
-import { Ionicons } from "@expo/vector-icons";
-import React from "react";
-import { Controller, useFieldArray, useFormContext } from "react-hook-form";
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { Controller, useFieldArray, useFormContext } from 'react-hook-form';
 import {
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-} from "react-native";
+} from 'react-native';
+import { createRecipeStyles } from '@/styles/create-recipe.styles';
+import type { RecipeFormData } from '@/types/recipe-form';
 
 interface Step3Props {
   hasAttemptedNext?: boolean;
@@ -22,10 +22,10 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
   } = useFormContext<RecipeFormData>();
   const { fields, append, remove } = useFieldArray({
     control,
-    name: "steps",
+    name: 'steps',
   });
   const addStep = () => {
-    append({ title: "", time: "", waterAmount: "", description: "" });
+    append({ title: '', time: '', waterAmount: '', description: '' });
   };
 
   return (
@@ -37,7 +37,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
       </View>
 
       {/* 스크롤 가능한 컨텐츠만 ScrollView에 포함 */}
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
         <View style={createRecipeStyles.stepsList}>
           {fields.map((field, index) => (
             <View key={field.id} style={createRecipeStyles.brewStep}>
@@ -47,7 +47,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                 </Text>
                 {index > 0 && (
                   <TouchableOpacity onPress={() => remove(index)}>
-                    <Ionicons name="close-circle" size={24} color="#ff4444" />
+                    <Ionicons color="#ff4444" name="close-circle" size={24} />
                   </TouchableOpacity>
                 )}
               </View>
@@ -61,12 +61,12 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                     <Text style={createRecipeStyles.subLabel}>시간</Text>
                     <View
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        backgroundColor: "white",
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: 'white',
                         borderRadius: 8,
                         borderWidth: 1,
-                        borderColor: "#e0e0e0",
+                        borderColor: '#e0e0e0',
                       }}
                     >
                       <Controller
@@ -74,29 +74,29 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                         name={`steps.${index}.time`}
                         render={({ field: { onChange, onBlur, value } }) => (
                           <TextInput
+                            keyboardType="numeric"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            placeholder="00"
+                            placeholderTextColor="#999"
                             style={[
                               createRecipeStyles.smallInput,
                               {
-                                backgroundColor: "transparent",
+                                backgroundColor: 'transparent',
                                 borderWidth: 0,
                                 flex: 1,
                               },
                             ]}
-                            placeholder="00"
-                            placeholderTextColor="#999"
-                            onBlur={onBlur}
-                            onChangeText={onChange}
                             value={value}
-                            keyboardType="numeric"
                           />
                         )}
                       />
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#666",
+                          color: '#666',
                           paddingRight: 12,
-                          fontWeight: "500",
+                          fontWeight: '500',
                         }}
                       >
                         초
@@ -107,12 +107,12 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                     <Text style={createRecipeStyles.subLabel}>물양</Text>
                     <View
                       style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        backgroundColor: "white",
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        backgroundColor: 'white',
                         borderRadius: 8,
                         borderWidth: 1,
-                        borderColor: "#e0e0e0",
+                        borderColor: '#e0e0e0',
                       }}
                     >
                       <Controller
@@ -120,29 +120,29 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                         name={`steps.${index}.waterAmount`}
                         render={({ field: { onChange, onBlur, value } }) => (
                           <TextInput
+                            keyboardType="numeric"
+                            onBlur={onBlur}
+                            onChangeText={onChange}
+                            placeholder="0"
+                            placeholderTextColor="#999"
                             style={[
                               createRecipeStyles.smallInput,
                               {
-                                backgroundColor: "transparent",
+                                backgroundColor: 'transparent',
                                 borderWidth: 0,
                                 flex: 1,
                               },
                             ]}
-                            placeholder="0"
-                            placeholderTextColor="#999"
-                            onBlur={onBlur}
-                            onChangeText={onChange}
                             value={value}
-                            keyboardType="numeric"
                           />
                         )}
                       />
                       <Text
                         style={{
                           fontSize: 14,
-                          color: "#666",
+                          color: '#666',
                           paddingRight: 12,
-                          fontWeight: "500",
+                          fontWeight: '500',
                         }}
                       >
                         ml
@@ -157,20 +157,20 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                     name={`steps.${index}.title`}
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        placeholder="단계 제목을 입력하세요 (예: 뜸들이기, 1차 추출)"
+                        placeholderTextColor="#999"
                         style={{
-                          backgroundColor: "white",
+                          backgroundColor: 'white',
                           borderRadius: 8,
                           borderWidth: 1,
-                          borderColor: "#e0e0e0",
+                          borderColor: '#e0e0e0',
                           paddingHorizontal: 12,
                           paddingVertical: 12,
                           fontSize: 16,
-                          color: "#333",
+                          color: '#333',
                         }}
-                        placeholder="단계 제목을 입력하세요 (예: 뜸들이기, 1차 추출)"
-                        placeholderTextColor="#999"
-                        onBlur={onBlur}
-                        onChangeText={onChange}
                         value={value}
                       />
                     )}
@@ -183,25 +183,25 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
                     name={`steps.${index}.description`}
                     render={({ field: { onChange, onBlur, value } }) => (
                       <TextInput
+                        multiline
+                        numberOfLines={4}
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        placeholder="단계에 대한 설명을 입력하세요"
+                        placeholderTextColor="#999"
                         style={{
-                          backgroundColor: "white",
+                          backgroundColor: 'white',
                           borderRadius: 8,
                           borderWidth: 1,
-                          borderColor: "#e0e0e0",
+                          borderColor: '#e0e0e0',
                           paddingHorizontal: 12,
                           paddingVertical: 12,
                           fontSize: 16,
-                          color: "#333",
-                          textAlignVertical: "top",
+                          color: '#333',
+                          textAlignVertical: 'top',
                           height: 80,
                         }}
-                        placeholder="단계에 대한 설명을 입력하세요"
-                        placeholderTextColor="#999"
-                        onBlur={onBlur}
-                        onChangeText={onChange}
                         value={value}
-                        multiline
-                        numberOfLines={4}
                       />
                     )}
                   />
@@ -213,24 +213,24 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
 
         {/* Add Step Button - moved to bottom */}
         <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={addStep}
           style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
             marginTop: 16,
             marginBottom: 20,
             paddingVertical: 12,
             paddingHorizontal: 16,
           }}
-          onPress={addStep}
-          activeOpacity={0.7}
         >
-          <Ionicons name="add-circle-outline" size={20} color="#8B4513" />
+          <Ionicons color="#8B4513" name="add-circle-outline" size={20} />
           <Text
             style={{
               fontSize: 14,
-              fontWeight: "500",
-              color: "#8B4513",
+              fontWeight: '500',
+              color: '#8B4513',
               marginLeft: 6,
             }}
           >
@@ -240,7 +240,7 @@ export const Step3: React.FC<Step3Props> = ({ hasAttemptedNext = false }) => {
 
         {hasAttemptedNext && errors.steps && (
           <Text style={createRecipeStyles.errorText}>
-            {errors.steps.message || "단계 정보를 모두 입력해주세요"}
+            {errors.steps.message || '단계 정보를 모두 입력해주세요'}
           </Text>
         )}
       </ScrollView>

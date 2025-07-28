@@ -1,8 +1,8 @@
 import { getDripperLabel } from "@/constants/dripperOptions";
 import { getFilterLabel } from "@/constants/filterOptions";
+import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
-import { useAnalytics } from "@/hooks/useAnalytics";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useRef, useState } from "react";
@@ -20,7 +20,11 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { formatTime, formatTimeKorean } from "../../lib/timer/formatters";
+import {
+  calculateActualTotalTime,
+  formatTime,
+  formatTimeKorean,
+} from "../../lib/timer/formatters";
 
 export default function RecipeDetail() {
   const { id } = useLocalSearchParams();
@@ -35,8 +39,14 @@ export default function RecipeDetail() {
   // Track recipe view when recipe loads
   React.useEffect(() => {
     if (recipe) {
-      track("recipe_viewed", { recipe_id: recipe.id, recipe_name: recipe.name });
-      screen("RecipeDetail", { recipe_id: recipe.id, recipe_name: recipe.name });
+      track("recipe_viewed", {
+        recipe_id: recipe.id,
+        recipe_name: recipe.name,
+      });
+      screen("RecipeDetail", {
+        recipe_id: recipe.id,
+        recipe_name: recipe.name,
+      });
     }
   }, [recipe, track, screen]);
 
@@ -83,7 +93,7 @@ export default function RecipeDetail() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={[styles.container, styles.centered]}>
-          <ActivityIndicator size="large" color="#8B4513" />
+          <ActivityIndicator color="#8B4513" size="large" />
           <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
         </View>
       </SafeAreaView>
@@ -95,7 +105,7 @@ export default function RecipeDetail() {
       <>
         <View style={styles.header}>
           <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#333" />
+            <Ionicons color="#333" name="arrow-back" size={24} />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>레시피 상세</Text>
         </View>
@@ -112,21 +122,13 @@ export default function RecipeDetail() {
   const handleStartRecipe = () => {
     // Track recipe start
     if (recipe) {
-      track("recipe_started", { 
-        recipe_id: recipe.id, 
-        recipe_name: recipe.name, 
-        total_time: recipe.total_time 
+      track("recipe_started", {
+        recipe_id: recipe.id,
+        recipe_name: recipe.name,
+        total_time: calculateActualTotalTime(recipe.recipe_steps || []),
       });
     }
     router.push(`/recipes/timer/${recipe.id}`);
-  };
-
-  const handleEditRecipe = () => {
-    if (!isOwner) {
-      Alert.alert("알림", "레시피 소유자만 수정할 수 있습니다.");
-      return;
-    }
-    router.push(`/recipes/edit/${recipe.id}`);
   };
 
   const handleYouTubePress = async () => {
@@ -151,7 +153,7 @@ export default function RecipeDetail() {
     <>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons color="#333" name="arrow-back" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>레시피 상세</Text>
       </View>
@@ -163,41 +165,43 @@ export default function RecipeDetail() {
 
           <View style={styles.infoGrid}>
             <View style={styles.infoCard}>
-              <Ionicons name="cafe-outline" size={20} color="#D2691E" />
+              <Ionicons color="#D2691E" name="cafe-outline" size={20} />
               <Text style={styles.infoLabel}>원두</Text>
               <Text style={styles.infoValue}>{recipe.coffee}g</Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="water-outline" size={20} color="#4A90E2" />
+              <Ionicons color="#4A90E2" name="water-outline" size={20} />
               <Text style={styles.infoLabel}>물</Text>
               <Text style={styles.infoValue}>{recipe.water}ml</Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="time-outline" size={20} color="#666" />
+              <Ionicons color="#666" name="time-outline" size={20} />
               <Text style={styles.infoLabel}>소요시간</Text>
               <Text style={styles.infoValue}>
-                {formatTimeKorean(recipe.total_time)}
+                {formatTimeKorean(
+                  calculateActualTotalTime(recipe.recipe_steps || [])
+                )}
               </Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="thermometer-outline" size={20} color="#FF6B6B" />
+              <Ionicons color="#FF6B6B" name="thermometer-outline" size={20} />
               <Text style={styles.infoLabel}>물 온도</Text>
               <Text style={styles.infoValue}>{recipe.water_temperature}°C</Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="funnel-outline" size={20} color="#8B4513" />
+              <Ionicons color="#8B4513" name="funnel-outline" size={20} />
               <Text style={styles.infoLabel}>드리퍼</Text>
               <Text style={styles.infoValue}>
                 {getDripperLabel(recipe?.dripper ?? "") || "미지정"}
               </Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="analytics-outline" size={20} color="#4ECDC4" />
+              <Ionicons color="#4ECDC4" name="analytics-outline" size={20} />
               <Text style={styles.infoLabel}>비율</Text>
               <Text style={styles.infoValue}>1:{recipe.ratio}</Text>
             </View>
             <View style={styles.infoCard}>
-              <Ionicons name="filter-outline" size={20} color="#8B7355" />
+              <Ionicons color="#8B7355" name="filter-outline" size={20} />
               <Text style={styles.infoLabel}>필터</Text>
               <Text style={styles.infoValue}>
                 {getFilterLabel(recipe?.filter ?? "") || "미지정"}
@@ -205,16 +209,16 @@ export default function RecipeDetail() {
             </View>
             {recipe.micron ? (
               <TouchableOpacity
-                style={styles.infoCard}
                 onPress={openBottomSheet}
+                style={styles.infoCard}
               >
-                <Ionicons name="cog-outline" size={20} color="#8B4513" />
+                <Ionicons color="#8B4513" name="cog-outline" size={20} />
                 <Text style={styles.infoLabel}>분쇄도</Text>
                 <Text style={styles.infoValue}>{recipe.micron}μm</Text>
               </TouchableOpacity>
             ) : (
               <View style={styles.infoCard}>
-                <Ionicons name="cog-outline" size={20} color="#999" />
+                <Ionicons color="#999" name="cog-outline" size={20} />
                 <Text style={styles.infoLabel}>분쇄도</Text>
                 <Text style={styles.infoValue}>미지정</Text>
               </View>
@@ -255,29 +259,29 @@ export default function RecipeDetail() {
       <View style={styles.buttonContainer}>
         {recipe.youtube_url && (
           <TouchableOpacity
-            style={styles.youtubeButton}
             onPress={handleYouTubePress}
+            style={styles.youtubeButton}
           >
-            <Ionicons name="logo-youtube" size={20} color="#FF0000" />
+            <Ionicons color="#FF0000" name="logo-youtube" size={20} />
             <Text style={styles.youtubeButtonText}>YouTube 영상 보기</Text>
           </TouchableOpacity>
         )}
 
         <TouchableOpacity
-          style={styles.startButton}
           onPress={handleStartRecipe}
+          style={styles.startButton}
         >
-          <Ionicons name="play" size={20} color="white" />
+          <Ionicons color="white" name="play" size={20} />
           <Text style={styles.startButtonText}>레시피 시작하기</Text>
         </TouchableOpacity>
       </View>
 
       {/* 분쇄도 가이드 바텀 시트 */}
       <Modal
-        visible={showGrindGuide}
-        transparent={true}
         animationType="none"
         onRequestClose={closeBottomSheet}
+        transparent={true}
+        visible={showGrindGuide}
       >
         <View style={styles.modalOverlay}>
           <Animated.View
@@ -289,9 +293,9 @@ export default function RecipeDetail() {
             ]}
           >
             <TouchableOpacity
-              style={styles.modalBackgroundTouchable}
               activeOpacity={1}
               onPress={closeBottomSheet}
+              style={styles.modalBackgroundTouchable}
             />
           </Animated.View>
           <Animated.View
@@ -305,13 +309,13 @@ export default function RecipeDetail() {
             <View style={styles.bottomSheetHeader}>
               <Text style={styles.bottomSheetTitle}>분쇄도 가이드</Text>
               <TouchableOpacity onPress={closeBottomSheet}>
-                <Ionicons name="close" size={24} color="#666" />
+                <Ionicons color="#666" name="close" size={24} />
               </TouchableOpacity>
             </View>
 
             <ScrollView style={styles.bottomSheetContent}>
               <View style={styles.micronSection}>
-                <Ionicons name="cog-outline" size={32} color="#8B4513" />
+                <Ionicons color="#8B4513" name="cog-outline" size={32} />
                 <Text style={styles.micronTitle}>추천 분쇄도</Text>
                 <Text style={styles.micronValue}>{recipe.micron}μm</Text>
                 <Text style={styles.micronDescription}>
@@ -354,7 +358,6 @@ export default function RecipeDetail() {
     </>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

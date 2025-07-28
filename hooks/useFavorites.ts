@@ -1,15 +1,16 @@
-import { FavoritesAPI } from "@/lib/api/favorites";
-import { RecipeWithSteps } from "@/types/recipe";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { FavoritesAPI } from '@/lib/api/favorites';
+import type { RecipeWithSteps } from '@/types/recipe';
 
 export const favoriteKeys = {
-  all: ["favorites"] as const,
-  lists: () => [...favoriteKeys.all, "list"] as const,
-  recipes: (userId: string) => [...favoriteKeys.lists(), "recipes", userId] as const,
-  ids: (userId: string) => [...favoriteKeys.lists(), "ids", userId] as const,
-  status: (userId: string, recipeId: string) => 
-    [...favoriteKeys.all, "status", userId, recipeId] as const,
-  count: (userId: string) => [...favoriteKeys.all, "count", userId] as const,
+  all: ['favorites'] as const,
+  lists: () => [...favoriteKeys.all, 'list'] as const,
+  recipes: (userId: string) =>
+    [...favoriteKeys.lists(), 'recipes', userId] as const,
+  ids: (userId: string) => [...favoriteKeys.lists(), 'ids', userId] as const,
+  status: (userId: string, recipeId: string) =>
+    [...favoriteKeys.all, 'status', userId, recipeId] as const,
+  count: (userId: string) => [...favoriteKeys.all, 'count', userId] as const,
 };
 
 // 즐겨찾기 레시피 목록 조회
@@ -77,12 +78,15 @@ export const useFavoriteToggle = () => {
 
       // 낙관적 업데이트
       const newStatus = !previousStatus;
-      queryClient.setQueryData(favoriteKeys.status(userId, recipeId), newStatus);
+      queryClient.setQueryData(
+        favoriteKeys.status(userId, recipeId),
+        newStatus
+      );
 
       if (previousIds) {
         const newIds = newStatus
           ? [...previousIds, recipeId]
-          : previousIds.filter(id => id !== recipeId);
+          : previousIds.filter((id) => id !== recipeId);
         queryClient.setQueryData(favoriteKeys.ids(userId), newIds);
       }
 
@@ -128,7 +132,7 @@ export const useAddFavorite = () => {
     onSuccess: (data, { userId, recipeId }) => {
       // 즐겨찾기 상태 업데이트
       queryClient.setQueryData(favoriteKeys.status(userId, recipeId), true);
-      
+
       // 관련 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: favoriteKeys.recipes(userId),
@@ -153,7 +157,7 @@ export const useRemoveFavorite = () => {
     onSuccess: (data, { userId, recipeId }) => {
       // 즐겨찾기 상태 업데이트
       queryClient.setQueryData(favoriteKeys.status(userId, recipeId), false);
-      
+
       // 관련 쿼리 무효화
       queryClient.invalidateQueries({
         queryKey: favoriteKeys.recipes(userId),

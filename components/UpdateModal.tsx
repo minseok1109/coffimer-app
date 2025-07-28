@@ -1,15 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
+  ActivityIndicator,
   Animated,
   Dimensions,
-  ActivityIndicator,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { useAppUpdates } from '../hooks/useAppUpdates';
 import { UPDATE_CONFIG } from '../utils/updateConfig';
 
@@ -40,7 +41,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
   const [scaleAnim] = useState(new Animated.Value(0));
   const [opacityAnim] = useState(new Animated.Value(0));
   const [isUpdating, setIsUpdating] = useState(false);
-  
+
   // 애니메이션 효과
   useEffect(() => {
     if (visible) {
@@ -72,7 +73,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
       ]).start();
     }
   }, [visible, opacityAnim, scaleAnim]);
-  
+
   // 우선순위에 따른 색상 설정
   const getPriorityColor = () => {
     switch (priority) {
@@ -88,7 +89,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
         return '#8B4513';
     }
   };
-  
+
   // 아이콘 설정
   const getIcon = () => {
     switch (priority) {
@@ -104,7 +105,7 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
         return 'refresh';
     }
   };
-  
+
   // 업데이트 시작 핸들러
   const handleUpdateNow = async () => {
     setIsUpdating(true);
@@ -116,34 +117,34 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
       setIsUpdating(false);
     }
   };
-  
+
   // 배경 터치 핸들러
   const handleBackdropPress = () => {
-    if (!isForced && !isUpdating) {
+    if (!(isForced || isUpdating)) {
       onDismiss();
     }
   };
-  
+
   // 나중에 버튼 핸들러
   const handleUpdateLater = () => {
     if (!isUpdating) {
       onUpdateLater();
     }
   };
-  
+
   // 닫기 버튼 핸들러
   const handleDismiss = () => {
-    if (!isForced && !isUpdating) {
+    if (!(isForced || isUpdating)) {
       onDismiss();
     }
   };
-  
+
   return (
     <Modal
-      visible={visible}
-      transparent
       animationType="none"
       onRequestClose={handleDismiss}
+      transparent
+      visible={visible}
     >
       <Animated.View
         style={[
@@ -154,9 +155,9 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
         ]}
       >
         <TouchableOpacity
-          style={styles.backdrop}
           activeOpacity={1}
           onPress={handleBackdropPress}
+          style={styles.backdrop}
         >
           <Animated.View
             style={[
@@ -169,30 +170,31 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
             <TouchableOpacity activeOpacity={1} onPress={() => {}}>
               {/* 헤더 */}
               <View style={styles.header}>
-                <View style={[styles.iconContainer, { backgroundColor: getPriorityColor() }]}>
-                  <Ionicons
-                    name={getIcon()}
-                    size={24}
-                    color="white"
-                  />
+                <View
+                  style={[
+                    styles.iconContainer,
+                    { backgroundColor: getPriorityColor() },
+                  ]}
+                >
+                  <Ionicons color="white" name={getIcon()} size={24} />
                 </View>
-                
+
                 {!isForced && (
                   <TouchableOpacity
-                    style={styles.closeButton}
-                    onPress={handleDismiss}
                     disabled={isUpdating}
+                    onPress={handleDismiss}
+                    style={styles.closeButton}
                   >
-                    <Ionicons name="close" size={24} color="#666" />
+                    <Ionicons color="#666" name="close" size={24} />
                   </TouchableOpacity>
                 )}
               </View>
-              
+
               {/* 콘텐츠 */}
               <View style={styles.content}>
                 <Text style={styles.title}>{title}</Text>
                 <Text style={styles.description}>{description}</Text>
-                
+
                 {/* 다운로드 진행률 */}
                 {isDownloading && (
                   <View style={styles.progressContainer}>
@@ -212,35 +214,41 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                     </Text>
                   </View>
                 )}
-                
+
                 {/* 업데이트 준비 완료 */}
                 {isPending && (
                   <View style={styles.readyContainer}>
-                    <Ionicons name="checkmark-circle" size={20} color="#4CAF50" />
+                    <Ionicons
+                      color="#4CAF50"
+                      name="checkmark-circle"
+                      size={20}
+                    />
                     <Text style={styles.readyText}>
                       {UPDATE_CONFIG.MESSAGES.READY_TO_RESTART}
                     </Text>
                   </View>
                 )}
               </View>
-              
+
               {/* 버튼 */}
               <View style={styles.buttonContainer}>
                 {!isForced && (
                   <TouchableOpacity
+                    disabled={isUpdating}
+                    onPress={handleUpdateLater}
                     style={[
                       styles.button,
                       styles.laterButton,
                       isUpdating && styles.disabledButton,
                     ]}
-                    onPress={handleUpdateLater}
-                    disabled={isUpdating}
                   >
                     <Text style={styles.laterButtonText}>나중에</Text>
                   </TouchableOpacity>
                 )}
-                
+
                 <TouchableOpacity
+                  disabled={isUpdating}
+                  onPress={handleUpdateNow}
                   style={[
                     styles.button,
                     styles.updateButton,
@@ -248,11 +256,9 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                     isUpdating && styles.disabledButton,
                     !isForced && styles.flexButton,
                   ]}
-                  onPress={handleUpdateNow}
-                  disabled={isUpdating}
                 >
                   {isUpdating ? (
-                    <ActivityIndicator size="small" color="white" />
+                    <ActivityIndicator color="white" size="small" />
                   ) : (
                     <Text style={styles.updateButtonText}>
                       {isPending ? '지금 재시작' : '지금 업데이트'}

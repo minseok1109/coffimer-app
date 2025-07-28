@@ -1,14 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import { Ionicons } from '@expo/vector-icons';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
   Animated,
   Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { PanGestureHandler, State } from 'react-native-gesture-handler';
-import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppUpdates } from '../hooks/useAppUpdates';
 
@@ -41,7 +42,7 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
   const [translateX] = useState(new Animated.Value(0));
   const [opacity] = useState(new Animated.Value(0));
   const [isUpdating, setIsUpdating] = useState(false);
-  
+
   // 애니메이션 효과
   useEffect(() => {
     if (visible) {
@@ -72,7 +73,7 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
       ]).start();
     }
   }, [visible, translateY, opacity]);
-  
+
   // 우선순위에 따른 색상 설정
   const getPriorityColor = () => {
     switch (priority) {
@@ -88,13 +89,13 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
         return '#8B4513';
     }
   };
-  
+
   // 아이콘 설정
   const getIcon = () => {
     if (isPending) {
       return 'checkmark-circle';
     }
-    
+
     switch (priority) {
       case 'critical':
         return 'warning';
@@ -108,7 +109,7 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
         return 'refresh';
     }
   };
-  
+
   // 업데이트 시작 핸들러
   const handleUpdateNow = async () => {
     setIsUpdating(true);
@@ -120,19 +121,22 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
       setIsUpdating(false);
     }
   };
-  
+
   // 스와이프 제스처 핸들러
   const handleGestureEvent = Animated.event(
     [{ nativeEvent: { translationX: translateX } }],
     { useNativeDriver: true }
   );
-  
+
   const handleStateChange = (event: any) => {
     if (event.nativeEvent.state === State.END) {
       const { translationX, velocityX } = event.nativeEvent;
-      
+
       // 스와이프 거리나 속도가 충분하면 닫기
-      if (Math.abs(translationX) > SCREEN_WIDTH * 0.3 || Math.abs(velocityX) > 1000) {
+      if (
+        Math.abs(translationX) > SCREEN_WIDTH * 0.3 ||
+        Math.abs(velocityX) > 1000
+      ) {
         if (dismissible) {
           Animated.timing(translateX, {
             toValue: translationX > 0 ? SCREEN_WIDTH : -SCREEN_WIDTH,
@@ -162,11 +166,11 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
       }
     }
   };
-  
+
   if (!visible) {
     return null;
   }
-  
+
   return (
     <Animated.View
       style={[
@@ -174,10 +178,7 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
         {
           bottom: insets.bottom + 20,
           opacity,
-          transform: [
-            { translateY },
-            { translateX },
-          ],
+          transform: [{ translateY }, { translateX }],
         },
       ]}
     >
@@ -185,49 +186,55 @@ export const UpdateSnackbar: React.FC<UpdateSnackbarProps> = ({
         onGestureEvent={handleGestureEvent}
         onHandlerStateChange={handleStateChange}
       >
-        <Animated.View style={[styles.snackbar, { borderLeftColor: getPriorityColor() }]}>
+        <Animated.View
+          style={[styles.snackbar, { borderLeftColor: getPriorityColor() }]}
+        >
           {/* 아이콘 */}
-          <View style={[styles.iconContainer, { backgroundColor: getPriorityColor() }]}>
-            <Ionicons
-              name={getIcon()}
-              size={20}
-              color="white"
-            />
+          <View
+            style={[
+              styles.iconContainer,
+              { backgroundColor: getPriorityColor() },
+            ]}
+          >
+            <Ionicons color="white" name={getIcon()} size={20} />
           </View>
-          
+
           {/* 콘텐츠 */}
           <View style={styles.content}>
-            <Text style={styles.title} numberOfLines={1}>
+            <Text numberOfLines={1} style={styles.title}>
               {title}
             </Text>
-            <Text style={styles.description} numberOfLines={2}>
+            <Text numberOfLines={2} style={styles.description}>
               {description}
             </Text>
           </View>
-          
+
           {/* 액션 버튼 */}
           <View style={styles.actions}>
             <TouchableOpacity
-              style={[styles.actionButton, { backgroundColor: getPriorityColor() }]}
-              onPress={handleUpdateNow}
               disabled={isUpdating}
+              onPress={handleUpdateNow}
+              style={[
+                styles.actionButton,
+                { backgroundColor: getPriorityColor() },
+              ]}
             >
               <Text style={styles.actionButtonText}>
                 {isPending ? '재시작' : '업데이트'}
               </Text>
             </TouchableOpacity>
-            
+
             {dismissible && (
               <TouchableOpacity
-                style={styles.dismissButton}
-                onPress={onDismiss}
                 disabled={isUpdating}
+                onPress={onDismiss}
+                style={styles.dismissButton}
               >
-                <Ionicons name="close" size={16} color="#666" />
+                <Ionicons color="#666" name="close" size={16} />
               </TouchableOpacity>
             )}
           </View>
-          
+
           {/* 스와이프 인디케이터 */}
           {dismissible && (
             <View style={styles.swipeIndicator}>

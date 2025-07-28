@@ -1,9 +1,8 @@
-import { useAuthContext } from "@/contexts/AuthContext";
-import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import * as WebBrowser from "expo-web-browser";
-import React, { useState } from "react";
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
+import React, { useState } from 'react';
 import {
   Alert,
   Linking,
@@ -12,8 +11,9 @@ import {
   Text,
   TouchableOpacity,
   View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAuthContext } from '@/contexts/AuthContext';
 
 interface InfoItem {
   id: string;
@@ -31,81 +31,81 @@ export default function InfoScreen() {
 
   const basicInfo: InfoItem[] = [
     {
-      id: "name",
-      title: "앱 이름",
-      subtitle: "Coffimer",
-      icon: "cafe-outline",
+      id: 'name',
+      title: '앱 이름',
+      subtitle: 'Coffimer',
+      icon: 'cafe-outline',
     },
     {
-      id: "version",
-      title: "버전",
-      subtitle: "1.0.0",
-      icon: "information-circle-outline",
+      id: 'version',
+      title: '버전',
+      subtitle: '1.0.0',
+      icon: 'information-circle-outline',
     },
     {
-      id: "developer",
-      title: "개발자",
-      subtitle: "beon",
-      icon: "person-outline",
+      id: 'developer',
+      title: '개발자',
+      subtitle: 'beon',
+      icon: 'person-outline',
     },
     {
-      id: "contact",
-      title: "문의하기",
-      subtitle: "minseok32@gmail.com",
-      icon: "mail-outline",
+      id: 'contact',
+      title: '문의하기',
+      subtitle: 'minseok32@gmail.com',
+      icon: 'mail-outline',
       hasArrow: true,
-      onPress: () => Linking.openURL("mailto:minseok32@gmail.com"),
+      onPress: () => Linking.openURL('mailto:minseok32@gmail.com'),
     },
   ];
 
   const handleDeleteAccount = () => {
     Alert.alert(
-      "계정 탈퇴",
-      "정말로 계정을 삭제하시겠습니까?\n\n• 모든 개인 데이터가 영구적으로 삭제됩니다\n• 생성한 레시피와 저장된 데이터가 모두 사라집니다\n• 이 작업은 되돌릴 수 없습니다",
+      '계정 탈퇴',
+      '정말로 계정을 삭제하시겠습니까?\n\n• 모든 개인 데이터가 영구적으로 삭제됩니다\n• 생성한 레시피와 저장된 데이터가 모두 사라집니다\n• 이 작업은 되돌릴 수 없습니다',
       [
         {
-          text: "취소",
-          style: "cancel",
+          text: '취소',
+          style: 'cancel',
         },
         {
-          text: "탈퇴하기",
-          style: "destructive",
+          text: '탈퇴하기',
+          style: 'destructive',
           onPress: () => {
             Alert.alert(
-              "최종 확인",
-              "계정 탈퇴를 진행하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.",
+              '최종 확인',
+              '계정 탈퇴를 진행하시겠습니까?\n삭제된 데이터는 복구할 수 없습니다.',
               [
                 {
-                  text: "취소",
-                  style: "cancel",
+                  text: '취소',
+                  style: 'cancel',
                 },
                 {
-                  text: "확인",
-                  style: "destructive",
+                  text: '확인',
+                  style: 'destructive',
                   onPress: async () => {
                     setIsDeleting(true);
                     try {
                       const result = await deleteAccount();
                       if (result.success) {
                         Alert.alert(
-                          "탈퇴 완료",
-                          "계정이 성공적으로 삭제되었습니다.",
+                          '탈퇴 완료',
+                          '계정이 성공적으로 삭제되었습니다.',
                           [
                             {
-                              text: "확인",
-                              onPress: () => router.replace("/auth/login"),
+                              text: '확인',
+                              onPress: () => router.replace('/auth/login'),
                             },
                           ]
                         );
                       } else {
                         Alert.alert(
-                          "오류",
+                          '오류',
                           (result.error as Error)?.message ||
-                            "계정 삭제에 실패했습니다."
+                            '계정 삭제에 실패했습니다.'
                         );
                       }
                     } catch (error) {
-                      Alert.alert("오류", "계정 삭제 중 오류가 발생했습니다.");
+                      Alert.alert('오류', '계정 삭제 중 오류가 발생했습니다.');
                     } finally {
                       setIsDeleting(false);
                     }
@@ -121,64 +121,64 @@ export default function InfoScreen() {
 
   const legalInfo: InfoItem[] = [
     {
-      id: "privacy",
-      title: "개인정보 보호정책",
-      icon: "shield-checkmark-outline",
+      id: 'privacy',
+      title: '개인정보 보호정책',
+      icon: 'shield-checkmark-outline',
       hasArrow: true,
       onPress: () => {
         // 실제 운영 시에는 정책 페이지 URL로 변경
-        WebBrowser.openBrowserAsync("https://coffimer.com/privacy");
+        WebBrowser.openBrowserAsync('https://coffimer.com/privacy');
       },
     },
     {
-      id: "terms",
-      title: "서비스 이용약관",
-      icon: "document-text-outline",
+      id: 'terms',
+      title: '서비스 이용약관',
+      icon: 'document-text-outline',
       hasArrow: true,
       onPress: () => {
         // 실제 운영 시에는 약관 페이지 URL로 변경
-        WebBrowser.openBrowserAsync("https://coffimer.com/terms");
+        WebBrowser.openBrowserAsync('https://coffimer.com/terms');
       },
     },
     {
-      id: "licenses",
-      title: "오픈소스 라이선스",
-      icon: "code-outline",
+      id: 'licenses',
+      title: '오픈소스 라이선스',
+      icon: 'code-outline',
       hasArrow: true,
-      onPress: () => router.push("/licenses"),
+      onPress: () => router.push('/licenses'),
     },
   ];
 
   const techInfo: InfoItem[] = [
     {
-      id: "platform",
-      title: "플랫폼",
-      subtitle: "React Native with Expo",
-      icon: "phone-portrait-outline",
+      id: 'platform',
+      title: '플랫폼',
+      subtitle: 'React Native with Expo',
+      icon: 'phone-portrait-outline',
     },
     {
-      id: "permissions",
-      title: "사용 권한",
-      subtitle: "알림, 오디오 재생",
-      icon: "settings-outline",
+      id: 'permissions',
+      title: '사용 권한',
+      subtitle: '알림, 오디오 재생',
+      icon: 'settings-outline',
     },
     {
-      id: "storage",
-      title: "데이터 저장",
-      subtitle: "Supabase (암호화됨)",
-      icon: "cloud-outline",
+      id: 'storage',
+      title: '데이터 저장',
+      subtitle: 'Supabase (암호화됨)',
+      icon: 'cloud-outline',
     },
   ];
 
   const renderInfoItem = (item: InfoItem) => (
     <TouchableOpacity
-      key={item.id}
-      style={styles.infoItem}
-      onPress={item.onPress}
       disabled={!item.onPress}
+      key={item.id}
+      onPress={item.onPress}
+      style={styles.infoItem}
     >
       <View style={styles.infoLeft}>
-        <Ionicons name={item.icon} size={24} color="#666" />
+        <Ionicons color="#666" name={item.icon} size={24} />
         <View style={styles.infoTextContainer}>
           <Text style={styles.infoTitle}>{item.title}</Text>
           {item.subtitle && (
@@ -188,7 +188,7 @@ export default function InfoScreen() {
       </View>
       <View style={styles.infoRight}>
         {item.hasArrow && (
-          <Ionicons name="chevron-forward" size={20} color="#ccc" />
+          <Ionicons color="#ccc" name="chevron-forward" size={20} />
         )}
       </View>
     </TouchableOpacity>
@@ -201,10 +201,10 @@ export default function InfoScreen() {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity
-          style={styles.backButton}
           onPress={() => router.back()}
+          style={styles.backButton}
         >
-          <Ionicons name="arrow-back" size={24} color="#333" />
+          <Ionicons color="#333" name="arrow-back" size={24} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>앱 정보</Text>
         <View style={styles.placeholder} />
@@ -214,7 +214,7 @@ export default function InfoScreen() {
         {/* App Icon Section */}
         <View style={styles.appIconSection}>
           <View style={styles.appIconContainer}>
-            <Ionicons name="cafe" size={60} color="#8B4513" />
+            <Ionicons color="#8B4513" name="cafe" size={60} />
           </View>
           <Text style={styles.appName}>Coffimer</Text>
           <Text style={styles.appDescription}>
@@ -270,19 +270,19 @@ export default function InfoScreen() {
           <Text style={styles.sectionTitle}>계정 관리</Text>
           <View style={styles.infoContainer}>
             <TouchableOpacity
-              style={[styles.infoItem, styles.deleteAccountItem]}
-              onPress={handleDeleteAccount}
               disabled={isDeleting}
+              onPress={handleDeleteAccount}
+              style={[styles.infoItem, styles.deleteAccountItem]}
             >
               <View style={styles.infoLeft}>
                 <Ionicons
+                  color={isDeleting ? '#ccc' : '#ff4444'}
                   name="trash-outline"
                   size={24}
-                  color={isDeleting ? "#ccc" : "#ff4444"}
                 />
                 <View style={styles.infoTextContainer}>
                   <Text style={[styles.infoTitle, styles.deleteAccountText]}>
-                    {isDeleting ? "탈퇴 처리 중..." : "계정 탈퇴"}
+                    {isDeleting ? '탈퇴 처리 중...' : '계정 탈퇴'}
                   </Text>
                   <Text style={styles.infoSubtitle}>
                     모든 데이터가 영구적으로 삭제됩니다
@@ -290,7 +290,7 @@ export default function InfoScreen() {
                 </View>
               </View>
               <View style={styles.infoRight}>
-                <Ionicons name="chevron-forward" size={20} color="#ccc" />
+                <Ionicons color="#ccc" name="chevron-forward" size={20} />
               </View>
             </TouchableOpacity>
           </View>
@@ -313,25 +313,25 @@ export default function InfoScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5',
   },
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    backgroundColor: "white",
+    backgroundColor: 'white',
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: '#f0f0f0',
   },
   backButton: {
     padding: 4,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
   },
   placeholder: {
     width: 32,
@@ -340,8 +340,8 @@ const styles = StyleSheet.create({
     paddingBottom: 30,
   },
   appIconSection: {
-    alignItems: "center",
-    backgroundColor: "white",
+    alignItems: 'center',
+    backgroundColor: 'white',
     paddingVertical: 40,
     marginBottom: 20,
   },
@@ -349,39 +349,39 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: 22,
-    backgroundColor: "#f8f4f1",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#f8f4f1',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: "#e8e8e8",
+    borderColor: '#e8e8e8',
   },
   appName: {
     fontSize: 24,
-    fontWeight: "bold",
-    color: "#8B4513",
+    fontWeight: 'bold',
+    color: '#8B4513',
     marginBottom: 8,
   },
   appDescription: {
     fontSize: 16,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
   },
   section: {
     marginBottom: 20,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
+    fontWeight: 'bold',
+    color: '#333',
     marginLeft: 20,
     marginBottom: 12,
   },
   infoContainer: {
-    backgroundColor: "white",
+    backgroundColor: 'white',
     marginHorizontal: 20,
     borderRadius: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -391,15 +391,15 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   infoItem: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
   infoLeft: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
   },
   infoTextContainer: {
@@ -408,44 +408,44 @@ const styles = StyleSheet.create({
   },
   infoTitle: {
     fontSize: 16,
-    color: "#333",
-    fontWeight: "500",
+    color: '#333',
+    fontWeight: '500',
   },
   infoSubtitle: {
     fontSize: 14,
-    color: "#666",
+    color: '#666',
     marginTop: 2,
   },
   infoRight: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   divider: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#f0f0f0',
     marginLeft: 56,
   },
   footer: {
-    alignItems: "center",
+    alignItems: 'center',
     paddingVertical: 30,
     paddingHorizontal: 20,
   },
   footerText: {
     fontSize: 14,
-    color: "#666",
-    textAlign: "center",
+    color: '#666',
+    textAlign: 'center',
     marginBottom: 8,
   },
   footerSubtext: {
     fontSize: 12,
-    color: "#999",
-    textAlign: "center",
+    color: '#999',
+    textAlign: 'center',
   },
   deleteAccountItem: {
-    backgroundColor: "#fff5f5",
+    backgroundColor: '#fff5f5',
   },
   deleteAccountText: {
-    color: "#ff4444",
-    fontWeight: "600",
+    color: '#ff4444',
+    fontWeight: '600',
   },
 });

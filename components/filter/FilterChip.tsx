@@ -10,46 +10,38 @@ interface FilterChipProps {
   showCount?: number;
 }
 
-const FilterChip = memo(function FilterChip({ 
-  label, 
-  isSelected, 
-  onPress, 
+const FilterChip = memo(function FilterChip({
+  label,
+  isSelected,
+  onPress,
   icon,
-  showCount 
+  showCount,
 }: FilterChipProps) {
   return (
     <TouchableOpacity
-      style={[
-        styles.chip,
-        isSelected && styles.selectedChip
-      ]}
-      onPress={onPress}
       activeOpacity={0.7}
+      onPress={onPress}
+      style={[styles.chip, isSelected && styles.selectedChip]}
     >
       <View style={styles.chipContent}>
         {icon && (
           <Ionicons
+            color={isSelected ? '#fff' : '#666'}
             name={icon}
             size={16}
-            color={isSelected ? '#fff' : '#666'}
             style={styles.icon}
           />
         )}
-        <Text style={[
-          styles.chipText,
-          isSelected && styles.selectedChipText
-        ]}>
+        <Text style={[styles.chipText, isSelected && styles.selectedChipText]}>
           {label}
         </Text>
         {showCount !== undefined && showCount > 0 && (
-          <View style={[
-            styles.countBadge,
-            isSelected && styles.selectedCountBadge
-          ]}>
-            <Text style={[
-              styles.countText,
-              isSelected && styles.selectedCountText
-            ]}>
+          <View
+            style={[styles.countBadge, isSelected && styles.selectedCountBadge]}
+          >
+            <Text
+              style={[styles.countText, isSelected && styles.selectedCountText]}
+            >
               {showCount}
             </Text>
           </View>

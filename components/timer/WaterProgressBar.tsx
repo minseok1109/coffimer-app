@@ -1,8 +1,8 @@
-import { RecipeWithSteps } from "@/types/recipe";
-import { StepInfo } from "@/types/timer";
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
-import { WaterInfo } from "../../lib/timer/types";
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import type { RecipeWithSteps } from '@/types/recipe';
+import type { StepInfo } from '@/types/timer';
+import type { WaterInfo } from '../../lib/timer/types';
 
 interface WaterProgressBarProps {
   currentStepInfo: StepInfo;
@@ -12,14 +12,14 @@ interface WaterProgressBarProps {
 
 // 커피 관련 색상 팔레트
 const STEP_COLORS = [
-  "#CD853F", // 페루 (생두)
-  "#A0522D", // 시에나 (물)
-  "#8B7355", // 탄 브라운 (크레마)
-  "#8B4513", // 브라운 (원두)
-  "#6B4423", // 다크 브라운 (에스프레소)
-  "#5C4033", // 초콜릿 (다크로스트)
-  "#4A3728", // 다크 초콜릿 (필터)
-  "#2C1810", // 에스프레소 (로스팅)
+  '#CD853F', // 페루 (생두)
+  '#A0522D', // 시에나 (물)
+  '#8B7355', // 탄 브라운 (크레마)
+  '#8B4513', // 브라운 (원두)
+  '#6B4423', // 다크 브라운 (에스프레소)
+  '#5C4033', // 초콜릿 (다크로스트)
+  '#4A3728', // 다크 초콜릿 (필터)
+  '#2C1810', // 에스프레소 (로스팅)
 ];
 
 export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
@@ -29,8 +29,9 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
 }) => {
   const { totalNeeded, remaining } = waterInfo;
   const currentStepWater =
-    parseInt(currentStepInfo.step.water.toString().replace("ml", "") || "0") ||
-    0;
+    Number.parseInt(
+      currentStepInfo.step.water.toString().replace('ml', '') || '0'
+    ) || 0;
 
   // 각 단계별 물양 계산
   const stepWaterAmounts = React.useMemo(() => {
@@ -38,7 +39,7 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
 
     return recipe.recipe_steps.map((step) => {
       const waterAmount =
-        parseInt(step.water.toString().replace(/[^\d]/g, "")) || 0;
+        Number.parseInt(step.water.toString().replace(/[^\d]/g, '')) || 0;
       return waterAmount;
     });
   }, [recipe?.recipe_steps]);
@@ -107,7 +108,7 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
 
         <View style={styles.labelItem}>
           <View
-            style={[styles.colorIndicator, { backgroundColor: "#E0E0E0" }]}
+            style={[styles.colorIndicator, { backgroundColor: '#E0E0E0' }]}
           />
           <Text style={styles.labelText}>남은 물량</Text>
           <Text style={styles.labelValue}>{remaining}ml</Text>
@@ -115,7 +116,7 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
 
         <View style={styles.labelItem}>
           <View
-            style={[styles.colorIndicator, { backgroundColor: "#9E9E9E" }]}
+            style={[styles.colorIndicator, { backgroundColor: '#9E9E9E' }]}
           />
           <Text style={styles.labelText}>총 물량</Text>
           <Text style={styles.labelValue}>{totalNeeded}ml</Text>
@@ -134,24 +135,24 @@ const styles = StyleSheet.create({
   },
   progressBarBackground: {
     height: 24,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: '#F5F5F5',
     borderRadius: 12,
-    position: "relative",
-    overflow: "hidden",
+    position: 'relative',
+    overflow: 'hidden',
     borderWidth: 1,
-    borderColor: "#E0E0E0",
+    borderColor: '#E0E0E0',
   },
   progressSegment: {
-    height: "100%",
-    position: "absolute",
+    height: '100%',
+    position: 'absolute',
     top: 0,
   },
   labelsContainer: {
     gap: 8,
   },
   labelItem: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: 8,
   },
   colorIndicator: {
@@ -162,11 +163,11 @@ const styles = StyleSheet.create({
   labelText: {
     flex: 1,
     fontSize: 14,
-    color: "#666",
+    color: '#666',
   },
   labelValue: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
+    fontWeight: '600',
+    color: '#333',
   },
 });
