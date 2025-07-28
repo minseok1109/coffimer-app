@@ -37,3 +37,14 @@ yarn-error.*
 *.tsbuildinfo
 
 app-example
+
+# IDE and tool-specific files
+.claude/
+.cursor/
+
+# Generated files
+repomix-output.xml
+
+# Suggestions and notes
+IMPROVEMENT_SUGGESTIONS.md
+
