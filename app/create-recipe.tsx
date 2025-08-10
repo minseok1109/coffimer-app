@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Step1,
   Step2,
@@ -44,6 +44,7 @@ export default function CreateRecipeScreen() {
     isSaving,
   } = useCreateRecipe();
 
+  const insets = useSafeAreaInsets();
   const bottomSheetRef = useRef<BottomSheetRef>(null);
   const filterBottomSheetRef = useRef<BottomSheetRef>(null);
   const grinderBottomSheetRef = useRef<BottomSheetRef>(null);
@@ -104,7 +105,7 @@ export default function CreateRecipeScreen() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <BottomSheetModalProvider>
         <FormProvider {...methods}>
-          <SafeAreaView style={createRecipeStyles.container}>
+          <View style={[createRecipeStyles.container, { paddingTop: insets.top }]}>
             <StatusBar style="auto" />
 
             {/* 헤더 */}
@@ -124,12 +125,14 @@ export default function CreateRecipeScreen() {
 
             {/* Form Content */}
             <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
               style={createRecipeStyles.content}
+              {...(Platform.OS === 'ios' && { keyboardVerticalOffset: 0 })}
             >
               <ScrollView
                 showsVerticalScrollIndicator={false}
                 style={createRecipeStyles.scrollView}
+                contentContainerStyle={{ flexGrow: 1 }}
               >
                 <Animated.View
                   style={[createRecipeStyles.stepsContainer, animatedStyle]}
@@ -139,7 +142,12 @@ export default function CreateRecipeScreen() {
               </ScrollView>
 
               {/* Navigation Buttons */}
-              <View style={createRecipeStyles.navigationButtons}>
+              <View 
+                style={[
+                  createRecipeStyles.navigationButtons,
+                  Platform.OS === 'android' && { paddingBottom: Math.max(insets.bottom, 24) }
+                ]}
+              >
                 {currentStep > 1 && (
                   <TouchableOpacity
                     disabled={isTransitioning}
@@ -175,7 +183,7 @@ export default function CreateRecipeScreen() {
                 </TouchableOpacity>
               </View>
             </KeyboardAvoidingView>
-          </SafeAreaView>
+          </View>
         </FormProvider>
 
         {/* Global Bottom Sheets */}
