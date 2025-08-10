@@ -1,10 +1,10 @@
-import { Ionicons } from '@expo/vector-icons';
-import type React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import type { RecipeWithSteps } from '@/types/recipe';
-import type { NextStepInfo, StepInfo } from '@/types/timer';
-import { formatTime } from '../../lib/timer/formatters';
-import type { WaterInfo } from '../../lib/timer/types';
+import type { RecipeWithSteps } from "@/types/recipe";
+import type { NextStepInfo, StepInfo } from "@/types/timer";
+import { Ionicons } from "@expo/vector-icons";
+import type React from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { formatTime } from "../../lib/timer/formatters";
+import type { WaterInfo } from "../../lib/timer/types";
 
 interface StepCardProps {
   currentStepInfo: StepInfo;
@@ -22,7 +22,7 @@ export const StepCard: React.FC<StepCardProps> = ({
   const { totalNeeded, remaining } = waterInfo;
   const currentStepWater =
     Number.parseInt(
-      currentStepInfo.step.water.toString().replace('ml', '') || '0'
+      currentStepInfo.step.water.toString().replace("ml", "") || "0"
     ) || 0;
   const usedWater = totalNeeded - remaining;
   const progressPercentage = (usedWater / totalNeeded) * 100;
@@ -49,17 +49,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             <View
               style={[
                 styles.waterStatIndicator,
-                { backgroundColor: '#FF6B35' },
-              ]}
-            />
-            <Text style={styles.waterStatLabel}>누적</Text>
-            <Text style={styles.waterStatValue}>{usedWater}ml</Text>
-          </View>
-          <View style={styles.waterStatItem}>
-            <View
-              style={[
-                styles.waterStatIndicator,
-                { backgroundColor: '#E0E0E0' },
+                { backgroundColor: "#E0E0E0" },
               ]}
             />
             <Text style={styles.waterStatLabel}>남은 물</Text>
@@ -69,7 +59,7 @@ export const StepCard: React.FC<StepCardProps> = ({
             <View
               style={[
                 styles.waterStatIndicator,
-                { backgroundColor: '#E0E0E0' },
+                { backgroundColor: "#E0E0E0" },
               ]}
             />
             <Text style={styles.waterStatLabel}>총 </Text>
@@ -95,28 +85,29 @@ export const StepCard: React.FC<StepCardProps> = ({
           </Text>
         </View>
 
-        {/* Next Step Card */}
-        {nextStepInfo && (
-          <View style={styles.nextStepCard}>
-            <View style={styles.stepCardHeader}>
-              <Ionicons color="#D2691E" name="time-outline" size={18} />
-              <Text style={[styles.stepCardLabel, styles.nextStepLabel]}>
-                다음 단계
-              </Text>
-            </View>
-            <Text style={[styles.stepCardAmount, styles.nextStepAmount]}>
-              {nextStepInfo.step.water}ml
-            </Text>
-            <Text style={[styles.stepCardTime, styles.nextStepTime]}>
-              {formatTime(nextStepInfo.step.time)}
-            </Text>
-            <Text
-              style={[styles.stepCardDescription, styles.nextStepDescription]}
-            >
-              {nextStepInfo.step.title}
+        {/* Total Water Card */}
+        <View style={styles.totalWaterCard}>
+          <View style={styles.stepCardHeader}>
+            <Text style={[styles.stepCardLabel, styles.totalWaterLabel]}>
+              누적 물양
             </Text>
           </View>
-        )}
+          <Text style={styles.totalWaterAmount}>{usedWater}ml</Text>
+          {nextStepInfo && (
+            <>
+              <View style={styles.divider} />
+              <Text style={styles.nextWaterAmount}>
+                {nextStepInfo.step.water}ml
+              </Text>
+              <Text style={styles.nextTimeText}>
+                {formatTime(nextStepInfo.step.time)}
+              </Text>
+              <Text style={styles.nextTitleText}>
+                {nextStepInfo.step.title}
+              </Text>
+            </>
+          )}
+        </View>
       </View>
     </View>
   );
@@ -124,11 +115,11 @@ export const StepCard: React.FC<StepCardProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     marginHorizontal: 20,
     borderRadius: 16,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -137,124 +128,142 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 4,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: "#f0f0f0",
   },
 
   // Main Info Section
   mainInfoSection: {
-    flexDirection: 'row',
+    flexDirection: "row",
     padding: 16,
     paddingTop: 16,
     gap: 12,
   },
   currentStepCard: {
     flex: 1,
-    backgroundColor: '#FFF8F5',
+    backgroundColor: "#FFF8F5",
     borderRadius: 12,
     padding: 12,
     borderWidth: 1.5,
-    borderColor: '#FF6B35',
-    alignItems: 'center',
+    borderColor: "#FF6B35",
+    alignItems: "center",
   },
-  nextStepCard: {
+  totalWaterCard: {
     flex: 1,
-    backgroundColor: '#FDF7F0',
+    backgroundColor: "#FFF5ED",
     borderRadius: 12,
     padding: 12,
-    borderWidth: 1,
-    borderColor: '#D2691E',
-    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: "#8B4513",
+    alignItems: "center",
   },
   stepCardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 4,
     marginBottom: 6,
   },
   stepCardLabel: {
     fontSize: 10,
-    fontWeight: '600',
-    color: '#FF6B35',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#FF6B35",
+    textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  nextStepLabel: {
-    color: '#D2691E',
+  totalWaterLabel: {
+    color: "#8B4513",
   },
   stepCardAmount: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#FF6B35',
+    fontWeight: "bold",
+    color: "#FF6B35",
     marginBottom: 2,
   },
-  nextStepAmount: {
-    fontSize: 16,
-    color: '#D2691E',
+  totalWaterAmount: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#8B4513",
+    marginBottom: 12,
   },
   stepCardTime: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
     marginBottom: 6,
-  },
-  nextStepTime: {
-    fontSize: 11,
   },
   stepCardDescription: {
     fontSize: 10,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
     lineHeight: 14,
   },
-  nextStepDescription: {
-    fontSize: 9,
+  divider: {
+    width: "80%",
+    height: 1,
+    backgroundColor: "#E8D5C4",
+    marginBottom: 8,
+  },
+  nextWaterAmount: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#8B4513",
+    marginBottom: 3,
+  },
+  nextTimeText: {
+    fontSize: 11,
+    color: "#666",
+    marginBottom: 2,
+  },
+  nextTitleText: {
+    fontSize: 10,
+    color: "#666",
+    textAlign: "center",
   },
 
   // Water Tracking Section
   waterTrackingSection: {
-    backgroundColor: '#F8F9FA',
+    backgroundColor: "#F8F9FA",
     padding: 16,
     paddingTop: 20,
   },
   waterTrackingHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
     marginBottom: 12,
   },
   waterTrackingTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
   enhancedProgressContainer: {
     marginBottom: 12,
   },
   enhancedProgressBar: {
     height: 8,
-    backgroundColor: '#E9ECEF',
+    backgroundColor: "#E9ECEF",
     borderRadius: 4,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 6,
   },
   enhancedProgressFill: {
-    height: '100%',
-    backgroundColor: '#FF6B35',
+    height: "100%",
+    backgroundColor: "#FF6B35",
     borderRadius: 4,
   },
   enhancedProgressText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#666',
-    textAlign: 'center',
+    fontWeight: "600",
+    color: "#666",
+    textAlign: "center",
   },
   waterStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-evenly",
   },
   waterStatItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 6,
   },
   waterStatIndicator: {
@@ -264,11 +273,11 @@ const styles = StyleSheet.create({
   },
   waterStatLabel: {
     fontSize: 14,
-    color: '#666',
+    color: "#666",
   },
   waterStatValue: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
+    fontWeight: "600",
+    color: "#333",
   },
 });

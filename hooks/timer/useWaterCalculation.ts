@@ -12,6 +12,7 @@ export const useWaterCalculation = (
     if (!recipe?.recipe_steps) return 0;
 
     let total = 0;
+    // 현재 진행 중인 단계까지 포함하여 계산
     for (let i = 0; i <= currentStep && i < recipe.recipe_steps.length; i++) {
       const waterAmount = Number.parseInt(
         recipe.recipe_steps[i].water
