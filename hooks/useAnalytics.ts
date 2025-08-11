@@ -45,6 +45,7 @@ export interface AnalyticsEvents {
   // Engagement Events
   notification_received: { type: string; recipe_id?: string };
   notification_tapped: { type: string; recipe_id?: string };
+  external_link_clicked: { link_type: string; url: string };
   settings_changed: {
     setting_name: string;
     new_value: string | number | boolean;

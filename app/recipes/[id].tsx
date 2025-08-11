@@ -207,22 +207,13 @@ export default function RecipeDetail() {
                 {getFilterLabel(recipe?.filter ?? "") || "미지정"}
               </Text>
             </View>
-            {recipe.micron ? (
-              <View
-                // onPress={openBottomSheet}
-                style={styles.infoCard}
-              >
-                <Ionicons color="#8B4513" name="cog-outline" size={20} />
-                <Text style={styles.infoLabel}>분쇄도</Text>
-                <Text style={styles.infoValue}>{recipe.micron}μm</Text>
-              </View>
-            ) : (
-              <View style={styles.infoCard}>
-                <Ionicons color="#999" name="cog-outline" size={20} />
-                <Text style={styles.infoLabel}>분쇄도</Text>
-                <Text style={styles.infoValue}>미지정</Text>
-              </View>
-            )}
+            <View style={styles.infoCard}>
+              <Ionicons color={recipe.micron ? "#8B4513" : "#999"} name="cog-outline" size={20} />
+              <Text style={styles.infoLabel}>분쇄도</Text>
+              <Text style={styles.infoValue}>
+                {recipe.micron ? `${recipe.micron}μm` : "미지정"}
+              </Text>
+            </View>
           </View>
 
           {recipe.recipe_steps && recipe.recipe_steps.length > 0 && (
@@ -257,15 +248,32 @@ export default function RecipeDetail() {
         </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
-        {recipe.youtube_url && (
+        <View style={styles.secondaryButtonRow}>
+          {recipe.youtube_url && (
+            <TouchableOpacity
+              onPress={handleYouTubePress}
+              style={styles.secondaryButton}
+            >
+              <Ionicons color="#FF0000" name="logo-youtube" size={18} />
+              <Text style={styles.secondaryButtonText}>YouTube</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity
-            onPress={handleYouTubePress}
-            style={styles.youtubeButton}
+            onPress={async () => {
+              // Track grinder guide link click
+              track("external_link_clicked", {
+                link_type: "grinder_guide",
+                url: "https://community.unspecialty.com/compass/grinder",
+              });
+              await Linking.openURL("https://community.unspecialty.com/compass/grinder");
+            }}
+            style={[styles.secondaryButton, !recipe.youtube_url && styles.fullWidthButton]}
           >
-            <Ionicons color="#FF0000" name="logo-youtube" size={20} />
-            <Text style={styles.youtubeButtonText}>YouTube 영상 보기</Text>
+            <Ionicons color="#8B4513" name="open-outline" size={18} />
+            <Text style={styles.secondaryButtonText}>분쇄도 가이드</Text>
           </TouchableOpacity>
-        )}
+        </View>
 
         <TouchableOpacity
           onPress={handleStartRecipe}
@@ -520,32 +528,42 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     paddingHorizontal: 20,
+    paddingTop: 16,
     paddingBottom: 32,
-    gap: 16,
+    gap: 12,
   },
-  youtubeButton: {
+  secondaryButtonRow: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  secondaryButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "white",
-    borderRadius: 16,
-    padding: 20,
-    gap: 8,
+    borderRadius: 12,
+    padding: 14,
+    gap: 6,
     borderWidth: 1,
     borderColor: "#dee2e6",
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 1,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
   },
-  youtubeButtonText: {
-    fontSize: 16,
+  secondaryButtonText: {
+    fontSize: 14,
     fontWeight: "600",
-    color: "#FF0000",
+    color: "#666",
+  },
+  fullWidthButton: {
+    flex: 0,
+    width: "100%",
   },
   editButton: {
     flexDirection: "row",
