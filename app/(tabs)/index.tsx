@@ -28,7 +28,7 @@ export default function HomeScreen() {
   // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
   if (isLoading && !recipes) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <View style={[styles.container, styles.centered]}>
           <ActivityIndicator color="#8B4513" size="large" />
           <Text style={styles.loadingText}>레시피를 불러오는 중...</Text>
@@ -39,7 +39,7 @@ export default function HomeScreen() {
 
   if (error) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
         <View style={[styles.container, styles.centered]}>
           <Text style={styles.errorText}>
             레시피를 불러오는데 실패했습니다.
@@ -51,7 +51,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <StatusBar style="auto" />
 
       <View style={styles.header}>
