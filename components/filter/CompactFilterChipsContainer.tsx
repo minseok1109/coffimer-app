@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useState } from 'react';
 import {
   ActivityIndicator,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -194,10 +195,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: Platform.OS === 'android' ? 6 : 8,
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    minHeight: 32,
   },
   selectedCombinedChip: {
     backgroundColor: '#8B4513',
@@ -206,14 +208,24 @@ const styles = StyleSheet.create({
   combinedChipContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     marginRight: 4,
+    ...Platform.select({
+      android: {
+        marginTop: -1,
+      },
+      ios: {},
+    }),
   },
   combinedChipText: {
     fontSize: 14,
+    lineHeight: 16,
     fontWeight: '500',
     color: '#666',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   selectedCombinedChipText: {
     color: '#fff',
@@ -232,7 +244,10 @@ const styles = StyleSheet.create({
   },
   selectedCountText: {
     fontSize: 12,
+    lineHeight: 14,
     fontWeight: '600',
     color: '#fff',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
 });

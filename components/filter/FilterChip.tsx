@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { memo } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface FilterChipProps {
   label: string;
@@ -58,10 +58,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderRadius: 20,
     paddingHorizontal: 16,
-    paddingVertical: 8,
+    paddingVertical: Platform.OS === 'android' ? 6 : 8,
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    minHeight: 32,
   },
   selectedChip: {
     backgroundColor: '#8B4513',
@@ -70,14 +71,24 @@ const styles = StyleSheet.create({
   chipContent: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   icon: {
     marginRight: 4,
+    ...Platform.select({
+      android: {
+        marginTop: -1,
+      },
+      ios: {},
+    }),
   },
   chipText: {
     fontSize: 14,
+    lineHeight: 16,
     fontWeight: '500',
     color: '#666',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   selectedChipText: {
     color: '#fff',
@@ -96,8 +107,11 @@ const styles = StyleSheet.create({
   },
   countText: {
     fontSize: 12,
+    lineHeight: 14,
     fontWeight: '600',
     color: '#666',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
   },
   selectedCountText: {
     color: '#fff',
