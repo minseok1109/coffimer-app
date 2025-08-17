@@ -1,19 +1,13 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CompactFilterChipsContainer } from '@/components/filter';
-import RecipeCard from '@/components/RecipeCard';
-import { useAnalytics } from '@/hooks/useAnalytics';
-import { useFilteredRecipes } from '@/hooks/useFilteredRecipes';
-import { useFilterState } from '@/hooks/useFilterState';
+import { CompactFilterChipsContainer } from "@/components/filter";
+import RecipeCard from "@/components/RecipeCard";
+import { useAnalytics } from "@/hooks/useAnalytics";
+import { useFilteredRecipes } from "@/hooks/useFilteredRecipes";
+import { useFilterState } from "@/hooks/useFilterState";
+import { LegendList } from "@legendapp/list";
+import { StatusBar } from "expo-status-bar";
+import React from "react";
+import { ActivityIndicator, Image, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function HomeScreen() {
   const filterState = useFilterState();
@@ -28,7 +22,7 @@ export default function HomeScreen() {
   // Test analytics connection and track screen view on mount
   React.useEffect(() => {
     testConnection();
-    screen('HomeScreen');
+    screen("HomeScreen");
   }, [testConnection, screen]);
 
   // 초기 로딩 시에만 로딩 화면 표시 (이전 데이터가 없는 경우)
@@ -62,7 +56,7 @@ export default function HomeScreen() {
 
       <View style={styles.header}>
         <Image
-          source={require('@/assets/images/logo.png')}
+          source={require("@/assets/images/logo.png")}
           style={styles.logo}
         />
         <Text style={styles.title}>Coffimer</Text>
@@ -77,13 +71,22 @@ export default function HomeScreen() {
         onReset={filterState.resetFilters}
       />
 
-      <ScrollView contentContainerStyle={styles.scrollView}>
-        <View style={styles.content}>
-          {recipes?.map((recipe) => (
-            <RecipeCard key={recipe.id} recipe={recipe} showMenu={false} />
-          )) ?? <Text style={styles.noDataText}>레시피가 없습니다.</Text>}
+      {recipes && recipes.length > 0 ? (
+        <LegendList
+          data={recipes}
+          renderItem={({ item }) => (
+            <RecipeCard recipe={item} showMenu={false} />
+          )}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          recycleItems
+        />
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.noDataText}>레시피가 없습니다.</Text>
         </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -91,20 +94,20 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: "#f5f5f5",
   },
   centered: {
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
-    backgroundColor: 'white',
+    backgroundColor: "white",
     paddingHorizontal: 20,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderBottomColor: "#f0f0f0",
+    flexDirection: "row",
+    alignItems: "center",
   },
   logo: {
     width: 24,
@@ -113,36 +116,36 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
-    color: '#8B4513',
+    fontWeight: "bold",
+    color: "#8B4513",
   },
-  scrollView: {
-    flexGrow: 1,
+  listContent: {
     padding: 20,
   },
-  content: {
-    gap: 0, // RecipeCard 컴포넌트에서 marginBottom으로 간격 조절
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: "#666",
   },
   errorText: {
     fontSize: 18,
-    color: '#d32f2f',
-    textAlign: 'center',
+    color: "#d32f2f",
+    textAlign: "center",
     marginBottom: 10,
   },
   errorDetail: {
     fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
+    color: "#666",
+    textAlign: "center",
   },
   noDataText: {
     fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 50,
+    color: "#666",
+    textAlign: "center",
   },
 });

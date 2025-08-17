@@ -18,6 +18,7 @@
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.1.6",
     "@hookform/resolvers": "^5.1.1",
+    "@legendapp/list": "^1.1.4",
     "@microsoft/react-native-clarity": "^4.3.0",
     "@react-native-async-storage/async-storage": "^2.1.2",
     "@react-native-google-signin/google-signin": "^14.0.1",
@@ -83,5 +84,6 @@
     "typescript": "~5.8.3",
     "ultracite": "5.1.1"
   },
-  "private": true
+  "private": true,
+  "packageManager": "pnpm@10.14.0+sha512.ad27a79641b49c3e481a16a805baa71817a04bbe06a38d17e60e2eaee83f6a146c6a688125f5792e48dd5ba30e7da52a5cda4c3992b9ccf333f9ce223af84748"
 }
