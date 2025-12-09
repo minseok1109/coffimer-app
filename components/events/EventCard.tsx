@@ -1,9 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { memo } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { Event } from '@/types/event';
-import { EVENT_COLORS, type EventCategory } from '@/types/event';
+import { EVENT_COLORS, type Event, type EventCategory } from '@/types/event';
 
 interface EventCardProps {
   event: Event;
@@ -23,7 +22,7 @@ export const EventCard = memo(function EventCard({ event }: EventCardProps) {
   const categoryColor = EVENT_COLORS[event.category as EventCategory] || '#FF6B35';
 
   const handlePress = () => {
-    router.push(`/events/${event.id}`);
+    router.push(`/events/${event.id}` as Href);
   };
 
   return (

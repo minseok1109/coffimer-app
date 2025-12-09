@@ -15,8 +15,7 @@ import {
 import { Calendar, LocaleConfig } from 'react-native-calendars';
 import { EventCard } from '@/components/events';
 import { useEventsByMonth } from '@/hooks/useEvents';
-import type { Event } from '@/types/event';
-import { EVENT_COLORS, type EventCategory, type MarkedDates } from '@/types/event';
+import { EVENT_COLORS, type Event, type EventCategory, type MarkedDates } from '@/types/event';
 
 LocaleConfig.locales['ko'] = {
   monthNames: [
