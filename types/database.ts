@@ -7,16 +7,125 @@ export type Json =
   | Json[];
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: '12.2.3 (519615d)';
   };
   public: {
     Tables: {
+      account_deletion_requests: {
+        Row: {
+          cancelled_at: string | null;
+          created_at: string | null;
+          expires_at: string;
+          id: string;
+          otp_code: string;
+          otp_hash: string;
+          user_email: string;
+          user_id: string | null;
+          verified_at: string | null;
+        };
+        Insert: {
+          cancelled_at?: string | null;
+          created_at?: string | null;
+          expires_at: string;
+          id?: string;
+          otp_code: string;
+          otp_hash: string;
+          user_email: string;
+          user_id?: string | null;
+          verified_at?: string | null;
+        };
+        Update: {
+          cancelled_at?: string | null;
+          created_at?: string | null;
+          expires_at?: string;
+          id?: string;
+          otp_code?: string;
+          otp_hash?: string;
+          user_email?: string;
+          user_id?: string | null;
+          verified_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'account_deletion_requests_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      beans: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          roastery_name: string | null;
+          roast_date: string | null;
+          roast_level: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
+          bean_type: 'blend' | 'single_origin';
+          weight_g: number;
+          remaining_g: number;
+          price: number | null;
+          cup_notes: string[];
+          image_url: string | null;
+          degassing_days: number | null;
+          created_at: string;
+          updated_at: string;
+          deleted_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          roastery_name?: string | null;
+          roast_date?: string | null;
+          roast_level?: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
+          bean_type?: 'blend' | 'single_origin';
+          weight_g: number;
+          remaining_g: number;
+          price?: number | null;
+          cup_notes?: string[];
+          image_url?: string | null;
+          degassing_days?: number | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          roastery_name?: string | null;
+          roast_date?: string | null;
+          roast_level?: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
+          bean_type?: 'blend' | 'single_origin';
+          weight_g?: number;
+          remaining_g?: number;
+          price?: number | null;
+          cup_notes?: string[];
+          image_url?: string | null;
+          degassing_days?: number | null;
+          created_at?: string;
+          updated_at?: string;
+          deleted_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'beans_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       daily_user_stats: {
         Row: {
-          avg_session_duration: unknown | null;
+          avg_session_duration: unknown;
           bounce_rate: number | null;
           created_at: string | null;
           date: string;
@@ -32,7 +141,7 @@ export type Database = {
           updated_at: string | null;
         };
         Insert: {
-          avg_session_duration?: unknown | null;
+          avg_session_duration?: unknown;
           bounce_rate?: number | null;
           created_at?: string | null;
           date: string;
@@ -48,7 +157,7 @@ export type Database = {
           updated_at?: string | null;
         };
         Update: {
-          avg_session_duration?: unknown | null;
+          avg_session_duration?: unknown;
           bounce_rate?: number | null;
           created_at?: string | null;
           date?: string;
@@ -61,6 +170,66 @@ export type Database = {
           total_recipe_views?: number | null;
           total_sessions?: number | null;
           unique_users?: number | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      events: {
+        Row: {
+          category: Database['public']['Enums']['event_category'];
+          created_at: string | null;
+          description: string | null;
+          end_date: string | null;
+          end_time: string | null;
+          event_date: string;
+          id: string;
+          image_url: string | null;
+          is_published: boolean | null;
+          location: string | null;
+          max_participants: number | null;
+          price: number | null;
+          registration_url: string | null;
+          roastery_name: string;
+          start_time: string | null;
+          title: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          category: Database['public']['Enums']['event_category'];
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          end_time?: string | null;
+          event_date: string;
+          id?: string;
+          image_url?: string | null;
+          is_published?: boolean | null;
+          location?: string | null;
+          max_participants?: number | null;
+          price?: number | null;
+          registration_url?: string | null;
+          roastery_name: string;
+          start_time?: string | null;
+          title: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          category?: Database['public']['Enums']['event_category'];
+          created_at?: string | null;
+          description?: string | null;
+          end_date?: string | null;
+          end_time?: string | null;
+          event_date?: string;
+          id?: string;
+          image_url?: string | null;
+          is_published?: boolean | null;
+          location?: string | null;
+          max_participants?: number | null;
+          price?: number | null;
+          registration_url?: string | null;
+          roastery_name?: string;
+          start_time?: string | null;
+          title?: string;
           updated_at?: string | null;
         };
         Relationships: [];
@@ -186,7 +355,7 @@ export type Database = {
           all_time_score: number | null;
           avg_completion_rate: number | null;
           avg_scroll_depth: number | null;
-          avg_view_duration: unknown | null;
+          avg_view_duration: unknown;
           created_at: string | null;
           last_trending_at: string | null;
           peak_daily_views: number | null;
@@ -204,7 +373,7 @@ export type Database = {
           all_time_score?: number | null;
           avg_completion_rate?: number | null;
           avg_scroll_depth?: number | null;
-          avg_view_duration?: unknown | null;
+          avg_view_duration?: unknown;
           created_at?: string | null;
           last_trending_at?: string | null;
           peak_daily_views?: number | null;
@@ -222,7 +391,7 @@ export type Database = {
           all_time_score?: number | null;
           avg_completion_rate?: number | null;
           avg_scroll_depth?: number | null;
-          avg_view_duration?: unknown | null;
+          avg_view_duration?: unknown;
           created_at?: string | null;
           last_trending_at?: string | null;
           peak_daily_views?: number | null;
@@ -257,7 +426,7 @@ export type Database = {
         Row: {
           avg_completion_rate: number | null;
           avg_scroll_depth: number | null;
-          avg_view_duration: unknown | null;
+          avg_view_duration: unknown;
           bounce_rate: number | null;
           created_at: string | null;
           date: string;
@@ -277,7 +446,7 @@ export type Database = {
         Insert: {
           avg_completion_rate?: number | null;
           avg_scroll_depth?: number | null;
-          avg_view_duration?: unknown | null;
+          avg_view_duration?: unknown;
           bounce_rate?: number | null;
           created_at?: string | null;
           date: string;
@@ -297,7 +466,7 @@ export type Database = {
         Update: {
           avg_completion_rate?: number | null;
           avg_scroll_depth?: number | null;
-          avg_view_duration?: unknown | null;
+          avg_view_duration?: unknown;
           bounce_rate?: number | null;
           created_at?: string | null;
           date?: string;
@@ -383,6 +552,7 @@ export type Database = {
       recipe_steps: {
         Row: {
           description: string | null;
+          duration: number | null;
           id: number;
           recipe_id: string;
           step_index: number;
@@ -393,6 +563,7 @@ export type Database = {
         };
         Insert: {
           description?: string | null;
+          duration?: number | null;
           id?: number;
           recipe_id: string;
           step_index: number;
@@ -403,6 +574,7 @@ export type Database = {
         };
         Update: {
           description?: string | null;
+          duration?: number | null;
           id?: number;
           recipe_id?: string;
           step_index?: number;
@@ -506,6 +678,7 @@ export type Database = {
           brewing_type: Database['public']['Enums']['brewing_type'] | null;
           coffee: number;
           created_at: string;
+          deleted_at: string | null;
           description: string | null;
           dripper: string | null;
           filter: string | null;
@@ -527,6 +700,7 @@ export type Database = {
           brewing_type?: Database['public']['Enums']['brewing_type'] | null;
           coffee: number;
           created_at?: string;
+          deleted_at?: string | null;
           description?: string | null;
           dripper?: string | null;
           filter?: string | null;
@@ -548,6 +722,7 @@ export type Database = {
           brewing_type?: Database['public']['Enums']['brewing_type'] | null;
           coffee?: number;
           created_at?: string;
+          deleted_at?: string | null;
           description?: string | null;
           dripper?: string | null;
           filter?: string | null;
@@ -574,6 +749,48 @@ export type Database = {
             referencedColumns: ['id'];
           },
         ];
+      };
+      roasteries: {
+        Row: {
+          address: string;
+          created_at: string | null;
+          deleted_at: string | null;
+          description: string;
+          featured_image: string | null;
+          id: string;
+          latitude: number | null;
+          longitude: number | null;
+          name: string;
+          online_shop_url: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          address: string;
+          created_at?: string | null;
+          deleted_at?: string | null;
+          description: string;
+          featured_image?: string | null;
+          id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          name: string;
+          online_shop_url?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          address?: string;
+          created_at?: string | null;
+          deleted_at?: string | null;
+          description?: string;
+          featured_image?: string | null;
+          id?: string;
+          latitude?: number | null;
+          longitude?: number | null;
+          name?: string;
+          online_shop_url?: string | null;
+          updated_at?: string | null;
+        };
+        Relationships: [];
       };
       saved_recipes: {
         Row: {
@@ -624,13 +841,34 @@ export type Database = {
           },
         ];
       };
+      temp_user_stats: {
+        Row: {
+          active_users: number | null;
+          created_at: string | null;
+          deleted_users: number | null;
+          total_users: number | null;
+        };
+        Insert: {
+          active_users?: number | null;
+          created_at?: string | null;
+          deleted_users?: number | null;
+          total_users?: number | null;
+        };
+        Update: {
+          active_users?: number | null;
+          created_at?: string | null;
+          deleted_users?: number | null;
+          total_users?: number | null;
+        };
+        Relationships: [];
+      };
       user_activity_logs: {
         Row: {
           created_at: string | null;
           event_data: Json | null;
           event_type: string;
           id: number;
-          ip_address: unknown | null;
+          ip_address: unknown;
           path: string;
           recipe_id: string | null;
           referrer: string | null;
@@ -643,7 +881,7 @@ export type Database = {
           event_data?: Json | null;
           event_type: string;
           id?: number;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           path: string;
           recipe_id?: string | null;
           referrer?: string | null;
@@ -656,7 +894,7 @@ export type Database = {
           event_data?: Json | null;
           event_type?: string;
           id?: number;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           path?: string;
           recipe_id?: string | null;
           referrer?: string | null;
@@ -692,7 +930,7 @@ export type Database = {
         Row: {
           ended_at: string | null;
           id: string;
-          ip_address: unknown | null;
+          ip_address: unknown;
           is_active: boolean | null;
           last_activity_at: string | null;
           page_views: number | null;
@@ -703,7 +941,7 @@ export type Database = {
         Insert: {
           ended_at?: string | null;
           id?: string;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           is_active?: boolean | null;
           last_activity_at?: string | null;
           page_views?: number | null;
@@ -714,7 +952,7 @@ export type Database = {
         Update: {
           ended_at?: string | null;
           id?: string;
-          ip_address?: unknown | null;
+          ip_address?: unknown;
           is_active?: boolean | null;
           last_activity_at?: string | null;
           page_views?: number | null;
@@ -735,6 +973,10 @@ export type Database = {
       users: {
         Row: {
           created_at: string;
+          deleted_at: string | null;
+          deletion_confirmed_at: string | null;
+          deletion_reason: string | null;
+          deletion_scheduled_for: string | null;
           display_name: string;
           email: string;
           id: string;
@@ -743,6 +985,10 @@ export type Database = {
         };
         Insert: {
           created_at?: string;
+          deleted_at?: string | null;
+          deletion_confirmed_at?: string | null;
+          deletion_reason?: string | null;
+          deletion_scheduled_for?: string | null;
           display_name: string;
           email: string;
           id: string;
@@ -751,6 +997,10 @@ export type Database = {
         };
         Update: {
           created_at?: string;
+          deleted_at?: string | null;
+          deletion_confirmed_at?: string | null;
+          deletion_reason?: string | null;
+          deletion_scheduled_for?: string | null;
           display_name?: string;
           email?: string;
           id?: string;
@@ -851,28 +1101,29 @@ export type Database = {
       };
       calculate_recipe_engagement_score: {
         Args: {
-          p_views: number;
           p_avg_duration: unknown;
           p_completion_rate: number;
           p_likes: number;
           p_saves: number;
           p_shares: number;
+          p_views: number;
         };
         Returns: number;
       };
       calculate_trending_recipes: {
-        Args: Record<PropertyKey, never>;
+        Args: never;
         Returns: {
+          recent_engagement: number;
+          recent_views: number;
           recipe_id: string;
           recipe_name: string;
           trending_score: number;
-          recent_views: number;
-          recent_engagement: number;
         }[];
       };
     };
     Enums: {
       brewing_type: 'hot' | 'ice';
+      event_category: 'cupping' | 'popup';
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1004,6 +1255,7 @@ export const Constants = {
   public: {
     Enums: {
       brewing_type: ['hot', 'ice'],
+      event_category: ['cupping', 'popup'],
     },
   },
 } as const;
