@@ -3,13 +3,15 @@ import { useRouter } from 'expo-router';
 import {
   Alert,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanForm } from '@/components/beans';
 import { useCreateBeanMutation } from '@/hooks/useBeans';
+import { uploadBeanImage } from '@/lib/storage/beanImage';
+import { supabase } from '@/lib/supabaseClient';
 import type { CreateBeanInput } from '@/types/bean';
 
 export default function AddBeanScreen() {
@@ -35,10 +37,26 @@ export default function AddBeanScreen() {
     weight_g: data.weight_g as number,
     price: data.price as number | null | undefined,
     cup_notes: data.cup_notes as string[] | undefined,
+    image_url: (data.image_url as string) ?? null,
   });
 
-  const handleSubmit = async (data: Record<string, unknown>) => {
-    await createBeanMutation.mutateAsync(normalizeInput(data));
+  const handleSubmit = async (
+    data: Record<string, unknown>,
+    imageData: { base64: string; mimeType: string } | null,
+  ) => {
+    let imageUrl: string | null = null;
+
+    if (imageData) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+      if (userId) {
+        imageUrl = await uploadBeanImage(imageData.base64, userId, imageData.mimeType);
+      }
+    }
+
+    await createBeanMutation.mutateAsync(
+      normalizeInput({ ...data, image_url: imageUrl }),
+    );
   };
 
   return (
