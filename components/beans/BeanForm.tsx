@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
+import dayjs from 'dayjs';
 import * as ImagePicker from 'expo-image-picker';
 import { useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -17,12 +18,16 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 import type {
-  BeanFieldConfidence,
   RoastLevel,
 } from '@/types/bean';
 import { PRESET_CUP_NOTES } from '@/types/bean';
+import { useBeanAnalysis } from '@/hooks/useBeanAnalysis';
 import { ConfidenceBadge } from './ConfidenceBadge';
 import { CupNoteTag } from './CupNoteTag';
+import {
+  RoastDateSelector,
+  type RoastDateSelectorRef,
+} from './RoastDateSelector';
 import {
   RoastLevelSelector,
   type RoastLevelSelectorRef,
@@ -47,8 +52,13 @@ type BeanFormData = z.infer<typeof beanFormSchema>;
 
 type Phase = 'capture' | 'analyzing' | 'form';
 
+interface ImageData {
+  base64: string;
+  mimeType: string;
+}
+
 interface BeanFormProps {
-  onSubmit: (data: BeanFormData) => Promise<void>;
+  onSubmit: (data: BeanFormData, imageData: ImageData | null) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
@@ -56,18 +66,11 @@ interface BeanFormProps {
 export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProps) {
   const [phase, setPhase] = useState<Phase>('capture');
   const [imageUri, setImageUri] = useState<string | null>(null);
-  const confidence: BeanFieldConfidence = {
-    name: null,
-    roastery_name: null,
-    roast_level: null,
-    bean_type: null,
-    weight_g: null,
-    price: null,
-    cup_notes: null,
-  };
+  const { isAnalyzing, confidence, imageData, analyze } = useBeanAnalysis();
   const [cupNoteInput, setCupNoteInput] = useState('');
 
   const roastLevelRef = useRef<RoastLevelSelectorRef>(null);
+  const roastDateRef = useRef<RoastDateSelectorRef>(null);
 
   const {
     control,
@@ -105,7 +108,24 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
       quality: 0.8,
     });
     if (!result.canceled && result.assets.at(0)) {
-      setImageUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      setPhase('analyzing');
+
+      const analysisResult = await analyze(uri);
+
+      if (analysisResult) {
+        if (analysisResult.name) setValue('name', analysisResult.name);
+        if (analysisResult.roastery_name) setValue('roastery_name', analysisResult.roastery_name);
+        if (analysisResult.roast_level) setValue('roast_level', analysisResult.roast_level);
+        if (analysisResult.bean_type) setValue('bean_type', analysisResult.bean_type);
+        if (analysisResult.weight_g) setValue('weight_g', analysisResult.weight_g);
+        if (analysisResult.price) setValue('price', analysisResult.price);
+        if (analysisResult.cup_notes?.length) setValue('cup_notes', analysisResult.cup_notes);
+      } else {
+        Alert.alert('분석 실패', 'AI 분석에 실패했습니다. 직접 입력해주세요.');
+      }
+
       setPhase('form');
     }
   };
@@ -121,7 +141,24 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
       quality: 0.8,
     });
     if (!result.canceled && result.assets.at(0)) {
-      setImageUri(result.assets[0].uri);
+      const uri = result.assets[0].uri;
+      setImageUri(uri);
+      setPhase('analyzing');
+
+      const analysisResult = await analyze(uri);
+
+      if (analysisResult) {
+        if (analysisResult.name) setValue('name', analysisResult.name);
+        if (analysisResult.roastery_name) setValue('roastery_name', analysisResult.roastery_name);
+        if (analysisResult.roast_level) setValue('roast_level', analysisResult.roast_level);
+        if (analysisResult.bean_type) setValue('bean_type', analysisResult.bean_type);
+        if (analysisResult.weight_g) setValue('weight_g', analysisResult.weight_g);
+        if (analysisResult.price) setValue('price', analysisResult.price);
+        if (analysisResult.cup_notes?.length) setValue('cup_notes', analysisResult.cup_notes);
+      } else {
+        Alert.alert('분석 실패', 'AI 분석에 실패했습니다. 직접 입력해주세요.');
+      }
+
       setPhase('form');
     }
   };
@@ -148,7 +185,7 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
 
   const handleFormSubmit = async (data: BeanFormData) => {
     try {
-      await onSubmit(data);
+      await onSubmit(data, imageData);
     } catch {
       Alert.alert('저장 실패', '원두 등록 중 오류가 발생했습니다.');
     }
@@ -168,15 +205,17 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
 
         <View style={styles.captureButtons}>
           <TouchableOpacity
+            disabled={isAnalyzing || isLoading}
             onPress={handleCapture}
-            style={styles.primaryButton}
+            style={[styles.primaryButton, (isAnalyzing || isLoading) && styles.disabledButton]}
           >
             <Ionicons color="#FFFFFF" name="camera" size={20} />
             <Text style={styles.primaryButtonText}>촬영</Text>
           </TouchableOpacity>
           <TouchableOpacity
+            disabled={isAnalyzing || isLoading}
             onPress={handleGallery}
-            style={styles.secondaryButton}
+            style={[styles.secondaryButton, (isAnalyzing || isLoading) && styles.disabledButton]}
           >
             <Ionicons color="#8B4513" name="image-outline" size={20} />
             <Text style={styles.secondaryButtonText}>갤러리</Text>
@@ -293,9 +332,7 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
                 name="roast_date"
                 render={({ field: { value } }) => (
                   <TouchableOpacity
-                    onPress={() => {
-                      // TODO: DatePicker 연동
-                    }}
+                    onPress={() => roastDateRef.current?.expand()}
                     style={styles.selector}
                   >
                     <Text
@@ -304,7 +341,7 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
                         !value && styles.selectorPlaceholder,
                       ]}
                     >
-                      {value || '날짜 선택'}
+                      {value ? dayjs(value).format('YYYY년 M월 D일') : '날짜 선택'}
                     </Text>
                     <Ionicons
                       color="#8B4513"
@@ -529,11 +566,16 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
         </TouchableOpacity>
       </View>
 
-      {/* Bottom Sheet */}
+      {/* Bottom Sheets */}
       <RoastLevelSelector
         onSelect={(level: RoastLevel) => setValue('roast_level', level)}
         ref={roastLevelRef}
         selectedLevel={roastLevel ?? null}
+      />
+      <RoastDateSelector
+        onSelect={(date: string) => setValue('roast_date', date)}
+        ref={roastDateRef}
+        selectedDate={watch('roast_date') || null}
       />
     </View>
   );
