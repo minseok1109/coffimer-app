@@ -11,7 +11,7 @@ export class BeanAPI {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return (data ?? []) as Bean[];
+    return (data ?? []) as unknown as Bean[];
   }
 
   static async getBeanById(beanId: string): Promise<Bean | null> {
@@ -23,7 +23,7 @@ export class BeanAPI {
       .maybeSingle();
 
     if (error) throw error;
-    return data as Bean | null;
+    return data as unknown as Bean | null;
   }
 
   static async createBean(
@@ -41,7 +41,7 @@ export class BeanAPI {
       .single();
 
     if (error) throw error;
-    return data as Bean;
+    return data as unknown as Bean;
   }
 
   static async updateBean(
@@ -58,16 +58,20 @@ export class BeanAPI {
       .single();
 
     if (error) throw error;
-    return data as Bean;
+    return data as unknown as Bean;
   }
 
   static async deleteBean(beanId: string, userId: string): Promise<void> {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('beans')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', beanId)
-      .eq('user_id', userId);
+      .eq('user_id', userId)
+      .select('id');
 
     if (error) throw error;
+    if (!data || data.length === 0) {
+      throw new Error('원두를 찾을 수 없거나 삭제 권한이 없습니다.');
+    }
   }
 }
