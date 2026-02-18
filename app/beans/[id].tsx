@@ -7,12 +7,12 @@ import {
   Animated,
   Modal,
   Pressable,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanDetail } from '@/components/beans';
 import { useBeanDetail, useDeleteBeanMutation } from '@/hooks/useBeans';
 
@@ -67,7 +67,7 @@ export default function BeanDetailScreen() {
 
   const handleEdit = () => {
     closeActionSheet();
-    // TODO: 수정 화면으로 이동
+    router.push(`/beans/edit/${id}`);
   };
 
   const handleDelete = () => {
