@@ -2,8 +2,8 @@ import { Ionicons } from '@expo/vector-icons';
 import dayjs from 'dayjs';
 import { useRef, useState } from 'react';
 import { Controller, useWatch } from 'react-hook-form';
+import type { Control, FieldErrors, UseFormSetValue } from 'react-hook-form';
 import {
-  Alert,
   Image,
   KeyboardAvoidingView,
   LayoutAnimation,
@@ -17,11 +17,16 @@ import {
   UIManager,
   View,
 } from 'react-native';
-import type { Bean, RoastLevel, UpdateBeanInput } from '@/types/bean';
+
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
+
+const PROCESS_METHOD_PRESETS = ['워시드', '내추럴', '허니', '무산소 발효', '기타'] as const;
+import type { BeanFieldConfidence, BeanType, RoastLevel } from '@/types/bean';
 import { PRESET_CUP_NOTES, ROAST_LEVEL_CONFIG } from '@/types/bean';
-import { useBeanForm } from '@/hooks/useBeanForm';
 import type { BeanFormData } from '@/lib/validation/beanSchema';
-import { beanToFormData, normalizeEditInput } from '@/lib/beans/normalizeBeanInput';
+import { ConfidenceBadge } from './ConfidenceBadge';
 import { CupNoteTag } from './CupNoteTag';
 import {
   RoastDateSelector,
@@ -32,25 +37,39 @@ import {
   type RoastLevelSelectorRef,
 } from './RoastLevelSelector';
 
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
-
-const PROCESS_METHOD_PRESETS = ['워시드', '내추럴', '허니', '무산소 발효', '기타'] as const;
-
-interface BeanEditFormProps {
-  bean: Bean;
-  onSubmit: (data: UpdateBeanInput) => Promise<void>;
+interface BeanFormPhaseProps {
+  imageUri: string | null;
+  onChangeImage: () => void;
+  control: Control<BeanFormData>;
+  errors: FieldErrors<BeanFormData>;
+  cupNotes: string[];
+  beanType: BeanType;
+  roastLevel: RoastLevel | null | undefined;
+  confidence: BeanFieldConfidence;
+  onAddCupNote: (note: string) => void;
+  onRemoveCupNote: (note: string) => void;
+  setValue: UseFormSetValue<BeanFormData>;
+  isLoading: boolean;
   onCancel: () => void;
-  isLoading?: boolean;
+  onSubmit: () => void;
 }
 
-export function BeanEditForm({
-  bean,
-  onSubmit,
+export function BeanFormPhase({
+  imageUri,
+  onChangeImage,
+  control,
+  errors,
+  cupNotes,
+  beanType,
+  roastLevel,
+  confidence,
+  onAddCupNote,
+  onRemoveCupNote,
+  setValue,
+  isLoading,
   onCancel,
-  isLoading = false,
-}: BeanEditFormProps) {
+  onSubmit,
+}: BeanFormPhaseProps) {
   const [cupNoteInput, setCupNoteInput] = useState('');
   const [customProcessInput, setCustomProcessInput] = useState('');
   const [isCustomProcess, setIsCustomProcess] = useState(false);
@@ -58,70 +77,31 @@ export function BeanEditForm({
   const noteSectionY = useRef(0);
   const roastLevelRef = useRef<RoastLevelSelectorRef>(null);
   const roastDateRef = useRef<RoastDateSelectorRef>(null);
-
-  const {
-    control,
-    handleSubmit,
-    setValue,
-    errors,
-    isDirty,
-    cupNotes,
-    beanType,
-    roastLevel,
-    addCupNote,
-    removeCupNote,
-    handleFormSubmit,
-  } = useBeanForm({
-    onSubmit: async (data: BeanFormData) => {
-      const normalized = normalizeEditInput(data as unknown as Record<string, unknown>);
-      await onSubmit(normalized);
-    },
-    imageData: null,
-    defaultValues: beanToFormData(bean),
-    submitErrorMessage: '원두 수정 중 오류가 발생했습니다.',
-  });
-
   const roastDate = useWatch({ control, name: 'roast_date' });
   const processMethod = useWatch({ control, name: 'process_method' });
 
   const handleAddCupNote = () => {
-    addCupNote(cupNoteInput);
+    onAddCupNote(cupNoteInput);
     setCupNoteInput('');
   };
 
-  const handleProcessMethodSelect = (preset: string) => {
+  const handleProcessMethodSelect = (preset: string, setFormValue: UseFormSetValue<BeanFormData>) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     if (preset === '기타') {
       if (isCustomProcess) {
         setIsCustomProcess(false);
         setCustomProcessInput('');
-        setValue('process_method', null, { shouldDirty: true });
+        setFormValue('process_method', null);
       } else {
         setIsCustomProcess(true);
-        setValue('process_method', null, { shouldDirty: true });
+        setFormValue('process_method', null);
       }
     } else {
       const isAlreadySelected = processMethod === preset && !isCustomProcess;
       setIsCustomProcess(false);
       setCustomProcessInput('');
-      setValue('process_method', isAlreadySelected ? null : preset, { shouldDirty: true });
+      setFormValue('process_method', isAlreadySelected ? null : preset);
     }
-  };
-
-  const handleCancel = () => {
-    if (!isDirty) {
-      onCancel();
-      return;
-    }
-
-    Alert.alert(
-      '변경사항이 있습니다',
-      '수정 중인 내용을 버리고 나가시겠습니까?',
-      [
-        { text: '계속 수정', style: 'cancel' },
-        { text: '나가기', style: 'destructive', onPress: onCancel },
-      ],
-    );
   };
 
   return (
@@ -135,9 +115,12 @@ export function BeanEditForm({
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
-        {bean.image_url && (
+        {imageUri && (
           <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: bean.image_url }} style={styles.formPreviewImage} />
+            <Image source={{ uri: imageUri }} style={styles.formPreviewImage} />
+            <TouchableOpacity onPress={onChangeImage} style={styles.changeImageButton}>
+              <Text style={styles.changeImageText}>변경</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -146,7 +129,10 @@ export function BeanEditForm({
           <Text style={styles.sectionTitle}>원두 기본 정보</Text>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>원두 이름 *</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>원두 이름 *</Text>
+              <ConfidenceBadge confidence={confidence.name} />
+            </View>
             <Controller
               control={control}
               name="name"
@@ -169,7 +155,10 @@ export function BeanEditForm({
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>로스터리</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.label}>로스터리</Text>
+              <ConfidenceBadge confidence={confidence.roastery_name} />
+            </View>
             <Controller
               control={control}
               name="roastery_name"
@@ -217,7 +206,7 @@ export function BeanEditForm({
               return (
                 <Pressable
                   key={preset}
-                  onPress={() => handleProcessMethodSelect(preset)}
+                  onPress={() => handleProcessMethodSelect(preset, setValue)}
                   style={[styles.processChip, isSelected && styles.processChipActive]}
                 >
                   <Text
@@ -235,7 +224,7 @@ export function BeanEditForm({
               <TextInput
                 onChangeText={(text) => {
                   setCustomProcessInput(text);
-                  setValue('process_method', text || null, { shouldDirty: true });
+                  setValue('process_method', text || null);
                 }}
                 placeholder="가공 방식을 입력하세요"
                 placeholderTextColor="#999"
@@ -320,7 +309,7 @@ export function BeanEditForm({
             <Text style={styles.label}>원두 종류</Text>
             <View style={styles.segmentedControl}>
               <Pressable
-                onPress={() => setValue('bean_type', 'blend', { shouldDirty: true })}
+                onPress={() => setValue('bean_type', 'blend')}
                 style={[styles.segment, beanType === 'blend' && styles.segmentActive]}
               >
                 <Text
@@ -333,7 +322,7 @@ export function BeanEditForm({
                 </Text>
               </Pressable>
               <Pressable
-                onPress={() => setValue('bean_type', 'single_origin', { shouldDirty: true })}
+                onPress={() => setValue('bean_type', 'single_origin')}
                 style={[styles.segment, beanType === 'single_origin' && styles.segmentActive]}
               >
                 <Text
@@ -410,33 +399,6 @@ export function BeanEditForm({
               />
             </View>
           </View>
-
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>잔여량</Text>
-            <Controller
-              control={control}
-              name="remaining_g"
-              render={({ field: { onChange, onBlur, value } }) => (
-                <>
-                  <View style={[styles.inputWithSuffix, errors.remaining_g && styles.inputError]}>
-                    <TextInput
-                      keyboardType="numeric"
-                      onBlur={onBlur}
-                      onChangeText={(text) => onChange(Number(text) || 0)}
-                      placeholder="0"
-                      placeholderTextColor="#999"
-                      style={styles.numberInput}
-                      value={value !== undefined ? value.toString() : ''}
-                    />
-                    <Text style={styles.suffix}>g</Text>
-                  </View>
-                  {errors.remaining_g && (
-                    <Text style={styles.errorText}>{errors.remaining_g.message}</Text>
-                  )}
-                </>
-              )}
-            />
-          </View>
         </View>
 
         {/* 컵노트 */}
@@ -446,7 +408,7 @@ export function BeanEditForm({
           {cupNotes.length > 0 && (
             <View style={styles.cupNotesWrap}>
               {cupNotes.map((note) => (
-                <CupNoteTag key={note} note={note} onRemove={() => removeCupNote(note)} />
+                <CupNoteTag key={note} note={note} onRemove={() => onRemoveCupNote(note)} />
               ))}
             </View>
           )}
@@ -479,7 +441,7 @@ export function BeanEditForm({
 
           <View style={styles.presetNotesWrap}>
             {PRESET_CUP_NOTES.filter((note) => !cupNotes.includes(note)).map((note) => (
-              <Pressable key={note} onPress={() => addCupNote(note)} style={styles.presetChip}>
+              <Pressable key={note} onPress={() => onAddCupNote(note)} style={styles.presetChip}>
                 <Text style={styles.presetChipText}>{note}</Text>
               </Pressable>
             ))}
@@ -519,26 +481,26 @@ export function BeanEditForm({
 
       {/* 하단 버튼 */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity disabled={isLoading} onPress={handleCancel} style={styles.cancelButton}>
+        <TouchableOpacity disabled={isLoading} onPress={onCancel} style={styles.cancelButton}>
           <Text style={styles.cancelButtonText}>취소</Text>
         </TouchableOpacity>
         <TouchableOpacity
           disabled={isLoading}
-          onPress={handleSubmit(handleFormSubmit)}
+          onPress={onSubmit}
           style={[styles.submitButton, isLoading && styles.disabledButton]}
         >
-          <Text style={styles.submitButtonText}>{isLoading ? '저장 중...' : '저장하기'}</Text>
+          <Text style={styles.submitButtonText}>{isLoading ? '등록 중...' : '등록하기'}</Text>
         </TouchableOpacity>
       </View>
 
       {/* BottomSheet */}
       <RoastLevelSelector
-        onSelect={(level: RoastLevel) => setValue('roast_level', level, { shouldDirty: true })}
+        onSelect={(level: RoastLevel) => setValue('roast_level', level)}
         ref={roastLevelRef}
         selectedLevel={roastLevel ?? null}
       />
       <RoastDateSelector
-        onSelect={(date: string) => setValue('roast_date', date, { shouldDirty: true })}
+        onSelect={(date: string) => setValue('roast_date', date)}
         ref={roastDateRef}
         selectedDate={roastDate ?? null}
       />
@@ -562,6 +524,20 @@ const styles = StyleSheet.create({
     height: 160,
     backgroundColor: '#E5E7EB',
   },
+  changeImageButton: {
+    position: 'absolute',
+    bottom: 12,
+    right: 12,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  changeImageText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
+  },
   section: {
     backgroundColor: 'white',
     marginBottom: 12,
@@ -581,6 +557,12 @@ const styles = StyleSheet.create({
   },
   inputGroup: {
     marginBottom: 16,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
   label: {
     fontSize: 16,
