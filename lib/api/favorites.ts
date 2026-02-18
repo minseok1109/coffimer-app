@@ -1,11 +1,11 @@
-import type { Recipe, RecipeWithSteps } from '../../types/recipe';
+import type { RecipeWithSteps } from '../../types/recipe';
 import { supabase } from '../supabaseClient';
 
 export interface SavedRecipe {
   user_id: string;
   recipe_id: string;
   saved_at: string;
-  is_pinned: boolean;
+  is_pinned: boolean | null;
   pin_order: number | null;
   pinned_at: string | null;
 }
@@ -40,27 +40,19 @@ export class FavoritesAPI {
     if (error) throw error;
   }
 
-  // 즐겨찾기 상태 확인
+  // 즐겨찾기 상태 확인 (HEAD 쿼리 — 데이터 전송 없이 count만 확인)
   static async checkFavoriteStatus(
     userId: string,
     recipeId: string
   ): Promise<boolean> {
-    const { data, error } = await supabase
+    const { count, error } = await supabase
       .from('saved_recipes')
-      .select('recipe_id')
+      .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .eq('recipe_id', recipeId)
-      .single();
+      .eq('recipe_id', recipeId);
 
-    if (error) {
-      if (error.code === 'PGRST116') {
-        // No rows returned - not favorited
-        return false;
-      }
-      throw error;
-    }
-
-    return !!data;
+    if (error) throw error;
+    return (count ?? 0) > 0;
   }
 
   // 사용자의 즐겨찾기 레시피 ID 목록 조회
@@ -72,7 +64,7 @@ export class FavoritesAPI {
       .order('saved_at', { ascending: false });
 
     if (error) throw error;
-    return data?.map((item) => item.recipe_id) || [];
+    return data?.map((item) => item.recipe_id) ?? [];
   }
 
   // 사용자의 즐겨찾기 레시피 전체 정보 조회
@@ -84,7 +76,8 @@ export class FavoritesAPI {
         saved_at,
         recipes (
           *,
-          recipe_steps (*)
+          recipe_steps (*),
+          users!recipes_owner_id_fkey (id, display_name, profile_image)
         )
       `)
       .eq('user_id', userId)
@@ -94,39 +87,22 @@ export class FavoritesAPI {
 
     if (!data) return [];
 
-    // 레시피 데이터 변환 및 사용자 정보 조회
     const recipes = data.map((item) => item.recipes).filter(Boolean);
-    const userIds = [...new Set(recipes.map((recipe) => recipe.owner_id))];
-
-    const { data: users } = await supabase
-      .from('users')
-      .select('id, display_name, profile_image')
-      .in('id', userIds);
-
-    const recipesWithUsers = recipes.map((recipe) => ({
-      ...recipe,
-      users: users?.find((user) => user.id === recipe.owner_id),
-    }));
-
-    return recipesWithUsers as RecipeWithSteps[];
+    return recipes as unknown as RecipeWithSteps[];
   }
 
-  // 즐겨찾기 토글 (현재 상태에 따라 추가/제거)
+  // 즐겨찾기 토글 (원자적 RPC — race condition 방지)
   static async toggleFavorite(
     userId: string,
     recipeId: string
   ): Promise<boolean> {
-    const isFavorited = await FavoritesAPI.checkFavoriteStatus(
-      userId,
-      recipeId
-    );
+    const { data, error } = await supabase.rpc('toggle_favorite' as any, {
+      p_user_id: userId,
+      p_recipe_id: recipeId,
+    });
 
-    if (isFavorited) {
-      await FavoritesAPI.removeFavorite(userId, recipeId);
-      return false;
-    }
-    await FavoritesAPI.addFavorite(userId, recipeId);
-    return true;
+    if (error) throw error;
+    return data as unknown as boolean;
   }
 
   // 즐겨찾기 개수 조회
@@ -137,6 +113,6 @@ export class FavoritesAPI {
       .eq('user_id', userId);
 
     if (error) throw error;
-    return count || 0;
+    return count ?? 0;
   }
 }

@@ -13,7 +13,6 @@ export const recipeKeys = {
   }) => [...recipeKeys.lists(), filters] as const,
   details: () => [...recipeKeys.all, 'detail'] as const,
   detail: (id: string) => [...recipeKeys.details(), id] as const,
-  drippers: () => [...recipeKeys.all, 'drippers'] as const,
   userRecipes: (userId: string) => [...recipeKeys.all, 'user', userId] as const,
 };
 
@@ -58,32 +57,5 @@ export const useUserRecipes = (userId: string) => {
     queryKey: recipeKeys.userRecipes(userId),
     queryFn: () => RecipeAPI.getUserRecipes(userId),
     enabled: !!userId,
-  });
-};
-
-// 사용 가능한 드리퍼 목록 조회
-export const useAvailableDrippers = () => {
-  return useQuery<string[], Error>({
-    queryKey: recipeKeys.drippers(),
-    queryFn: () => RecipeService.getAvailableDrippers(),
-  });
-};
-
-// 페이지네이션된 레시피 조회
-export const useRecipesPaginated = (
-  page = 0,
-  pageSize = 10,
-  includeSteps = false
-) => {
-  return useQuery({
-    queryKey: [
-      ...recipeKeys.lists(),
-      'paginated',
-      page,
-      pageSize,
-      includeSteps,
-    ],
-    queryFn: () =>
-      RecipeService.getRecipesPaginated(page, pageSize, includeSteps),
   });
 };

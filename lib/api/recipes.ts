@@ -1,3 +1,4 @@
+import { RecipeService } from '@/services/recipeService';
 import type { CreateRecipeInput, RecipeWithSteps } from '../../types/recipe';
 import { supabase } from '../supabaseClient';
 
@@ -25,7 +26,7 @@ export class RecipeAPI {
       recipe_id: recipe.id,
     }));
 
-    const { data: steps, error: stepsError } = await supabase
+    const { error: stepsError } = await supabase
       .from('recipe_steps')
       .insert(stepsWithRecipeId)
       .select();
@@ -36,50 +37,8 @@ export class RecipeAPI {
       throw stepsError;
     }
 
-    // 3. 사용자 정보와 함께 반환
-    const { data: owner } = await supabase
-      .from('users')
-      .select('id, display_name, profile_image')
-      .eq('id', userId)
-      .single();
-
-    return {
-      ...recipe,
-      recipe_steps: steps,
-      users: owner || undefined,
-    };
-  }
-
-  // 레시피 조회 (단계 포함)
-  static async getRecipeWithSteps(
-    recipeId: string
-  ): Promise<RecipeWithSteps | null> {
-    // 레시피와 단계 조회
-    const { data: recipe, error: recipeError } = await supabase
-      .from('recipes')
-      .select(
-        `
-        *,
-        recipe_steps (*)
-      `
-      )
-      .eq('id', recipeId)
-      .single();
-
-    if (recipeError) throw recipeError;
-    if (!recipe) return null;
-
-    // 사용자 정보 조회
-    const { data: user } = await supabase
-      .from('users')
-      .select('id, display_name, profile_image')
-      .eq('id', recipe.owner_id)
-      .single();
-
-    return {
-      ...recipe,
-      users: user || undefined,
-    } as RecipeWithSteps;
+    // 3. nested select로 완전한 레시피 반환 (users 포함)
+    return RecipeService.getRecipeById(recipe.id);
   }
 
   // 공개 레시피 목록 조회
@@ -89,18 +48,16 @@ export class RecipeAPI {
   ): Promise<RecipeWithSteps[]> {
     const { data, error } = await supabase
       .from('recipes')
-      .select(
-        `
+      .select(`
         *,
-        recipe_steps (*),
-              `
-      )
+        recipe_steps (*)
+      `)
       .eq('is_public', true)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) throw error;
-    return data as any;
+    return (data ?? []) as unknown as RecipeWithSteps[];
   }
 
   // 사용자의 레시피 목록 조회
@@ -116,7 +73,7 @@ export class RecipeAPI {
       .eq('owner_id', userId)
       .order('created_at', { ascending: false });
     if (error) throw error;
-    return data as any;
+    return (data ?? []) as unknown as RecipeWithSteps[];
   }
 
   // 레시피 수정
@@ -171,7 +128,7 @@ export class RecipeAPI {
     }
 
     // 업데이트된 레시피 반환
-    return RecipeAPI.getRecipeWithSteps(recipeId) as Promise<RecipeWithSteps>;
+    return RecipeService.getRecipeById(recipeId);
   }
 
   // 레시피 삭제

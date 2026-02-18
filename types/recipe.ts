@@ -26,12 +26,19 @@ export interface RecipeWithSteps extends Recipe {
   users?: Pick<User, 'id' | 'display_name' | 'profile_image'>;
 }
 
+// 필터 옵션 (RPC 반환 타입)
+export interface RecipeFilterOptions {
+  drippers: string[];
+  filters: string[];
+  brewing_types: string[];
+}
+
 // 즐겨찾기 레시피 타입
 export interface SavedRecipe {
   user_id: string;
   recipe_id: string;
   saved_at: string;
-  is_pinned: boolean;
+  is_pinned: boolean | null;
   pin_order: number | null;
   pinned_at: string | null;
 }
