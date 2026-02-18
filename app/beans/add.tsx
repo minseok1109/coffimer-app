@@ -10,9 +10,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanForm } from '@/components/beans';
 import { useCreateBeanMutation } from '@/hooks/useBeans';
+import { normalizeInput } from '@/lib/beans/normalizeBeanInput';
 import { uploadBeanImage } from '@/lib/storage/beanImage';
 import { supabase } from '@/lib/supabaseClient';
-import type { CreateBeanInput } from '@/types/bean';
 
 export default function AddBeanScreen() {
   const router = useRouter();
@@ -26,18 +26,6 @@ export default function AddBeanScreen() {
     onError: () => {
       Alert.alert('등록 실패', '원두 등록 중 오류가 발생했습니다.');
     },
-  });
-
-  const normalizeInput = (data: Record<string, unknown>): CreateBeanInput => ({
-    name: data.name as string,
-    roastery_name: (data.roastery_name as string) || null,
-    roast_date: (data.roast_date as string) || null,
-    roast_level: data.roast_level as CreateBeanInput['roast_level'],
-    bean_type: data.bean_type as CreateBeanInput['bean_type'],
-    weight_g: data.weight_g as number,
-    price: data.price as number | null | undefined,
-    cup_notes: data.cup_notes as string[] | undefined,
-    image_url: (data.image_url as string) ?? null,
   });
 
   const handleSubmit = async (
