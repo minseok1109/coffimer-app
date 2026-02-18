@@ -1,0 +1,1 @@
+export { CustomDayComponent } from "./CustomDayComponent";
