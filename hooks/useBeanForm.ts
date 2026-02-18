@@ -71,6 +71,9 @@ export function useBeanForm({
     if (result.weight_g) setValue('weight_g', result.weight_g);
     if (result.price) setValue('price', result.price);
     if (result.cup_notes?.length) setValue('cup_notes', result.cup_notes);
+    if (result.roast_date) setValue('roast_date', result.roast_date);
+    if (result.variety) setValue('variety', result.variety);
+    if (result.process_method) setValue('process_method', result.process_method);
   };
 
   const handleFormSubmit = async (data: BeanFormData) => {

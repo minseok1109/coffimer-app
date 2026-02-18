@@ -1,8 +1,11 @@
-import { useState, useRef, useCallback } from 'react';
-import { File } from 'expo-file-system';
-import { encode } from 'base64-arraybuffer';
-import type { BeanFieldConfidence, AIExtractionResult } from '@/types/bean';
 import { analyzeBeanImage } from '@/lib/api/beanAnalysis';
+import type { ImageData } from '@/lib/validation/beanSchema';
+import type { AIExtractionResult, BeanFieldConfidence } from '@/types/bean';
+import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
+import { useCallback, useRef, useState } from 'react';
+
+const MAX_IMAGE_WIDTH = 1280;
+const COMPRESS_QUALITY = 0.7;
 
 const INITIAL_CONFIDENCE: BeanFieldConfidence = {
   name: null,
@@ -12,12 +15,10 @@ const INITIAL_CONFIDENCE: BeanFieldConfidence = {
   weight_g: null,
   price: null,
   cup_notes: null,
+  roast_date: null,
+  variety: null,
+  process_method: null,
 };
-
-interface ImageData {
-  base64: string;
-  mimeType: string;
-}
 
 interface UseBeanAnalysisReturn {
   isAnalyzing: boolean;
@@ -38,11 +39,16 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
     setIsAnalyzing(true);
 
     try {
-      const file = new File(uri);
-      const arrayBuffer = await file.arrayBuffer();
-      const base64 = encode(arrayBuffer);
-
-      const mimeType = uri.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+      const imageRef = await ImageManipulator.manipulate(uri)
+        .resize({ width: MAX_IMAGE_WIDTH })
+        .renderAsync();
+      const { base64: encodedBase64 } = await imageRef.saveAsync({
+        format: SaveFormat.JPEG,
+        compress: COMPRESS_QUALITY,
+        base64: true,
+      });
+      const base64 = encodedBase64 ?? '';
+      const mimeType = 'image/jpeg';
 
       // base64를 캐시하여 업로드 시 재사용
       imageDataRef.current = { base64, mimeType };

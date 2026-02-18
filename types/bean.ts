@@ -22,6 +22,9 @@ export interface Bean {
   user_id: string;
   created_at: string;
   degassing_days: number | null;
+  variety: string | null;
+  process_method: string | null;
+  notes: string | null;
   updated_at: string;
 }
 
@@ -33,6 +36,9 @@ export interface BeanFieldConfidence {
   weight_g: number | null;
   price: number | null;
   cup_notes: number | null;
+  roast_date: number | null;
+  variety: number | null;
+  process_method: number | null;
 }
 
 export interface AIExtractionResult {
@@ -43,6 +49,9 @@ export interface AIExtractionResult {
   weight_g: number | null;
   price: number | null;
   cup_notes: string[];
+  roast_date: string | null;
+  variety: string | null;
+  process_method: string | null;
   confidence: BeanFieldConfidence;
 }
 
@@ -89,6 +98,9 @@ export interface CreateBeanInput {
   cup_notes?: string[];
   image_url?: string | null;
   degassing_days?: number | null;
+  variety?: string | null;
+  process_method?: string | null;
+  notes?: string | null;
 }
 
 export type UpdateBeanInput = Partial<CreateBeanInput> & {

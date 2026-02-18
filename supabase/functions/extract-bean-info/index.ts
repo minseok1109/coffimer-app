@@ -15,9 +15,9 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
 }
 
 const MAX_BASE64_LENGTH = 4 * 1024 * 1024; // ~3MB 원본 기준 (base64 인코딩 시 ~33% 증가)
-const GEMINI_TIMEOUT_MS = 25_000;
+const API_TIMEOUT_MS = 25_000;
 
-const GEMINI_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. 다음 정보를 추출하세요:
+const ANALYSIS_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. 다음 정보를 추출하세요:
 - name: 원두 이름
 - roastery_name: 로스터리(카페) 이름
 - roast_level: light, medium_light, medium, medium_dark, dark 중 하나
@@ -25,6 +25,9 @@ const GEMINI_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. �
 - weight_g: 무게 (그램 단위 정수)
 - price: 가격 (원 단위 정수)
 - cup_notes: 컵노트 배열 (한국어)
+- roast_date: 로스팅 날짜 (YYYY-MM-DD 형식)
+- variety: 품종 (예: Geisha, Typica, SL28, Caturra, Bourbon)
+- process_method: 가공 방식 (예: Washed, Natural, Honey, Anaerobic)
 
 각 필드에 대해 0.0~1.0 사이의 confidence 값도 함께 반환하세요.
 정보를 확인할 수 없는 필드는 null로, confidence는 0.0으로 설정하세요.
@@ -38,6 +41,9 @@ const GEMINI_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. �
   "weight_g": "number | null",
   "price": "number | null",
   "cup_notes": ["string"],
+  "roast_date": "string | null",
+  "variety": "string | null",
+  "process_method": "string | null",
   "confidence": {
     "name": 0.0,
     "roastery_name": 0.0,
@@ -45,7 +51,10 @@ const GEMINI_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. �
     "bean_type": 0.0,
     "weight_g": 0.0,
     "price": 0.0,
-    "cup_notes": 0.0
+    "cup_notes": 0.0,
+    "roast_date": 0.0,
+    "variety": 0.0,
+    "process_method": 0.0
   }
 }`;
 
@@ -94,42 +103,54 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // Gemini 3.0 Flash API 호출
-    const geminiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!geminiKey) {
-      return jsonResponse({ error: 'Gemini API key not configured' }, 500);
+    // OpenRouter API 호출
+    const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
+    if (!openRouterKey) {
+      return jsonResponse(
+        { error: 'OpenRouter API key not configured' },
+        500,
+      );
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`;
-
-    // AbortController로 타임아웃 설정 (Gemini API 무한 대기 방지)
+    // AbortController로 타임아웃 설정 (API 무한 대기 방지)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
+    const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
-    let geminiResponse: Response;
+    let apiResponse: Response;
     try {
-      geminiResponse = await fetch(geminiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { inline_data: { mime_type, data: image_base64 } },
-                { text: GEMINI_PROMPT },
-              ],
-            },
-          ],
-          generationConfig: {
-            responseMimeType: 'application/json',
+      apiResponse = await fetch(
+        'https://openrouter.ai/api/v1/chat/completions',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${openRouterKey}`,
           },
-        }),
-        signal: controller.signal,
-      });
+          body: JSON.stringify({
+            model: 'google/gemini-3-flash-preview',
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  {
+                    type: 'image_url',
+                    image_url: {
+                      url: `data:${mime_type};base64,${image_base64}`,
+                    },
+                  },
+                  { type: 'text', text: ANALYSIS_PROMPT },
+                ],
+              },
+            ],
+            response_format: { type: 'json_object' },
+          }),
+          signal: controller.signal,
+        },
+      );
     } catch (fetchError) {
       if ((fetchError as Error).name === 'AbortError') {
         return jsonResponse(
-          { success: false, error: 'Gemini API request timed out' },
+          { success: false, error: 'OpenRouter API request timed out' },
           504,
         );
       }
@@ -138,23 +159,22 @@ Deno.serve(async (req: Request) => {
       clearTimeout(timeoutId);
     }
 
-    if (!geminiResponse.ok) {
-      const errorText = await geminiResponse.text();
+    if (!apiResponse.ok) {
+      const errorText = await apiResponse.text();
       return jsonResponse(
         {
           success: false,
-          error: 'Gemini API call failed',
+          error: 'OpenRouter API call failed',
           details: errorText,
         },
         502,
       );
     }
 
-    const geminiResult = await geminiResponse.json();
-    const rawText =
-      geminiResult.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    const result = await apiResponse.json();
+    const rawText = result.choices?.[0]?.message?.content ?? '';
 
-    // JSON 파싱 실패를 별도로 처리 (Gemini JSON 모드라도 100% 보장 아님)
+    // JSON 파싱 실패를 별도로 처리 (JSON 모드라도 100% 보장 아님)
     let parsed;
     try {
       parsed = JSON.parse(rawText);
@@ -162,7 +182,7 @@ Deno.serve(async (req: Request) => {
       return jsonResponse(
         {
           success: false,
-          error: 'Failed to parse Gemini response as JSON',
+          error: 'Failed to parse API response as JSON',
           details: rawText.slice(0, 200),
         },
         502,
@@ -179,6 +199,9 @@ Deno.serve(async (req: Request) => {
         weight_g: parsed.weight_g ?? null,
         price: parsed.price ?? null,
         cup_notes: Array.isArray(parsed.cup_notes) ? parsed.cup_notes : [],
+        roast_date: parsed.roast_date ?? null,
+        variety: parsed.variety ?? null,
+        process_method: parsed.process_method ?? null,
         confidence: {
           name: parsed.confidence?.name ?? 0,
           roastery_name: parsed.confidence?.roastery_name ?? 0,
@@ -187,6 +210,9 @@ Deno.serve(async (req: Request) => {
           weight_g: parsed.confidence?.weight_g ?? 0,
           price: parsed.confidence?.price ?? 0,
           cup_notes: parsed.confidence?.cup_notes ?? 0,
+          roast_date: parsed.confidence?.roast_date ?? 0,
+          variety: parsed.confidence?.variety ?? 0,
+          process_method: parsed.confidence?.process_method ?? 0,
         },
       },
     });

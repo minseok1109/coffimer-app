@@ -73,6 +73,9 @@ export type Database = {
           cup_notes: string[];
           image_url: string | null;
           degassing_days: number | null;
+          variety: string | null;
+          process_method: string | null;
+          notes: string | null;
           created_at: string;
           updated_at: string;
           deleted_at: string | null;
@@ -91,6 +94,9 @@ export type Database = {
           cup_notes?: string[];
           image_url?: string | null;
           degassing_days?: number | null;
+          variety?: string | null;
+          process_method?: string | null;
+          notes?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
@@ -109,6 +115,9 @@ export type Database = {
           cup_notes?: string[];
           image_url?: string | null;
           degassing_days?: number | null;
+          variety?: string | null;
+          process_method?: string | null;
+          notes?: string | null;
           created_at?: string;
           updated_at?: string;
           deleted_at?: string | null;
