@@ -62,16 +62,27 @@ export class BeanAPI {
   }
 
   static async deleteBean(beanId: string, userId: string): Promise<void> {
-    const { data, error } = await supabase
+    // SELECT 정책(deleted_at IS NULL)으로 존재 및 권한 확인
+    const { data: existing, error: checkError } = await supabase
+      .from('beans')
+      .select('id')
+      .eq('id', beanId)
+      .eq('user_id', userId)
+      .is('deleted_at', null)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (!existing) {
+      throw new Error('원두를 찾을 수 없거나 삭제 권한이 없습니다.');
+    }
+
+    // RETURNING 없이 UPDATE — SELECT RLS 정책 미적용
+    const { error } = await supabase
       .from('beans')
       .update({ deleted_at: new Date().toISOString() })
       .eq('id', beanId)
-      .eq('user_id', userId)
-      .select('id');
+      .eq('user_id', userId);
 
     if (error) throw error;
-    if (!data || data.length === 0) {
-      throw new Error('원두를 찾을 수 없거나 삭제 권한이 없습니다.');
-    }
   }
 }
