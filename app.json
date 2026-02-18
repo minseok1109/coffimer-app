@@ -9,7 +9,6 @@
     "icon": "./assets/images/logo.png",
     "scheme": "coffimerapp",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "primaryColor": "#8B4513",
     "splash": {
       "image": "./assets/images/logo.png",
@@ -20,15 +19,13 @@
       "supportsTablet": false,
       "bundleIdentifier": "com.bangbangminseok.coffimerapp",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": ["nmap", "kakaomap", "comgooglemaps"]
       }
     },
     "android": {
       "package": "com.bangbangminseok.coffimerapp",
       "versionCode": 11,
-      "compileSdkVersion": 34,
-      "targetSdkVersion": 34,
-      "minSdkVersion": 24,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo_1024.png",
         "backgroundColor": "#ffffff"
@@ -70,8 +67,6 @@
         }
       ],
       "expo-audio",
-      "expo-video",
-      "@react-native-google-signin/google-signin",
       [
         "expo-font",
         {
@@ -88,11 +83,21 @@
           ]
         }
       ],
-      "expo-localization",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-secure-store",
+      "expo-asset",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "원두 정보를 등록하기 위해 갤러리 접근 권한이 필요합니다.",
+          "cameraPermission": "원두 봉투를 촬영하기 위해 카메라 접근 권한이 필요합니다.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
-      "typedRoutes": true
+      "typedRoutes": true,
+      "reactCompiler": true
     },
     "extra": {
       "router": {},
@@ -100,9 +105,7 @@
         "projectId": "fd761fa1-092e-4338-b2e7-d8f56e757844"
       }
     },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.11",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
