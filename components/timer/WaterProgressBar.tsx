@@ -1,4 +1,4 @@
-import React from 'react';
+import { useMemo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import type { RecipeWithSteps } from '@/types/recipe';
 import type { StepInfo } from '@/types/timer';
@@ -7,45 +7,42 @@ import type { WaterInfo } from '../../lib/timer/types';
 interface WaterProgressBarProps {
   currentStepInfo: StepInfo;
   waterInfo: WaterInfo;
-  recipe?: RecipeWithSteps | null | undefined;
+  recipe?: RecipeWithSteps | null;
 }
 
-// 커피 관련 색상 팔레트
 const STEP_COLORS = [
-  '#CD853F', // 페루 (생두)
-  '#A0522D', // 시에나 (물)
-  '#8B7355', // 탄 브라운 (크레마)
-  '#8B4513', // 브라운 (원두)
-  '#6B4423', // 다크 브라운 (에스프레소)
-  '#5C4033', // 초콜릿 (다크로스트)
-  '#4A3728', // 다크 초콜릿 (필터)
-  '#2C1810', // 에스프레소 (로스팅)
+  '#CD853F',
+  '#A0522D',
+  '#8B7355',
+  '#8B4513',
+  '#6B4423',
+  '#5C4033',
+  '#4A3728',
+  '#2C1810',
 ];
 
-export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
+export function WaterProgressBar({
   currentStepInfo,
   waterInfo,
   recipe,
-}) => {
+}: WaterProgressBarProps) {
   const { totalNeeded, remaining } = waterInfo;
   const currentStepWater =
     Number.parseInt(
-      currentStepInfo.step.water.toString().replace('ml', '') || '0'
+      (currentStepInfo.step.water ?? 0).toString().replace('ml', '') || '0'
     ) || 0;
 
-  // 각 단계별 물양 계산
-  const stepWaterAmounts = React.useMemo(() => {
+  const stepWaterAmounts = useMemo(() => {
     if (!recipe?.recipe_steps) return [];
 
     return recipe.recipe_steps.map((step) => {
       const waterAmount =
-        Number.parseInt(step.water.toString().replace(/[^\d]/g, '')) || 0;
+        Number.parseInt((step.water ?? 0).toString().replace(/[^\d]/g, '')) || 0;
       return waterAmount;
     });
   }, [recipe?.recipe_steps]);
 
-  // 진행률 계산을 위한 누적 물양
-  const cumulativeWaterAmounts = React.useMemo(() => {
+  const cumulativeWaterAmounts = useMemo(() => {
     const cumulative = [];
     let total = 0;
     for (const amount of stepWaterAmounts) {
@@ -124,7 +121,7 @@ export const WaterProgressBar: React.FC<WaterProgressBarProps> = ({
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

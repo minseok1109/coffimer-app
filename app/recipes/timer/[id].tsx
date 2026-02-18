@@ -67,7 +67,6 @@ export default function RecipeTimer() {
           <StepCard
             currentStepInfo={currentStepInfo}
             nextStepInfo={nextStepInfo}
-            recipe={recipe}
             waterInfo={waterInfo}
           />
         )}

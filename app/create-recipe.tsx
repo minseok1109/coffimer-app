@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { StatusBar } from 'expo-status-bar';
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { FormProvider } from 'react-hook-form';
 import {
   KeyboardAvoidingView,
@@ -11,7 +11,6 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -31,6 +30,11 @@ import { useCreateRecipe } from '@/hooks/useCreateRecipe';
 import { createRecipeStyles } from '@/styles/create-recipe.styles';
 import { DRIPPER_OPTIONS } from '@/utils/selectorUtils';
 
+const DRIPPER_OPTIONS_WITH_ICONS = DRIPPER_OPTIONS.map((option) => ({
+  ...option,
+  icon: 'funnel-outline' as const,
+}));
+
 export default function CreateRecipeScreen() {
   const {
     methods,
@@ -48,12 +52,6 @@ export default function CreateRecipeScreen() {
   const bottomSheetRef = useRef<BottomSheetRef>(null);
   const filterBottomSheetRef = useRef<BottomSheetRef>(null);
   const grinderBottomSheetRef = useRef<BottomSheetRef>(null);
-
-  // 아이콘 정보를 추가한 드리퍼 옵션
-  const dripperOptionsWithIcons = DRIPPER_OPTIONS.map((option) => ({
-    ...option,
-    icon: 'funnel-outline' as const,
-  }));
 
   const handleDripperSelect = (value: string) => {
     methods.setValue('dripper', value);
@@ -79,6 +77,12 @@ export default function CreateRecipeScreen() {
     grinderBottomSheetRef.current?.expand();
   };
 
+  const getNextButtonLabel = (): string => {
+    if (isSaving) return '저장 중...';
+    if (currentStep === 4) return '완료';
+    return '다음 버튼';
+  };
+
   const renderCurrentStep = () => {
     switch (currentStep) {
       case 1:
@@ -102,108 +106,102 @@ export default function CreateRecipeScreen() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <FormProvider {...methods}>
-          <View style={[createRecipeStyles.container, { paddingTop: insets.top }]}>
-            <StatusBar style="auto" />
+    <BottomSheetModalProvider>
+      <FormProvider {...methods}>
+        <View style={[createRecipeStyles.container, { paddingTop: insets.top }]}>
+          <StatusBar style="auto" />
 
-            {/* 헤더 */}
-            <View style={createRecipeStyles.header}>
-              <TouchableOpacity
-                onPress={() => router.back()}
-                style={createRecipeStyles.backButton}
-              >
-                <Ionicons color="#333" name="arrow-back" size={24} />
-              </TouchableOpacity>
-              <Text style={createRecipeStyles.title}>레시피 작성</Text>
-              <View style={createRecipeStyles.placeholder} />
-            </View>
-
-            {/* Step Indicator */}
-            <StepIndicator currentStep={currentStep} />
-
-            {/* Form Content */}
-            <KeyboardAvoidingView
-              behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-              style={createRecipeStyles.content}
-              {...(Platform.OS === 'ios' && { keyboardVerticalOffset: 0 })}
+          {/* 헤더 */}
+          <View style={createRecipeStyles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              style={createRecipeStyles.backButton}
             >
-              <ScrollView
-                showsVerticalScrollIndicator={false}
-                style={createRecipeStyles.scrollView}
-                contentContainerStyle={{ flexGrow: 1 }}
-              >
-                <Animated.View
-                  style={[createRecipeStyles.stepsContainer, animatedStyle]}
-                >
-                  {renderCurrentStep()}
-                </Animated.View>
-              </ScrollView>
+              <Ionicons color="#333" name="arrow-back" size={24} />
+            </TouchableOpacity>
+            <Text style={createRecipeStyles.title}>레시피 작성</Text>
+            <View style={createRecipeStyles.placeholder} />
+          </View>
 
-              {/* Navigation Buttons */}
-              <View 
-                style={[
-                  createRecipeStyles.navigationButtons,
-                  Platform.OS === 'android' && { paddingBottom: Math.max(insets.bottom, 24) }
-                ]}
+          {/* Step Indicator */}
+          <StepIndicator currentStep={currentStep} />
+
+          {/* Form Content */}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={createRecipeStyles.content}
+            {...(Platform.OS === 'ios' && { keyboardVerticalOffset: 0 })}
+          >
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              style={createRecipeStyles.scrollView}
+              contentContainerStyle={{ flexGrow: 1 }}
+            >
+              <Animated.View
+                style={[createRecipeStyles.stepsContainer, animatedStyle]}
               >
-                {currentStep > 1 && (
-                  <TouchableOpacity
-                    disabled={isTransitioning}
-                    onPress={handlePrevious}
-                    style={[
-                      createRecipeStyles.navButton,
-                      createRecipeStyles.previousButton,
-                      isTransitioning && { opacity: 0.7 },
-                    ]}
-                  >
-                    <Text style={createRecipeStyles.previousButtonText}>
-                      이전 버튼
-                    </Text>
-                  </TouchableOpacity>
-                )}
+                {renderCurrentStep()}
+              </Animated.View>
+            </ScrollView>
+
+            {/* Navigation Buttons */}
+            <View
+              style={[
+                createRecipeStyles.navigationButtons,
+                Platform.OS === 'android' && { paddingBottom: Math.max(insets.bottom, 24) }
+              ]}
+            >
+              {currentStep > 1 && (
                 <TouchableOpacity
-                  disabled={isTransitioning || isSaving}
-                  onPress={handleNext}
+                  disabled={isTransitioning}
+                  onPress={handlePrevious}
                   style={[
                     createRecipeStyles.navButton,
-                    createRecipeStyles.nextButton,
-                    currentStep === 1 && createRecipeStyles.fullWidthButton,
-                    (isTransitioning || isSaving) && { opacity: 0.7 },
+                    createRecipeStyles.previousButton,
+                    isTransitioning && { opacity: 0.7 },
                   ]}
                 >
-                  <Text style={createRecipeStyles.nextButtonText}>
-                    {isSaving
-                      ? '저장 중...'
-                      : currentStep === 4
-                        ? '완료'
-                        : '다음 버튼'}
+                  <Text style={createRecipeStyles.previousButtonText}>
+                    이전 버튼
                   </Text>
                 </TouchableOpacity>
-              </View>
-            </KeyboardAvoidingView>
-          </View>
-        </FormProvider>
+              )}
+              <TouchableOpacity
+                disabled={isTransitioning || isSaving}
+                onPress={handleNext}
+                style={[
+                  createRecipeStyles.navButton,
+                  createRecipeStyles.nextButton,
+                  currentStep === 1 && createRecipeStyles.fullWidthButton,
+                  (isTransitioning || isSaving) && { opacity: 0.7 },
+                ]}
+              >
+                <Text style={createRecipeStyles.nextButtonText}>
+                  {getNextButtonLabel()}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </View>
+      </FormProvider>
 
-        {/* Global Bottom Sheets */}
-        <DripperBottomSheet
-          onSelect={handleDripperSelect}
-          options={dripperOptionsWithIcons}
-          ref={bottomSheetRef}
-          selectedValue={methods.watch('dripper')}
-        />
-        <FilterBottomSheet
-          onSelect={handleFilterSelect}
-          ref={filterBottomSheetRef}
-          selectedValue={methods.watch('filter')}
-        />
-        <GrinderBottomSheet
-          onSelect={handleGrinderSelect}
-          ref={grinderBottomSheetRef}
-          selectedValue={methods.watch('grindGrinder')}
-        />
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+      {/* Global Bottom Sheets */}
+      <DripperBottomSheet
+        onSelect={handleDripperSelect}
+        options={DRIPPER_OPTIONS_WITH_ICONS}
+        ref={bottomSheetRef}
+        selectedValue={methods.watch('dripper')}
+      />
+      <FilterBottomSheet
+        onSelect={handleFilterSelect}
+        ref={filterBottomSheetRef}
+        selectedValue={methods.watch('filter')}
+      />
+      <GrinderBottomSheet
+        onSelect={handleGrinderSelect}
+        ref={grinderBottomSheetRef}
+        selectedValue={methods.watch('grindGrinder')}
+      />
+    </BottomSheetModalProvider>
   );
 }

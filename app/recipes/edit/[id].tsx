@@ -1,20 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
 import {
   ActivityIndicator,
-  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { EditForm } from '@/components/recipe/EditForm';
 import { useAuth } from '@/hooks/useAuth';
 import { useUpdateRecipeMutation } from '@/hooks/useCreateRecipeMutation';
 import { useRecipe } from '@/hooks/useRecipes';
-import type { RecipeEditFormData } from '@/lib/validation/recipeSchema';
+import type { CreateRecipeInput } from '@/types/recipe';
 
 export default function RecipeEditPage() {
   const { id } = useLocalSearchParams();
@@ -22,8 +20,6 @@ export default function RecipeEditPage() {
   const { data: recipe, isLoading, error } = useRecipe(id as string);
   const { user, loading: authLoading } = useAuth();
   const { mutate: updateRecipe } = useUpdateRecipeMutation();
-
-  const currentUserId = user?.id;
 
   if (isLoading || authLoading) {
     return (
@@ -99,8 +95,7 @@ export default function RecipeEditPage() {
     );
   }
 
-  // 권한 확인: 현재 사용자가 레시피 소유자인지 확인
-  const isOwner = currentUserId && recipe.owner_id === currentUserId;
+  const isOwner = user.id === recipe.owner_id;
 
   if (!isOwner) {
     return (
@@ -129,20 +124,9 @@ export default function RecipeEditPage() {
     );
   }
 
-  const handleSave = async (data: RecipeEditFormData) => {
-    try {
-      if (!currentUserId) {
-        throw new Error('로그인이 필요합니다.');
-      }
-
-      updateRecipe({ recipeId: recipe.id, input: data });
-
-      // 수정 완료 후 상세 페이지로 이동
-      router.replace(`/recipes/${recipe.id}`);
-    } catch (error) {
-      console.error('레시피 수정 오류:', error);
-      throw error; // EditForm에서 에러 처리
-    }
+  const handleSave = async (data: CreateRecipeInput) => {
+    updateRecipe({ recipeId: recipe.id, input: data });
+    router.replace(`/recipes/${recipe.id}`);
   };
 
   const handleCancel = () => {
@@ -150,18 +134,16 @@ export default function RecipeEditPage() {
   };
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()}>
-            <Ionicons color="#333" name="arrow-back" size={24} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>레시피 수정</Text>
-        </View>
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons color="#333" name="arrow-back" size={24} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>레시피 수정</Text>
+      </View>
 
-        <EditForm onCancel={handleCancel} onSave={handleSave} recipe={recipe} />
-      </SafeAreaView>
-    </GestureHandlerRootView>
+      <EditForm onCancel={handleCancel} onSave={handleSave} recipe={recipe} />
+    </SafeAreaView>
   );
 }
 

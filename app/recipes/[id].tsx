@@ -1,11 +1,10 @@
 import { getDripperLabel } from "@/constants/dripperOptions";
 import { getFilterLabel } from "@/constants/filterOptions";
 import { useAnalytics } from "@/hooks/useAnalytics";
-import { useAuth } from "@/hooks/useAuth";
 import { useRecipe } from "@/hooks/useRecipes";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -13,13 +12,13 @@ import {
   Easing,
   Linking,
   Modal,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import {
   calculateActualTotalTime,
   formatTime,
@@ -30,14 +29,12 @@ export default function RecipeDetail() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { data: recipe, isLoading } = useRecipe(id as string);
-  const { user } = useAuth();
   const { track, screen } = useAnalytics();
   const [showGrindGuide, setShowGrindGuide] = useState(false);
   const slideAnim = useRef(new Animated.Value(500)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  // Track recipe view when recipe loads
-  React.useEffect(() => {
+  useEffect(() => {
     if (recipe) {
       track("recipe_viewed", {
         recipe_id: recipe.id,
@@ -116,11 +113,7 @@ export default function RecipeDetail() {
     );
   }
 
-  // 소유자 확인
-  const isOwner = user && recipe && user.id === recipe.owner_id;
-
   const handleStartRecipe = () => {
-    // Track recipe start
     if (recipe) {
       track("recipe_started", {
         recipe_id: recipe.id,
@@ -136,7 +129,6 @@ export default function RecipeDetail() {
 
     // Track YouTube video click
     track("screen_view", { screen_name: "YouTube" });
-
     try {
       const supported = await Linking.canOpenURL(recipe.youtube_url);
       if (supported) {

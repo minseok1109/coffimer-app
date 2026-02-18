@@ -1,6 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
-import type React from 'react';
 import { useEffect, useRef } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -34,22 +33,22 @@ import {
 } from '@/lib/validation/recipeSchema';
 import { transformEditFormDataToRecipe } from '@/lib/recipeApi';
 import { smartTimeConversion } from '@/lib/timer/formatters';
-import type { RecipeWithSteps } from '@/types/recipe';
+import type { CreateRecipeInput, RecipeWithSteps } from '@/types/recipe';
 import { StepEditor } from './StepEditor';
 
 interface EditFormProps {
   recipe: RecipeWithSteps;
-  onSave: (data: any) => Promise<void>;
+  onSave: (data: CreateRecipeInput) => Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
 }
 
-export const EditForm: React.FC<EditFormProps> = ({
+export function EditForm({
   recipe,
   onSave,
   onCancel,
   isLoading = false,
-}) => {
+}: EditFormProps) {
   const {
     control,
     handleSubmit,
@@ -82,7 +81,7 @@ export const EditForm: React.FC<EditFormProps> = ({
       }));
 
       // 스마트 변환: 자동으로 누적/개별 시간 감지하여 개별 시간으로 정규화
-      const { steps: normalizedSteps, wasCumulative } = smartTimeConversion(originalSteps);
+      const { steps: normalizedSteps } = smartTimeConversion(originalSteps);
 
       const formData: RecipeEditFormData = {
         recipe: {
@@ -96,17 +95,12 @@ export const EditForm: React.FC<EditFormProps> = ({
           ratio: recipe.ratio || 15,
           micron: recipe.micron || null,
           youtube_url: recipe.youtube_url || '',
-          is_public: recipe.is_public,
+          is_public: recipe.is_public ?? false,
           total_time: recipe.total_time,
         },
         steps: normalizedSteps,
       };
       reset(formData);
-
-      // 개발 환경에서 변환 정보 로깅
-      if (process.env.NODE_ENV === 'development') {
-        console.log(`[EditForm] 시간 데이터 형태: ${wasCumulative ? '누적 시간' : '개별 시간'}`);
-      }
     }
   }, [recipe, reset]);
 
@@ -124,11 +118,8 @@ export const EditForm: React.FC<EditFormProps> = ({
 
   // 총 시간 자동 계산 (모든 단계의 시간 합계)
   useEffect(() => {
-    if (steps && Array.isArray(steps) && steps.length > 0) {
-      // 모든 단계의 시간을 합산하여 총 시간 계산
-      const totalTime = steps.reduce((sum, step) => {
-        return sum + (step?.time || 0);
-      }, 0);
+    if (steps?.length > 0) {
+      const totalTime = steps.reduce((sum, step) => sum + (step?.time ?? 0), 0);
       setValue('recipe.total_time', totalTime);
     }
   }, [steps, setValue]);
@@ -137,8 +128,8 @@ export const EditForm: React.FC<EditFormProps> = ({
     try {
       // 수정 데이터를 생성과 동일한 형식으로 변환 (누적 시간 적용)
       const transformedData = transformEditFormDataToRecipe(data);
-      await onSave(transformedData as any);
-    } catch (error) {
+      await onSave(transformedData);
+    } catch {
       Alert.alert(
         '저장 실패',
         '레시피 저장 중 오류가 발생했습니다. 다시 시도해주세요.'
@@ -358,7 +349,7 @@ export const EditForm: React.FC<EditFormProps> = ({
             <Controller
               control={control}
               name="recipe.dripper"
-              render={({ field: { onChange, value } }) => (
+              render={({ field: { value } }) => (
                 <TouchableOpacity
                   onPress={() => dripperBottomSheetRef.current?.expand()}
                   style={styles.selector}
@@ -382,7 +373,7 @@ export const EditForm: React.FC<EditFormProps> = ({
             <Controller
               control={control}
               name="recipe.filter"
-              render={({ field: { onChange, value } }) => (
+              render={({ field: { value } }) => (
                 <TouchableOpacity
                   onPress={() => filterBottomSheetRef.current?.expand()}
                   style={styles.selector}
@@ -419,7 +410,7 @@ export const EditForm: React.FC<EditFormProps> = ({
                       onBlur={onBlur}
                       onChangeText={(text) => {
                         const numValue = Number(text);
-                        onChange(isNaN(numValue) ? null : numValue);
+                        onChange(Number.isNaN(numValue) ? null : numValue);
                       }}
                       placeholder="600"
                       placeholderTextColor="#999"
@@ -530,7 +521,7 @@ export const EditForm: React.FC<EditFormProps> = ({
       />
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

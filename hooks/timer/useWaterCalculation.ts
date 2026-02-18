@@ -2,54 +2,39 @@ import { useMemo } from 'react';
 import type { RecipeWithSteps } from '@/types/recipe';
 import type { WaterInfo } from '../../lib/timer/types';
 
-const WATER_AMOUNT_EXTRACTION_REGEX = /[^\d]/g;
+const NON_DIGIT_REGEX = /[^\d]/g;
+
+function parseWaterAmount(water: number | null | undefined): number {
+  const parsed = Number.parseInt(
+    (water ?? 0).toString().replace(NON_DIGIT_REGEX, ''),
+    10,
+  );
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function sumWater(steps: RecipeWithSteps['recipe_steps'], endIndex: number): number {
+  let total = 0;
+  for (let i = 0; i <= endIndex && i < steps.length; i++) {
+    total += parseWaterAmount(steps[i].water);
+  }
+  return total;
+}
 
 export const useWaterCalculation = (
   recipe: RecipeWithSteps | null,
-  currentStep: number
+  currentStep: number,
 ): WaterInfo => {
-  const getTotalWaterUsed = useMemo(() => {
+  const totalUsed = useMemo(() => {
     if (!recipe?.recipe_steps) return 0;
-
-    let total = 0;
-    // 현재 진행 중인 단계까지 포함하여 계산
-    for (let i = 0; i <= currentStep && i < recipe.recipe_steps.length; i++) {
-      const waterAmount = Number.parseInt(
-        recipe.recipe_steps[i].water
-          .toString()
-          .replace(WATER_AMOUNT_EXTRACTION_REGEX, '')
-      );
-      if (!isNaN(waterAmount)) {
-        total += waterAmount;
-      }
-    }
-    return total;
+    return sumWater(recipe.recipe_steps, currentStep);
   }, [recipe?.recipe_steps, currentStep]);
 
-  const getTotalWaterNeeded = useMemo(() => {
+  const totalNeeded = useMemo(() => {
     if (!recipe?.recipe_steps) return 0;
-
-    let total = 0;
-    for (let i = 0; i < recipe.recipe_steps.length; i++) {
-      const waterAmount = Number.parseInt(
-        recipe.recipe_steps[i].water
-          .toString()
-          .replace(WATER_AMOUNT_EXTRACTION_REGEX, '')
-      );
-      if (!isNaN(waterAmount)) {
-        total += waterAmount;
-      }
-    }
-    return total;
+    return sumWater(recipe.recipe_steps, recipe.recipe_steps.length - 1);
   }, [recipe?.recipe_steps]);
 
-  const getRemainingWater = useMemo(() => {
-    return getTotalWaterNeeded - getTotalWaterUsed;
-  }, [getTotalWaterNeeded, getTotalWaterUsed]);
+  const remaining = totalNeeded - totalUsed;
 
-  return {
-    totalUsed: getTotalWaterUsed,
-    totalNeeded: getTotalWaterNeeded,
-    remaining: getRemainingWater,
-  };
+  return { totalUsed, totalNeeded, remaining };
 };

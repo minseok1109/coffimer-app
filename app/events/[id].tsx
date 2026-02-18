@@ -7,12 +7,12 @@ import {
   ActivityIndicator,
   Linking,
   Pressable,
-  SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useEvent } from '@/hooks/useEvents';
 import { EVENT_COLORS, type EventCategory } from '@/types/event';
 

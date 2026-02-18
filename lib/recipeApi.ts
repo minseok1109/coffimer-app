@@ -1,5 +1,6 @@
-import type { CreateRecipeRequest, Recipe, RecipeStep } from '@/types/recipe';
+import type { CreateRecipeInput, CreateRecipeRequest, Recipe, RecipeStep, RecipeStepInsert } from '@/types/recipe';
 import type { RecipeFormData } from '@/types/recipe-form';
+import type { RecipeEditFormData } from '@/lib/validation/recipeSchema';
 
 /**
  * 폼 데이터를 데이터베이스 형식으로 변환 (생성용)
@@ -54,6 +55,7 @@ export function transformFormDataToRecipe(
     youtube_url: formData.youtubeUrl || null,
     is_public: formData.isPublic,
     brewing_type: 'hot', // 기본값: 핫 브루잉
+    deleted_at: null,
   };
 
   // 스텝 데이터 변환 - 누적 시간으로 변환
@@ -74,6 +76,7 @@ export function transformFormDataToRecipe(
         description: step.description || null,
         water: stepWater || 0,
         total_water: cumulativeWater || null,
+        duration: stepTime, // 개별 소요 시간
       };
     }
   );
@@ -85,29 +88,30 @@ export function transformFormDataToRecipe(
  * 수정용 폼 데이터를 데이터베이스 형식으로 변환
  */
 export function transformEditFormDataToRecipe(
-  formData: { recipe: any; steps: any[] }
-): CreateRecipeRequest {
+  formData: RecipeEditFormData
+): CreateRecipeInput {
   // 레시피 데이터는 그대로 사용
   const recipe = formData.recipe;
 
   // 스텝 데이터 변환 - 누적 시간으로 변환
   let cumulativeTime = 0;
   let cumulativeWater = 0;
-  const steps: Omit<RecipeStep, 'id' | 'recipe_id'>[] = formData.steps.map(
+  const steps: Omit<RecipeStepInsert, 'recipe_id'>[] = formData.steps.map(
     (step, index) => {
       const stepTime = step.time || 0;
       const stepWater = step.water || 0;
 
-      cumulativeTime += stepTime; // 누적 시간 계산
+      cumulativeTime += stepTime;
       cumulativeWater += stepWater;
 
       return {
         step_index: index,
-        time: cumulativeTime, // 누적 시간으로 저장
+        time: cumulativeTime,
         title: step.title || `Step ${index + 1}`,
         description: step.description || null,
         water: stepWater,
         total_water: cumulativeWater || null,
+        duration: stepTime,
       };
     }
   );

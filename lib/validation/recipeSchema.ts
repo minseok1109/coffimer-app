@@ -53,7 +53,7 @@ export const recipeSchema = z.object({
     .optional()
     .or(z.literal(''))
     .nullable(),
-  is_public: z.boolean().default(false),
+  is_public: z.boolean(),
   total_time: z
     .number()
     .min(1, '총 시간은 1초 이상이어야 합니다')

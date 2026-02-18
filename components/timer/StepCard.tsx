@@ -1,7 +1,5 @@
-import type { RecipeWithSteps } from "@/types/recipe";
 import type { NextStepInfo, StepInfo } from "@/types/timer";
 import { Ionicons } from "@expo/vector-icons";
-import type React from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { formatTime } from "../../lib/timer/formatters";
 import type { WaterInfo } from "../../lib/timer/types";
@@ -10,19 +8,17 @@ interface StepCardProps {
   currentStepInfo: StepInfo;
   nextStepInfo: NextStepInfo | null;
   waterInfo: WaterInfo;
-  recipe?: RecipeWithSteps;
 }
 
-export const StepCard: React.FC<StepCardProps> = ({
+export function StepCard({
   currentStepInfo,
   nextStepInfo,
   waterInfo,
-  recipe,
-}) => {
+}: StepCardProps) {
   const { totalNeeded, remaining } = waterInfo;
   const currentStepWater =
     Number.parseInt(
-      currentStepInfo.step.water.toString().replace("ml", "") || "0"
+      (currentStepInfo.step.water ?? 0).toString().replace("ml", "") || "0"
     ) || 0;
   const usedWater = totalNeeded - remaining;
   const progressPercentage = (usedWater / totalNeeded) * 100;
@@ -111,7 +107,7 @@ export const StepCard: React.FC<StepCardProps> = ({
       </View>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -225,17 +221,6 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingTop: 20,
   },
-  waterTrackingHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 12,
-  },
-  waterTrackingTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#333",
-  },
   enhancedProgressContainer: {
     marginBottom: 12,
   },
@@ -250,12 +235,6 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#FF6B35",
     borderRadius: 4,
-  },
-  enhancedProgressText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: "#666",
-    textAlign: "center",
   },
   waterStats: {
     flexDirection: "row",
