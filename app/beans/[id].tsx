@@ -24,8 +24,8 @@ export default function BeanDetailScreen() {
 
   const deleteMutation = useDeleteBeanMutation({
     onSuccess: () => router.back(),
-    onError: () =>
-      Alert.alert('삭제 실패', '원두 삭제 중 오류가 발생했습니다.'),
+    onError: (error) =>
+      Alert.alert('삭제 실패', error.message ?? '원두 삭제 중 오류가 발생했습니다.'),
   });
 
   const [showActionSheet, setShowActionSheet] = useState(false);
