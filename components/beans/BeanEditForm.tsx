@@ -16,13 +16,6 @@ import {
   UIManager,
   View,
 } from 'react-native';
-
-if (Platform.OS === 'android') {
-  UIManager.setLayoutAnimationEnabledExperimental?.(true);
-}
-
-const PROCESS_METHOD_PRESETS = ['워시드', '내추럴', '허니', '무산소 발효', '기타'] as const;
-
 import type { Bean, RoastLevel, UpdateBeanInput } from '@/types/bean';
 import { PRESET_CUP_NOTES, ROAST_LEVEL_CONFIG } from '@/types/bean';
 import { useBeanForm } from '@/hooks/useBeanForm';
@@ -37,6 +30,12 @@ import {
   RoastLevelSelector,
   type RoastLevelSelectorRef,
 } from './RoastLevelSelector';
+
+if (Platform.OS === 'android') {
+  UIManager.setLayoutAnimationEnabledExperimental?.(true);
+}
+
+const PROCESS_METHOD_PRESETS = ['워시드', '내추럴', '허니', '무산소 발효', '기타'] as const;
 
 interface BeanEditFormProps {
   bean: Bean;
