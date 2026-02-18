@@ -29,8 +29,8 @@ pnpm run web       # Web browser
 # Code quality
 pnpm run lint      # ESLint linting
 
-# Reset project
-pnpm run reset-project  # Clean project slate
+# type check
+pnpm run type-check  # Type check
 ```
 
 ## Architecture Overview
@@ -141,5 +141,11 @@ Timer logic is centralized in `useRecipeTimer` hook with states:
 - Use Expo DevTools and Metro bundler logs for debugging
 - React Native debugger recommended for state inspection
 - Use `expo start --clear` to clear Metro cache if needed
+- After completing a task, always run `pnpm run type-check` to perform a type check before moving on to the next task.
 
 Avoid using useEffect at all costs, unless it’s truly essential.
+
+
+# Skills
+When creating plans related to React, always use the vercel-react-best-practices skill and refer to its guidelines.
+When creating plans related to Supabase, always use the supabase-postgres-best-practices skill and refer to its guidelines.

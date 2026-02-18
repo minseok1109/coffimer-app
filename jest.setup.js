@@ -24,6 +24,11 @@ jest.mock('@expo/vector-icons', () => ({
   Ionicons: 'Ionicons',
 }));
 
+// Mock expo-image
+jest.mock('expo-image', () => ({
+  Image: 'ExpoImage',
+}));
+
 // Mock react-native-safe-area-context
 jest.mock('react-native-safe-area-context', () => {
   const inset = {
