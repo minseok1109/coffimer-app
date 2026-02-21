@@ -99,7 +99,7 @@ export const useDeleteBeanMutation = (options?: {
   return useMutation({
     mutationFn: async (beanId: string): Promise<void> => {
       if (!user) throw new Error('사용자 인증이 필요합니다.');
-      return BeanAPI.deleteBean(beanId, user.id);
+      return BeanAPI.deleteBean(beanId);
     },
     onSuccess: (_, beanId) => {
       queryClient.removeQueries({ queryKey: beanKeys.detail(beanId) });

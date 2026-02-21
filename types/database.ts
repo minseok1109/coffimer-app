@@ -1129,6 +1129,10 @@ export type Database = {
           trending_score: number;
         }[];
       };
+      soft_delete_bean: {
+        Args: { bean_id: string };
+        Returns: undefined;
+      };
     };
     Enums: {
       brewing_type: 'hot' | 'ice';
