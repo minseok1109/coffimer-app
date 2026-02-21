@@ -60,7 +60,7 @@ export default function BeansScreen() {
             contentContainerStyle={{ alignItems: 'center' }}
             horizontal
             showsHorizontalScrollIndicator={false}
-            className="px-4 pt-4"
+            className="p-4"
           >
             {SORT_OPTIONS.map((option) => (
               <FilterChip
@@ -86,7 +86,7 @@ export default function BeansScreen() {
             ListEmptyComponent={
               <BeanListEmpty isFiltered={isFiltered} />
             }
-            contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+            contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
             data={sortedBeans}
             keyExtractor={(item) => item.id}
             renderItem={renderBeanItem}
