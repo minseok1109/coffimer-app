@@ -1,11 +1,11 @@
-import { analyzeBeanImage } from '@/lib/api/beanAnalysis';
-import type { ImageData } from '@/lib/validation/beanSchema';
+import { analyzeBeanImages } from '@/lib/api/beanAnalysis';
+import type { EncodedImageData } from '@/lib/validation/beanSchema';
 import type { AIExtractionResult, BeanFieldConfidence } from '@/types/bean';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { useCallback, useRef, useState } from 'react';
 
-const MAX_IMAGE_WIDTH = 1280;
-const COMPRESS_QUALITY = 0.7;
+const MAX_IMAGE_WIDTH = 1024;
+const COMPRESS_QUALITY = 0.6;
 
 const INITIAL_CONFIDENCE: BeanFieldConfidence = {
   name: null,
@@ -23,61 +23,82 @@ const INITIAL_CONFIDENCE: BeanFieldConfidence = {
 interface UseBeanAnalysisReturn {
   isAnalyzing: boolean;
   confidence: BeanFieldConfidence;
-  imageData: ImageData | null;
-  analyze: (uri: string) => Promise<AIExtractionResult | null>;
+  encodedImages: EncodedImageData[];
+  extractedData: AIExtractionResult | null;
+  error: string | null;
+  analyze: (uris: string[]) => Promise<AIExtractionResult>;
   resetConfidence: () => void;
+}
+
+async function encodeImage(uri: string): Promise<EncodedImageData> {
+  const imageRef = await ImageManipulator.manipulate(uri)
+    .resize({ width: MAX_IMAGE_WIDTH })
+    .renderAsync();
+
+  const { base64: encodedBase64 } = await imageRef.saveAsync({
+    format: SaveFormat.JPEG,
+    compress: COMPRESS_QUALITY,
+    base64: true,
+  });
+
+  return {
+    base64: encodedBase64 ?? '',
+    mimeType: 'image/jpeg',
+  };
 }
 
 export function useBeanAnalysis(): UseBeanAnalysisReturn {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [confidence, setConfidence] = useState<BeanFieldConfidence>(INITIAL_CONFIDENCE);
-  const imageDataRef = useRef<ImageData | null>(null);
-  const abortRef = useRef(false);
+  const [extractedData, setExtractedData] = useState<AIExtractionResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const encodedImagesRef = useRef<EncodedImageData[]>([]);
 
-  const analyze = useCallback(async (uri: string): Promise<AIExtractionResult | null> => {
-    abortRef.current = false;
+  const analyze = useCallback(async (uris: string[]): Promise<AIExtractionResult> => {
+    if (!uris.length) {
+      const message = '최소 1장의 이미지가 필요합니다.';
+      setError(message);
+      throw new Error(message);
+    }
+
     setIsAnalyzing(true);
+    setError(null);
 
     try {
-      const imageRef = await ImageManipulator.manipulate(uri)
-        .resize({ width: MAX_IMAGE_WIDTH })
-        .renderAsync();
-      const { base64: encodedBase64 } = await imageRef.saveAsync({
-        format: SaveFormat.JPEG,
-        compress: COMPRESS_QUALITY,
-        base64: true,
-      });
-      const base64 = encodedBase64 ?? '';
-      const mimeType = 'image/jpeg';
-
-      // base64를 캐시하여 업로드 시 재사용
-      imageDataRef.current = { base64, mimeType };
-
-      if (abortRef.current) return null;
-
-      const result = await analyzeBeanImage(base64, mimeType);
-
-      if (abortRef.current) return null;
-
-      setConfidence(result.confidence);
-      return result;
-    } catch {
-      return null;
-    } finally {
-      if (!abortRef.current) {
-        setIsAnalyzing(false);
+      const encodedImages: EncodedImageData[] = [];
+      for (const uri of uris) {
+        encodedImages.push(await encodeImage(uri));
       }
+
+      encodedImagesRef.current = encodedImages;
+
+      const result = await analyzeBeanImages(encodedImages);
+      setConfidence(result.confidence);
+      setExtractedData(result);
+      return result;
+    } catch (analysisError) {
+      const message =
+        analysisError instanceof Error ? analysisError.message : '이미지 분석에 실패했습니다.';
+      setError(message);
+      console.error('[useBeanAnalysis] analyze failed', analysisError);
+      throw analysisError instanceof Error ? analysisError : new Error(message);
+    } finally {
+      setIsAnalyzing(false);
     }
   }, []);
 
   const resetConfidence = useCallback(() => {
     setConfidence(INITIAL_CONFIDENCE);
+    setExtractedData(null);
+    setError(null);
   }, []);
 
   return {
     isAnalyzing,
     confidence,
-    imageData: imageDataRef.current,
+    encodedImages: encodedImagesRef.current,
+    extractedData,
+    error,
     analyze,
     resetConfidence,
   };

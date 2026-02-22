@@ -1,7 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { BeanAPI } from '@/lib/api/beans';
 import { useAuth } from '@/hooks/useAuth';
-import type { Bean, CreateBeanInput, UpdateBeanInput } from '@/types/bean';
+import type {
+  Bean,
+  CreateBeanImageInput,
+  CreateBeanInput,
+  UpdateBeanInput,
+} from '@/types/bean';
 
 export const beanKeys = {
   all: ['beans'] as const,
@@ -42,6 +47,39 @@ export const useCreateBeanMutation = (options?: {
     mutationFn: async (input: CreateBeanInput): Promise<Bean> => {
       if (!user) throw new Error('사용자 인증이 필요합니다.');
       return BeanAPI.createBean(input, user.id);
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: beanKeys.userBeans(user?.id ?? ''),
+      });
+      queryClient.setQueryData(beanKeys.detail(data.id), data);
+      options?.onSuccess?.(data);
+    },
+    onError: (error: Error) => {
+      options?.onError?.(error);
+    },
+  });
+};
+
+export const useCreateBeanWithImagesMutation = (options?: {
+  onSuccess?: (bean: Bean) => void;
+  onError?: (error: Error) => void;
+}) => {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  return useMutation({
+    mutationFn: async ({
+      beanId,
+      input,
+      images,
+    }: {
+      beanId: string;
+      input: CreateBeanInput;
+      images: CreateBeanImageInput[];
+    }): Promise<Bean> => {
+      if (!user) throw new Error('사용자 인증이 필요합니다.');
+      return BeanAPI.createBeanWithImages(beanId, input, images, user.id);
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({

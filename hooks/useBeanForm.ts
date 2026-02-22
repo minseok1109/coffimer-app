@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { useForm } from 'react-hook-form';
 import type { AIExtractionResult } from '@/types/bean';
 import { beanFormSchema } from '@/lib/validation/beanSchema';
-import type { BeanFormData, ImageData } from '@/lib/validation/beanSchema';
+import type { BeanFormData, EncodedImageData } from '@/lib/validation/beanSchema';
 
 const DEFAULT_FORM_VALUES: BeanFormData = {
   name: '',
@@ -21,15 +21,15 @@ const DEFAULT_FORM_VALUES: BeanFormData = {
 };
 
 interface UseBeanFormOptions {
-  onSubmit: (data: BeanFormData, imageData: ImageData | null) => Promise<void>;
-  imageData: ImageData | null;
+  onSubmit: (data: BeanFormData, encodedImages: EncodedImageData[]) => Promise<void>;
+  encodedImages: EncodedImageData[];
   defaultValues?: Partial<BeanFormData>;
   submitErrorMessage?: string;
 }
 
 export function useBeanForm({
   onSubmit,
-  imageData,
+  encodedImages,
   defaultValues,
   submitErrorMessage = '원두 저장 중 오류가 발생했습니다.',
 }: UseBeanFormOptions) {
@@ -78,7 +78,7 @@ export function useBeanForm({
 
   const handleFormSubmit = async (data: BeanFormData) => {
     try {
-      await onSubmit(data, imageData);
+      await onSubmit(data, encodedImages);
     } catch {
       Alert.alert('저장 실패', submitErrorMessage);
     }
