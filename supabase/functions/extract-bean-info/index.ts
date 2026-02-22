@@ -14,10 +14,29 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
-const MAX_BASE64_LENGTH = 4 * 1024 * 1024; // ~3MB 원본 기준 (base64 인코딩 시 ~33% 증가)
-const API_TIMEOUT_MS = 25_000;
+interface ImagePayload {
+  base64: string;
+  mimeType: string;
+}
 
-const ANALYSIS_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. 다음 정보를 추출하세요:
+type RequestShape = 'new' | 'legacy';
+
+interface RequestContext {
+  requestId: string;
+  requestShape: RequestShape;
+  imageCount: number;
+  totalBase64Length: number;
+}
+
+const MAX_IMAGE_COUNT = 5;
+const MAX_IMAGE_BASE64_LENGTH = 1_500_000;
+const MAX_TOTAL_BASE64_LENGTH = 6_000_000;
+const API_TIMEOUT_MS = 40_000;
+
+const ANALYSIS_PROMPT = `다음 이미지들은 같은 커피 원두 봉투의 여러 면/각도입니다.
+모든 이미지를 종합적으로 분석하여 하나의 결과를 반환하세요.
+
+추출 필드:
 - name: 원두 이름
 - roastery_name: 로스터리(카페) 이름
 - roast_level: light, medium_light, medium, medium_dark, dark 중 하나
@@ -58,7 +77,138 @@ const ANALYSIS_PROMPT = `이 이미지는 커피 원두 봉투 사진입니다. 
   }
 }`;
 
+function validateImages(images: ImagePayload[]) {
+  if (!Array.isArray(images) || images.length === 0) {
+    return { valid: false, status: 400, message: 'images is required' };
+  }
+
+  if (images.length > MAX_IMAGE_COUNT) {
+    return {
+      valid: false,
+      status: 400,
+      message: `Up to ${MAX_IMAGE_COUNT} images are allowed`,
+    };
+  }
+
+  let totalLength = 0;
+
+  for (const image of images) {
+    if (
+      typeof image?.base64 !== 'string' ||
+      typeof image?.mimeType !== 'string' ||
+      !image.base64 ||
+      !image.mimeType
+    ) {
+      return {
+        valid: false,
+        status: 400,
+        message: 'Each image requires base64 and mimeType',
+      };
+    }
+
+    if (image.base64.length > MAX_IMAGE_BASE64_LENGTH) {
+      return {
+        valid: false,
+        status: 413,
+        message: 'Each image must be under size limit',
+      };
+    }
+
+    totalLength += image.base64.length;
+  }
+
+  if (totalLength > MAX_TOTAL_BASE64_LENGTH) {
+    return {
+      valid: false,
+      status: 413,
+      message: 'Total image payload is too large',
+    };
+  }
+
+  return { valid: true, status: 200, message: '' };
+}
+
+function getTotalBase64Length(images: ImagePayload[]) {
+  return images.reduce((sum, image) => {
+    const base64 = typeof image?.base64 === 'string' ? image.base64 : '';
+    return sum + base64.length;
+  }, 0);
+}
+
+function logEdge(
+  level: 'log' | 'warn' | 'error',
+  event: string,
+  payload: Record<string, unknown>,
+) {
+  const message = '[extract-bean-info]';
+  if (level === 'error') {
+    console.error(message, { event, ...payload });
+    return;
+  }
+  if (level === 'warn') {
+    console.warn(message, { event, ...payload });
+    return;
+  }
+  console.log(message, { event, ...payload });
+}
+
+function parseImagesFromRequestBody(body: unknown) {
+  if (!body || typeof body !== 'object') {
+    return { ok: false as const, status: 400, message: 'Invalid request body' };
+  }
+
+  const payload = body as {
+    images?: unknown;
+    image_base64?: unknown;
+    mime_type?: unknown;
+  };
+
+  if (payload.images !== undefined) {
+    if (!Array.isArray(payload.images)) {
+      return {
+        ok: false as const,
+        status: 400,
+        message: 'images must be an array',
+      };
+    }
+
+    return {
+      ok: true as const,
+      images: payload.images as ImagePayload[],
+      requestShape: 'new' as RequestShape,
+    };
+  }
+
+  if (payload.image_base64 !== undefined || payload.mime_type !== undefined) {
+    if (
+      typeof payload.image_base64 !== 'string' ||
+      typeof payload.mime_type !== 'string'
+    ) {
+      return {
+        ok: false as const,
+        status: 400,
+        message: 'image_base64 and mime_type are required',
+      };
+    }
+
+    return {
+      ok: true as const,
+      requestShape: 'legacy' as RequestShape,
+      images: [
+        {
+          base64: payload.image_base64,
+          mimeType: payload.mime_type,
+        },
+      ],
+    };
+  }
+
+  return { ok: false as const, status: 400, message: 'images is required' };
+}
+
 Deno.serve(async (req: Request) => {
+  const requestId = crypto.randomUUID();
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -68,7 +218,6 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
-    // JWT 검증
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
       return jsonResponse({ error: 'Authorization header required' }, 401);
@@ -86,24 +235,49 @@ Deno.serve(async (req: Request) => {
       return jsonResponse({ error: 'Invalid token' }, 401);
     }
 
-    // Request body 파싱
-    const { image_base64, mime_type } = await req.json();
-    if (!image_base64 || !mime_type) {
-      return jsonResponse(
-        { error: 'image_base64 and mime_type are required' },
-        400,
-      );
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      logEdge('warn', 'request.invalid_json', { requestId, status: 400 });
+      return jsonResponse({ error: 'Invalid JSON body' }, 400);
     }
 
-    // base64 페이로드 크기 검증
-    if (image_base64.length > MAX_BASE64_LENGTH) {
-      return jsonResponse(
-        { error: 'Image too large. Max 3MB allowed.' },
-        413,
-      );
+    const parsedRequest = parseImagesFromRequestBody(body);
+    if (!parsedRequest.ok) {
+      logEdge('warn', 'request.invalid_payload', {
+        requestId,
+        status: parsedRequest.status,
+        reason: parsedRequest.message,
+      });
+      return jsonResponse({ error: parsedRequest.message }, parsedRequest.status);
     }
 
-    // OpenRouter API 호출
+    const { images, requestShape } = parsedRequest;
+    const requestContext: RequestContext = {
+      requestId,
+      requestShape,
+      imageCount: images.length,
+      totalBase64Length: getTotalBase64Length(images),
+    };
+
+    logEdge('log', 'request.received', requestContext);
+
+    const validation = validateImages(images);
+
+    if (!validation.valid) {
+      logEdge(
+        validation.status >= 500 ? 'error' : 'warn',
+        'request.validation_failed',
+        {
+          ...requestContext,
+          status: validation.status,
+          reason: validation.message,
+        },
+      );
+      return jsonResponse({ error: validation.message }, validation.status);
+    }
+
     const openRouterKey = Deno.env.get('OPENROUTER_API_KEY');
     if (!openRouterKey) {
       return jsonResponse(
@@ -112,7 +286,6 @@ Deno.serve(async (req: Request) => {
       );
     }
 
-    // AbortController로 타임아웃 설정 (API 무한 대기 방지)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
 
@@ -132,13 +305,13 @@ Deno.serve(async (req: Request) => {
               {
                 role: 'user',
                 content: [
-                  {
+                  { type: 'text', text: ANALYSIS_PROMPT },
+                  ...images.map((image) => ({
                     type: 'image_url',
                     image_url: {
-                      url: `data:${mime_type};base64,${image_base64}`,
+                      url: `data:${image.mimeType};base64,${image.base64}`,
                     },
-                  },
-                  { type: 'text', text: ANALYSIS_PROMPT },
+                  })),
                 ],
               },
             ],
@@ -149,6 +322,10 @@ Deno.serve(async (req: Request) => {
       );
     } catch (fetchError) {
       if ((fetchError as Error).name === 'AbortError') {
+        logEdge('error', 'openrouter.timeout', {
+          ...requestContext,
+          status: 504,
+        });
         return jsonResponse(
           { success: false, error: 'OpenRouter API request timed out' },
           504,
@@ -161,6 +338,12 @@ Deno.serve(async (req: Request) => {
 
     if (!apiResponse.ok) {
       const errorText = await apiResponse.text();
+      logEdge('error', 'openrouter.non_ok_response', {
+        ...requestContext,
+        status: 502,
+        providerStatus: apiResponse.status,
+        providerBodyPreview: errorText.slice(0, 200),
+      });
       return jsonResponse(
         {
           success: false,
@@ -174,11 +357,15 @@ Deno.serve(async (req: Request) => {
     const result = await apiResponse.json();
     const rawText = result.choices?.[0]?.message?.content ?? '';
 
-    // JSON 파싱 실패를 별도로 처리 (JSON 모드라도 100% 보장 아님)
     let parsed;
     try {
       parsed = JSON.parse(rawText);
     } catch {
+      logEdge('error', 'openrouter.parse_failed', {
+        ...requestContext,
+        status: 502,
+        responsePreview: rawText.slice(0, 200),
+      });
       return jsonResponse(
         {
           success: false,
@@ -188,6 +375,11 @@ Deno.serve(async (req: Request) => {
         502,
       );
     }
+
+    logEdge('log', 'analysis.success', {
+      ...requestContext,
+      status: 200,
+    });
 
     return jsonResponse({
       success: true,
@@ -217,6 +409,11 @@ Deno.serve(async (req: Request) => {
       },
     });
   } catch (error) {
+    logEdge('error', 'request.unhandled_error', {
+      requestId,
+      status: 500,
+      error: (error as Error).message,
+    });
     return jsonResponse(
       {
         success: false,
