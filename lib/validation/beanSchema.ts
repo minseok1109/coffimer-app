@@ -35,8 +35,8 @@ export const beanFormSchema = z
 
 export type BeanFormData = z.infer<typeof beanFormSchema>;
 
-// useBeanAnalysis.ts와 공유되는 단일 정의
-export interface ImageData {
+// useBeanAnalysis.ts와 공유되는 이미지 인코딩 정의
+export interface EncodedImageData {
   base64: string;
   mimeType: string;
 }

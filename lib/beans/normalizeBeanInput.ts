@@ -25,9 +25,12 @@ export const normalizeInput = (data: Record<string, unknown>): CreateBeanInput =
     roast_level: data.roast_level as CreateBeanInput['roast_level'],
     bean_type: data.bean_type as CreateBeanInput['bean_type'],
     weight_g: data.weight_g as number,
+    remaining_g:
+      typeof data.remaining_g === 'number' && Number.isFinite(data.remaining_g)
+        ? data.remaining_g
+        : undefined,
     price: normalizeNumber(data.price),
     cup_notes: cupNotes,
-    image_url: normalizeText(data.image_url),
     degassing_days: normalizeNumber(data.degassing_days),
     variety: normalizeText(data.variety),
     process_method: normalizeText(data.process_method),
