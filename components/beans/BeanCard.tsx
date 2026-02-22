@@ -4,6 +4,7 @@ import { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
 import { calculateDegassingStatus } from '@/utils/degassingUtils';
+import { getPrimaryBeanImage } from '@/utils/beanImages';
 import { DegassingTimeline } from './DegassingTimeline';
 
 interface BeanCardProps {
@@ -13,6 +14,7 @@ interface BeanCardProps {
 export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
   const router = useRouter();
   const isExhausted = bean.remaining_g <= 0;
+  const primaryImage = useMemo(() => getPrimaryBeanImage(bean.images), [bean.images]);
 
   const roastConfig = bean.roast_level
     ? ROAST_LEVEL_CONFIG[bean.roast_level]
@@ -89,10 +91,14 @@ export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
         </Text>
       </View>
 
-      {bean.image_url ? (
-        <Image source={{ uri: bean.image_url }} style={styles.image} />
+      {primaryImage ? (
+        <Image
+          source={{ uri: primaryImage.image_url }}
+          style={styles.image}
+          testID="bean-card-image"
+        />
       ) : (
-        <View style={styles.imagePlaceholder}>
+        <View style={styles.imagePlaceholder} testID="bean-card-placeholder">
           <Ionicons color="#A56A49" name="bag-outline" size={32} />
         </View>
       )}

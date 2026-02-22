@@ -1,13 +1,16 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
+  FlatList,
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
+import { sortBeanImages } from '@/utils/beanImages';
 import { calculateDegassingStatus } from '@/utils/degassingUtils';
 import { CupNoteTag } from './CupNoteTag';
 import { DegassingTimeline } from './DegassingTimeline';
@@ -19,9 +22,12 @@ interface BeanDetailProps {
 }
 
 export function BeanDetail({ bean }: BeanDetailProps) {
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const { width } = useWindowDimensions();
   const roastConfig = bean.roast_level
     ? ROAST_LEVEL_CONFIG[bean.roast_level]
     : null;
+  const orderedImages = useMemo(() => sortBeanImages(bean.images), [bean.images]);
   const variety = bean.variety?.trim() ?? '';
   const processMethod = bean.process_method?.trim() ?? '';
   const notes = bean.notes?.trim() ?? '';
@@ -104,13 +110,36 @@ export function BeanDetail({ bean }: BeanDetailProps) {
     >
       {/* Hero */}
       <View style={styles.heroContainer}>
-        {bean.image_url ? (
-          <Image
-            contentFit="cover"
-            source={{ uri: bean.image_url }}
-            style={styles.heroImage}
-            transition={200}
-          />
+        {orderedImages.length > 0 ? (
+          <>
+            <FlatList
+              data={orderedImages}
+              horizontal
+              pagingEnabled
+              keyExtractor={(item) => item.id}
+              onMomentumScrollEnd={(event) => {
+                const width = event.nativeEvent.layoutMeasurement.width;
+                if (width <= 0) return;
+                const index = Math.round(event.nativeEvent.contentOffset.x / width);
+                setActiveImageIndex(index);
+              }}
+              renderItem={({ item, index }) => (
+                <Image
+                  contentFit="cover"
+                  source={{ uri: item.image_url }}
+                  style={[styles.heroImage, { width }]}
+                  testID={`bean-detail-image-${index}`}
+                  transition={200}
+                />
+              )}
+              showsHorizontalScrollIndicator={false}
+            />
+            <View style={styles.counterPill} testID="bean-detail-counter">
+              <Text style={styles.counterText}>
+                {activeImageIndex + 1}/{orderedImages.length}
+              </Text>
+            </View>
+          </>
         ) : (
           <View style={styles.heroPlaceholder}>
             <Ionicons color="#A56A49" name="bag-handle" size={64} />
@@ -302,7 +331,6 @@ const styles = StyleSheet.create({
     height: 256,
   },
   heroImage: {
-    width: '100%',
     height: '100%',
     backgroundColor: '#E5E7EB',
   },
@@ -324,6 +352,20 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 16,
     gap: 6,
+  },
+  counterPill: {
+    position: 'absolute',
+    right: 16,
+    bottom: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  counterText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '600',
   },
   pillDot: {
     width: 12,

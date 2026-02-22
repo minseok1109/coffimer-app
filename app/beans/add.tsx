@@ -1,4 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
+import { randomUUID } from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import {
   Alert,
@@ -9,10 +10,20 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanForm } from '@/components/beans';
-import { useCreateBeanMutation } from '@/hooks/useBeans';
+import { useCreateBeanMutation, useCreateBeanWithImagesMutation } from '@/hooks/useBeans';
 import { normalizeInput } from '@/lib/beans/normalizeBeanInput';
-import { uploadBeanImage } from '@/lib/storage/beanImage';
+import {
+  deleteBeanImagesByPaths,
+  uploadBeanImages,
+} from '@/lib/storage/beanImage';
 import { supabase } from '@/lib/supabaseClient';
+import type { BeanFormData, EncodedImageData } from '@/lib/validation/beanSchema';
+
+interface BeanFormSubmitPayload {
+  encodedImages: EncodedImageData[];
+  imageUris: string[];
+  primaryIndex: number | null;
+}
 
 export default function AddBeanScreen() {
   const router = useRouter();
@@ -28,24 +39,60 @@ export default function AddBeanScreen() {
     },
   });
 
-  const handleSubmit = async (
-    data: Record<string, unknown>,
-    imageData: { base64: string; mimeType: string } | null,
-  ) => {
-    let imageUrl: string | null = null;
+  const createBeanWithImagesMutation = useCreateBeanWithImagesMutation({
+    onSuccess: () => {
+      Alert.alert('등록 완료', '원두가 등록되었습니다.', [
+        { text: '확인', onPress: () => router.back() },
+      ]);
+    },
+    onError: () => {
+      Alert.alert('등록 실패', '원두 등록 중 오류가 발생했습니다.');
+    },
+  });
 
-    if (imageData) {
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user?.id;
-      if (userId) {
-        imageUrl = await uploadBeanImage(imageData.base64, userId, imageData.mimeType);
-      }
+  const handleSubmit = async (data: BeanFormData, payload: BeanFormSubmitPayload) => {
+    const normalized = normalizeInput(data as unknown as Record<string, unknown>);
+
+    if (!payload.imageUris.length) {
+      await createBeanMutation.mutateAsync(normalized);
+      return;
     }
 
-    await createBeanMutation.mutateAsync(
-      normalizeInput({ ...data, image_url: imageUrl }),
-    );
+    if (!payload.encodedImages.length) {
+      throw new Error('이미지 분석 결과가 없습니다. 다시 분석해주세요.');
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+    const userId = sessionData.session?.user?.id;
+
+    if (!userId) {
+      throw new Error('사용자 인증이 필요합니다.');
+    }
+
+    const beanId = randomUUID();
+    const uploadedImages = await uploadBeanImages(payload.encodedImages, userId, beanId);
+
+    try {
+      const primaryIndex = payload.primaryIndex ?? 0;
+
+      await createBeanWithImagesMutation.mutateAsync({
+        beanId,
+        input: normalized,
+        images: uploadedImages.map((uploadedImage, index) => ({
+          image_url: uploadedImage.publicUrl,
+          storage_path: uploadedImage.storagePath,
+          sort_order: index,
+          is_primary: index === primaryIndex,
+        })),
+      });
+    } catch (error) {
+      await deleteBeanImagesByPaths(uploadedImages.map((image) => image.storagePath));
+      throw error;
+    }
   };
+
+  const isSubmitting =
+    createBeanMutation.isPending || createBeanWithImagesMutation.isPending;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,7 +105,7 @@ export default function AddBeanScreen() {
       </View>
 
       <BeanForm
-        isLoading={createBeanMutation.isPending}
+        isLoading={isSubmitting}
         onCancel={() => router.back()}
         onSubmit={handleSubmit}
       />

@@ -1,17 +1,29 @@
-import { ActivityIndicator, Image, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 
 interface BeanAnalyzingPhaseProps {
-  imageUri: string | null;
+  imageUris: string[];
 }
 
-export function BeanAnalyzingPhase({ imageUri }: BeanAnalyzingPhaseProps) {
+export function BeanAnalyzingPhase({ imageUris }: BeanAnalyzingPhaseProps) {
   return (
     <View style={styles.container}>
-      {imageUri && <Image source={{ uri: imageUri }} style={styles.previewImage} />}
+      {imageUris.length > 0 ? (
+        <FlatList
+          data={imageUris}
+          horizontal
+          keyExtractor={(item, index) => `${item}-${index}`}
+          pagingEnabled
+          renderItem={({ item }) => (
+            <Image cachePolicy="memory-disk" contentFit="cover" source={{ uri: item }} style={styles.previewImage} />
+          )}
+          showsHorizontalScrollIndicator={false}
+        />
+      ) : null}
       <View style={styles.card}>
         <ActivityIndicator color="#8B4513" size="large" />
         <Text style={styles.title}>AI가 원두 정보를 분석 중입니다...</Text>
-        <Text style={styles.subtitle}>잠시만 기다려주세요</Text>
+        <Text style={styles.subtitle}>총 {imageUris.length}장의 사진을 종합 분석합니다.</Text>
       </View>
     </View>
   );
@@ -24,8 +36,9 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   previewImage: {
-    width: '100%',
-    aspectRatio: 4 / 3,
+    width: 320,
+    height: 240,
+    marginRight: 12,
     borderRadius: 16,
     backgroundColor: '#E5E7EB',
   },

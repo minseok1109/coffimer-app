@@ -22,6 +22,7 @@ import { PRESET_CUP_NOTES, ROAST_LEVEL_CONFIG } from '@/types/bean';
 import { useBeanForm } from '@/hooks/useBeanForm';
 import type { BeanFormData } from '@/lib/validation/beanSchema';
 import { beanToFormData, normalizeEditInput } from '@/lib/beans/normalizeBeanInput';
+import { getPrimaryBeanImage } from '@/utils/beanImages';
 import { CupNoteTag } from './CupNoteTag';
 import {
   RoastDateSelector,
@@ -76,10 +77,11 @@ export function BeanEditForm({
       const normalized = normalizeEditInput(data as unknown as Record<string, unknown>);
       await onSubmit(normalized);
     },
-    imageData: null,
+    encodedImages: [],
     defaultValues: beanToFormData(bean),
     submitErrorMessage: '원두 수정 중 오류가 발생했습니다.',
   });
+  const primaryImage = getPrimaryBeanImage(bean.images);
 
   const roastDate = useWatch({ control, name: 'roast_date' });
   const processMethod = useWatch({ control, name: 'process_method' });
@@ -135,9 +137,9 @@ export function BeanEditForm({
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
-        {bean.image_url && (
+        {primaryImage && (
           <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: bean.image_url }} style={styles.formPreviewImage} />
+            <Image source={{ uri: primaryImage.image_url }} style={styles.formPreviewImage} />
           </View>
         )}
 

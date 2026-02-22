@@ -38,8 +38,8 @@ import {
 } from './RoastLevelSelector';
 
 interface BeanFormPhaseProps {
-  imageUri: string | null;
-  onChangeImage: () => void;
+  primaryImageUri: string | null;
+  onChangeImages: () => void;
   control: Control<BeanFormData>;
   errors: FieldErrors<BeanFormData>;
   cupNotes: string[];
@@ -55,8 +55,8 @@ interface BeanFormPhaseProps {
 }
 
 export function BeanFormPhase({
-  imageUri,
-  onChangeImage,
+  primaryImageUri,
+  onChangeImages,
   control,
   errors,
   cupNotes,
@@ -115,10 +115,10 @@ export function BeanFormPhase({
         showsVerticalScrollIndicator={false}
         style={styles.scrollView}
       >
-        {imageUri && (
+        {primaryImageUri && (
           <View style={styles.imagePreviewContainer}>
-            <Image source={{ uri: imageUri }} style={styles.formPreviewImage} />
-            <TouchableOpacity onPress={onChangeImage} style={styles.changeImageButton}>
+            <Image source={{ uri: primaryImageUri }} style={styles.formPreviewImage} />
+            <TouchableOpacity onPress={onChangeImages} style={styles.changeImageButton}>
               <Text style={styles.changeImageText}>변경</Text>
             </TouchableOpacity>
           </View>
