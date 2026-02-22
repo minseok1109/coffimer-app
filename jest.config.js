@@ -8,6 +8,9 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  modulePathIgnorePatterns: [
+    '<rootDir>/.claude/',
+  ],
   collectCoverageFrom: [
     '**/*.{ts,tsx}',
     '!**/node_modules/**',
