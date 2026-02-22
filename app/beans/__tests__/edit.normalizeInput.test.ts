@@ -87,7 +87,7 @@ describe('beanToFormData', () => {
       remaining_g: 150,
       price: null,
       cup_notes: [],
-      image_url: null,
+      images: [],
       user_id: 'user-1',
       created_at: '2024-01-01',
       degassing_days: null,

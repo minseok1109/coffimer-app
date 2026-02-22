@@ -9,9 +9,9 @@ describe('normalizeInput', () => {
       roast_level: 'medium',
       bean_type: 'blend',
       weight_g: 200,
+      remaining_g: 120,
       price: 15000,
       cup_notes: ['berry', 123, 'chocolate'],
-      image_url: '  https://example.com/bean.jpg  ',
       degassing_days: '14',
       variety: '   ',
       process_method: '  워시드  ',
@@ -21,7 +21,7 @@ describe('normalizeInput', () => {
     expect(normalized.name).toBe('Ethiopia Sidamo');
     expect(normalized.roastery_name).toBe('Test Roastery');
     expect(normalized.roast_date).toBe('2026-02-18');
-    expect(normalized.image_url).toBe('https://example.com/bean.jpg');
+    expect(normalized.remaining_g).toBe(120);
     expect(normalized.degassing_days).toBeNull();
     expect(normalized.variety).toBeNull();
     expect(normalized.process_method).toBe('워시드');
@@ -37,9 +37,9 @@ describe('normalizeInput', () => {
       roast_level: null,
       bean_type: 'single_origin',
       weight_g: 250,
+      remaining_g: 0,
       price: null,
       cup_notes: [],
-      image_url: null,
       degassing_days: 0,
       variety: '',
       process_method: null,

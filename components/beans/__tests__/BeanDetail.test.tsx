@@ -13,7 +13,7 @@ const createBean = (overrides: Partial<Bean> = {}): Bean => ({
   remaining_g: 120,
   price: 18000,
   cup_notes: ['초콜릿'],
-  image_url: null,
+  images: [],
   user_id: 'user-1',
   created_at: '2026-02-01T00:00:00.000Z',
   degassing_days: null,
