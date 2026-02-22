@@ -7,6 +7,18 @@ export type RoastLevel =
 
 export type BeanType = 'blend' | 'single_origin';
 
+export interface BeanImage {
+  id: string;
+  bean_id: string;
+  user_id: string;
+  image_url: string;
+  storage_path: string;
+  sort_order: number;
+  is_primary: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Bean {
   id: string;
   name: string;
@@ -18,7 +30,7 @@ export interface Bean {
   remaining_g: number;
   price: number | null;
   cup_notes: string[];
-  image_url: string | null;
+  images: BeanImage[];
   user_id: string;
   created_at: string;
   degassing_days: number | null;
@@ -94,13 +106,20 @@ export interface CreateBeanInput {
   roast_level?: RoastLevel | null;
   bean_type: BeanType;
   weight_g: number;
+  remaining_g?: number;
   price?: number | null;
   cup_notes?: string[];
-  image_url?: string | null;
   degassing_days?: number | null;
   variety?: string | null;
   process_method?: string | null;
   notes?: string | null;
+}
+
+export interface CreateBeanImageInput {
+  image_url: string;
+  storage_path: string;
+  sort_order: number;
+  is_primary: boolean;
 }
 
 export type UpdateBeanInput = Partial<CreateBeanInput> & {

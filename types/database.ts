@@ -58,6 +58,57 @@ export type Database = {
           },
         ];
       };
+      bean_images: {
+        Row: {
+          id: string;
+          bean_id: string;
+          user_id: string;
+          image_url: string;
+          storage_path: string;
+          sort_order: number;
+          is_primary: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          bean_id: string;
+          user_id: string;
+          image_url: string;
+          storage_path: string;
+          sort_order: number;
+          is_primary?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          bean_id?: string;
+          user_id?: string;
+          image_url?: string;
+          storage_path?: string;
+          sort_order?: number;
+          is_primary?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'bean_images_bean_id_fkey';
+            columns: ['bean_id'];
+            isOneToOne: false;
+            referencedRelation: 'beans';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'bean_images_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'users';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       beans: {
         Row: {
           id: string;
@@ -71,7 +122,6 @@ export type Database = {
           remaining_g: number;
           price: number | null;
           cup_notes: string[];
-          image_url: string | null;
           degassing_days: number | null;
           variety: string | null;
           process_method: string | null;
@@ -92,7 +142,6 @@ export type Database = {
           remaining_g: number;
           price?: number | null;
           cup_notes?: string[];
-          image_url?: string | null;
           degassing_days?: number | null;
           variety?: string | null;
           process_method?: string | null;
@@ -113,7 +162,6 @@ export type Database = {
           remaining_g?: number;
           price?: number | null;
           cup_notes?: string[];
-          image_url?: string | null;
           degassing_days?: number | null;
           variety?: string | null;
           process_method?: string | null;
@@ -1128,6 +1176,14 @@ export type Database = {
           recipe_name: string;
           trending_score: number;
         }[];
+      };
+      create_bean_with_images: {
+        Args: {
+          p_bean: Json;
+          p_bean_id: string;
+          p_images: Json;
+        };
+        Returns: Json;
       };
       soft_delete_bean: {
         Args: { bean_id: string };
