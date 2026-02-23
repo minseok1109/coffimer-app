@@ -12,6 +12,7 @@ const BEAN_SELECT = `
   name,
   roastery_name,
   roast_date,
+  opened_date,
   roast_level,
   bean_type,
   weight_g,

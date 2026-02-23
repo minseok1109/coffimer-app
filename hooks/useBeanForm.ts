@@ -1,14 +1,15 @@
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Alert } from 'react-native';
-import { useForm } from 'react-hook-form';
-import type { AIExtractionResult } from '@/types/bean';
-import { beanFormSchema } from '@/lib/validation/beanSchema';
 import type { BeanFormData, EncodedImageData } from '@/lib/validation/beanSchema';
+import { beanFormSchema } from '@/lib/validation/beanSchema';
+import type { AIExtractionResult } from '@/types/bean';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { Alert } from 'react-native';
 
 const DEFAULT_FORM_VALUES: BeanFormData = {
   name: '',
   roastery_name: '',
   roast_date: '',
+  opened_date: '',
   roast_level: null,
   bean_type: 'blend',
   weight_g: 0,

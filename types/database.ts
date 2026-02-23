@@ -116,6 +116,7 @@ export type Database = {
           name: string;
           roastery_name: string | null;
           roast_date: string | null;
+          opened_date: string | null;
           roast_level: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
           bean_type: 'blend' | 'single_origin';
           weight_g: number;
@@ -136,6 +137,7 @@ export type Database = {
           name: string;
           roastery_name?: string | null;
           roast_date?: string | null;
+          opened_date?: string | null;
           roast_level?: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
           bean_type?: 'blend' | 'single_origin';
           weight_g: number;
@@ -156,6 +158,7 @@ export type Database = {
           name?: string;
           roastery_name?: string | null;
           roast_date?: string | null;
+          opened_date?: string | null;
           roast_level?: 'light' | 'medium_light' | 'medium' | 'medium_dark' | 'dark' | null;
           bean_type?: 'blend' | 'single_origin';
           weight_g?: number;

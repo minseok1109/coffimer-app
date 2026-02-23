@@ -24,6 +24,7 @@ export interface Bean {
   name: string;
   roastery_name: string | null;
   roast_date: string | null;
+  opened_date: string | null;
   roast_level: RoastLevel | null;
   bean_type: BeanType;
   weight_g: number;
@@ -103,6 +104,7 @@ export interface CreateBeanInput {
   name: string;
   roastery_name?: string | null;
   roast_date?: string | null;
+  opened_date?: string | null;
   roast_level?: RoastLevel | null;
   bean_type: BeanType;
   weight_g: number;

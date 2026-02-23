@@ -3,7 +3,6 @@ import type { BeanFormData } from '@/lib/validation/beanSchema';
 
 export const normalizeText = (value: unknown): string | null => {
   if (typeof value !== 'string') return null;
-
   const trimmed = value.trim();
   return trimmed.length > 0 ? trimmed : null;
 };
@@ -11,6 +10,17 @@ export const normalizeText = (value: unknown): string | null => {
 const normalizeNumber = (value: unknown): number | null => {
   if (typeof value !== 'number') return null;
   return Number.isFinite(value) ? value : null;
+};
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const normalizeOptionalText = (
+  data: Record<string, unknown>,
+  key: string,
+): string | null | undefined => {
+  if (!(key in data)) return undefined;
+  return normalizeText(data[key]);
 };
 
 export const normalizeInput = (data: Record<string, unknown>): CreateBeanInput => {
@@ -22,13 +32,11 @@ export const normalizeInput = (data: Record<string, unknown>): CreateBeanInput =
     name: typeof data.name === 'string' ? data.name.trim() : '',
     roastery_name: normalizeText(data.roastery_name),
     roast_date: normalizeText(data.roast_date),
+    opened_date: normalizeText(data.opened_date),
     roast_level: data.roast_level as CreateBeanInput['roast_level'],
     bean_type: data.bean_type as CreateBeanInput['bean_type'],
-    weight_g: data.weight_g as number,
-    remaining_g:
-      typeof data.remaining_g === 'number' && Number.isFinite(data.remaining_g)
-        ? data.remaining_g
-        : undefined,
+    weight_g: isFiniteNumber(data.weight_g) ? data.weight_g : 0,
+    remaining_g: isFiniteNumber(data.remaining_g) ? data.remaining_g : undefined,
     price: normalizeNumber(data.price),
     cup_notes: cupNotes,
     degassing_days: normalizeNumber(data.degassing_days),
@@ -42,6 +50,7 @@ export const beanToFormData = (bean: Bean): BeanFormData => ({
   name: bean.name,
   roastery_name: bean.roastery_name ?? '',
   roast_date: bean.roast_date ?? '',
+  opened_date: bean.opened_date ?? '',
   roast_level: bean.roast_level,
   bean_type: bean.bean_type,
   weight_g: bean.weight_g,
@@ -54,40 +63,25 @@ export const beanToFormData = (bean: Bean): BeanFormData => ({
   remaining_g: bean.remaining_g,
 });
 
-const normalizeTextForEdit = (
-  data: Record<string, unknown>,
-  key: keyof Pick<
-    UpdateBeanInput,
-    'name' | 'roastery_name' | 'roast_date' | 'variety' | 'process_method' | 'notes'
-  >,
-): string | null | undefined => {
-  if (!(key in data)) return undefined;
-  const value = data[key];
-  if (typeof value !== 'string') return null;
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
-};
+const TEXT_FIELDS = [
+  'roastery_name', 'roast_date', 'opened_date',
+  'variety', 'process_method', 'notes',
+] as const;
+
+const NULLABLE_NUMBER_FIELDS = ['price', 'degassing_days'] as const;
 
 export const normalizeEditInput = (data: Record<string, unknown>): UpdateBeanInput => {
   const input: UpdateBeanInput = {};
 
-  const name = normalizeTextForEdit(data, 'name');
+  const name = normalizeOptionalText(data, 'name');
   if (name !== undefined) input.name = name ?? '';
 
-  const roasteryName = normalizeTextForEdit(data, 'roastery_name');
-  if (roasteryName !== undefined) input.roastery_name = roasteryName;
-
-  const roastDate = normalizeTextForEdit(data, 'roast_date');
-  if (roastDate !== undefined) input.roast_date = roastDate;
-
-  const variety = normalizeTextForEdit(data, 'variety');
-  if (variety !== undefined) input.variety = variety;
-
-  const processMethod = normalizeTextForEdit(data, 'process_method');
-  if (processMethod !== undefined) input.process_method = processMethod;
-
-  const notes = normalizeTextForEdit(data, 'notes');
-  if (notes !== undefined) input.notes = notes;
+  for (const field of TEXT_FIELDS) {
+    const value = normalizeOptionalText(data, field);
+    if (value !== undefined) {
+      (input as Record<string, unknown>)[field] = value;
+    }
+  }
 
   if ('roast_level' in data) {
     input.roast_level = data.roast_level as UpdateBeanInput['roast_level'];
@@ -97,35 +91,23 @@ export const normalizeEditInput = (data: Record<string, unknown>): UpdateBeanInp
     input.bean_type = data.bean_type as UpdateBeanInput['bean_type'];
   }
 
-  if ('weight_g' in data && typeof data.weight_g === 'number' && Number.isFinite(data.weight_g)) {
+  if ('weight_g' in data && isFiniteNumber(data.weight_g)) {
     input.weight_g = data.weight_g;
   }
 
-  if ('price' in data) {
-    if (typeof data.price === 'number' && Number.isFinite(data.price)) {
-      input.price = data.price;
-    } else {
-      input.price = null;
-    }
-  }
-
-  if ('degassing_days' in data) {
-    if (typeof data.degassing_days === 'number' && Number.isFinite(data.degassing_days)) {
-      input.degassing_days = data.degassing_days;
-    } else {
-      input.degassing_days = null;
+  for (const field of NULLABLE_NUMBER_FIELDS) {
+    if (field in data) {
+      (input as Record<string, unknown>)[field] = normalizeNumber(data[field]);
     }
   }
 
   if ('cup_notes' in data && Array.isArray(data.cup_notes)) {
-    input.cup_notes = data.cup_notes.filter((note): note is string => typeof note === 'string');
+    input.cup_notes = data.cup_notes.filter(
+      (note): note is string => typeof note === 'string',
+    );
   }
 
-  if (
-    'remaining_g' in data &&
-    typeof data.remaining_g === 'number' &&
-    Number.isFinite(data.remaining_g)
-  ) {
+  if ('remaining_g' in data && isFiniteNumber(data.remaining_g)) {
     input.remaining_g = data.remaining_g;
   }
 
