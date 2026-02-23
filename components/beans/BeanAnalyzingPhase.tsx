@@ -1,5 +1,5 @@
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 import { Image } from 'expo-image';
+import { ActivityIndicator, FlatList, StyleSheet, Text, View } from 'react-native';
 
 interface BeanAnalyzingPhaseProps {
   imageUris: string[];
@@ -31,7 +31,6 @@ export function BeanAnalyzingPhase({ imageUris }: BeanAnalyzingPhaseProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 20,
     gap: 20,
   },

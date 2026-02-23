@@ -20,6 +20,7 @@ export interface RoastDateSelectorRef {
 interface RoastDateSelectorProps {
   selectedDate: string | null;
   onSelect: (date: string) => void;
+  title?: string;
 }
 
 const TODAY = dayjs().format('YYYY-MM-DD');
@@ -42,7 +43,7 @@ const CALENDAR_THEME = {
 export const RoastDateSelector = forwardRef<
   RoastDateSelectorRef,
   RoastDateSelectorProps
->(({ selectedDate, onSelect }, ref) => {
+>(({ selectedDate, onSelect, title = '로스팅 날짜 선택' }, ref) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ['60%'], []);
 
@@ -81,7 +82,7 @@ export const RoastDateSelector = forwardRef<
       snapPoints={snapPoints}
     >
       <View style={styles.header}>
-        <Text style={styles.title}>로스팅 날짜 선택</Text>
+        <Text style={styles.title}>{title}</Text>
         <TouchableOpacity
           onPress={() => bottomSheetRef.current?.close()}
           style={styles.closeButton}

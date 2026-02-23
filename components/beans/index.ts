@@ -2,7 +2,6 @@ export { BeanCard } from './BeanCard';
 export { BeanDetail } from './BeanDetail';
 export { BeanEditForm } from './BeanEditForm';
 export { BeanForm } from './BeanForm';
-export { DegassingTimeline } from './DegassingTimeline';
 export { ConfidenceBadge } from './ConfidenceBadge';
 export { CupNoteTag } from './CupNoteTag';
 export { RemainingBar } from './RemainingBar';
