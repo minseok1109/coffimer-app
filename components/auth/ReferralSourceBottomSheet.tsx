@@ -33,7 +33,7 @@ export const ReferralSourceBottomSheet = forwardRef<
   const bottomSheetRef = React.useRef<BottomSheet>(null);
   const [inputValue, setInputValue] = useState('');
 
-  const snapPoints = useMemo(() => ['60%'], []);
+  const snapPoints = useMemo(() => ['75%'], []);
 
   useImperativeHandle(ref, () => ({
     expand: () => {
