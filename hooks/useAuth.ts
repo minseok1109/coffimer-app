@@ -200,7 +200,9 @@ export function useAuth() {
     email: string,
     password: string,
     displayName?: string,
-    referralSource?: string | null
+    referralSource?: string | null,
+    termsAgreedAt?: string,
+    termsVersion?: string
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -221,6 +223,8 @@ export function useAuth() {
           display_name: displayName || data.user.email?.split('@')[0] || 'User',
           profile_image: null,
           referral_source: referralSource ?? null,
+          terms_agreed_at: termsAgreedAt ?? null,
+          terms_version: termsVersion ?? null,
         });
       } catch (insertError) {
         console.error('Error creating user profile:', insertError);

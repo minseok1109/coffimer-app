@@ -48,6 +48,9 @@ export const signUpSchema = z
       .string()
       .max(100, '최대 100자까지 입력할 수 있습니다')
       .nullable(),
+    termsAgreed: z.boolean().refine((val) => val === true, {
+      message: '이용약관 및 개인정보 수집·이용에 동의해주세요',
+    }),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: '비밀번호가 일치하지 않습니다',
@@ -110,6 +113,7 @@ export const getDefaultSignUpForm = (): SignUpFormData => ({
   password: '',
   confirmPassword: '',
   referralSource: null,
+  termsAgreed: false,
 });
 
 export const getDefaultSignInForm = (): SignInFormData => ({

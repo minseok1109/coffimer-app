@@ -740,6 +740,8 @@ export type Database = {
           id: string;
           profile_image: string | null;
           referral_source: string | null;
+          terms_agreed_at: string | null;
+          terms_version: string | null;
           updated_at: string;
         };
         Insert: {
@@ -749,6 +751,8 @@ export type Database = {
           id: string;
           profile_image?: string | null;
           referral_source?: string | null;
+          terms_agreed_at?: string | null;
+          terms_version?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -758,6 +762,8 @@ export type Database = {
           id?: string;
           profile_image?: string | null;
           referral_source?: string | null;
+          terms_agreed_at?: string | null;
+          terms_version?: string | null;
           updated_at?: string;
         };
         Relationships: [];
