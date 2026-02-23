@@ -46,6 +46,7 @@ describe('useBeanAnalysis multi-image', () => {
 
     expect(analyzeBeanImages).toHaveBeenCalledTimes(1);
     expect((analyzeBeanImages as jest.Mock).mock.calls[0][0]).toHaveLength(2);
+    expect((analyzeBeanImages as jest.Mock).mock.calls[0][1]).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(result.current.extractedData?.name).toBe('Extracted Bean');
     expect(result.current.isAnalyzing).toBe(false);
   });

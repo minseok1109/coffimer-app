@@ -7,6 +7,7 @@ const createBean = (overrides: Partial<Bean> = {}): Bean => ({
   name: '테스트 원두',
   roastery_name: '테스트 로스터리',
   roast_date: '2026-02-01',
+  opened_date: null,
   roast_level: 'medium',
   bean_type: 'single_origin',
   weight_g: 200,
@@ -57,6 +58,62 @@ describe('BeanDetail', () => {
       screen.getByText('로스팅 날짜를 입력하면 디게싱 타임라인이 표시됩니다.'),
     ).toBeTruthy();
     expect(screen.queryByText('최적기')).toBeNull();
+  });
+
+  it('원두 정보를 레이블-값 테이블 형태로 표시한다', () => {
+    const openedDate = '2026-02-03';
+    const formattedOpenedDate = new Date(openedDate).toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
+
+    render(
+      <BeanDetail
+        bean={createBean({
+          opened_date: openedDate,
+          variety: '게이샤',
+          process_method: '워시드',
+        })}
+      />,
+    );
+
+    expect(screen.getByText('가격')).toBeTruthy();
+    expect(screen.getByText('용량')).toBeTruthy();
+    expect(screen.getByText('원두 유형')).toBeTruthy();
+    expect(screen.getByText('로스팅 날짜')).toBeTruthy();
+    expect(screen.getByText('개봉일')).toBeTruthy();
+    expect(screen.getByText(formattedOpenedDate)).toBeTruthy();
+    expect(screen.getByText('배전도')).toBeTruthy();
+    expect(screen.getByText('품종')).toBeTruthy();
+    expect(screen.getByText('가공 방식')).toBeTruthy();
+  });
+
+  it('null 또는 빈 필드의 레이블을 숨긴다', () => {
+    render(
+      <BeanDetail
+        bean={createBean({
+          price: null,
+          roast_date: null,
+          opened_date: null,
+          roast_level: null,
+          variety: null,
+          process_method: null,
+        })}
+      />,
+    );
+
+    // 항상 표시되는 레이블
+    expect(screen.getByText('용량')).toBeTruthy();
+    expect(screen.getByText('원두 유형')).toBeTruthy();
+
+    // 조건부 레이블은 숨겨져야 함
+    expect(screen.queryByText('가격')).toBeNull();
+    expect(screen.queryByText('로스팅 날짜')).toBeNull();
+    expect(screen.queryByText('개봉일')).toBeNull();
+    expect(screen.queryByText('배전도')).toBeNull();
+    expect(screen.queryByText('품종')).toBeNull();
+    expect(screen.queryByText('가공 방식')).toBeNull();
   });
 
   it('신규 텍스트 필드를 trim하여 표시하고 공백 메모는 숨긴다', () => {

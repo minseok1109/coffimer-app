@@ -25,6 +25,7 @@ describe('manual bean entry regression', () => {
         name: 'Manual Bean',
         roastery_name: null,
         roast_date: null,
+        opened_date: null,
         roast_level: null,
         bean_type: 'blend',
         weight_g: 200,

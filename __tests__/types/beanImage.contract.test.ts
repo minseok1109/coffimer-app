@@ -25,6 +25,7 @@ describe('BeanImage type contract', () => {
       name: '테스트',
       roastery_name: null,
       roast_date: null,
+      opened_date: null,
       roast_level: null,
       bean_type: 'blend',
       weight_g: 200,

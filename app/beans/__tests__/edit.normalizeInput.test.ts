@@ -23,6 +23,16 @@ describe('normalizeEditInput', () => {
     expect(result.notes).toBeNull();
   });
 
+  it('should normalize opened_date text field', () => {
+    const result = normalizeEditInput({
+      opened_date: ' 2026-02-20 ',
+    });
+    expect(result.opened_date).toBe('2026-02-20');
+
+    const cleared = normalizeEditInput({ opened_date: '   ' });
+    expect(cleared.opened_date).toBeNull();
+  });
+
   it('should only include remaining_g when it is a finite number', () => {
     expect(normalizeEditInput({ remaining_g: 100 }).remaining_g).toBe(100);
     expect(normalizeEditInput({ remaining_g: NaN })).not.toHaveProperty('remaining_g');
@@ -72,6 +82,58 @@ describe('beanFormSchema cross-validation', () => {
     });
     expect(result.success).toBe(true);
   });
+
+  it('should reject when opened_date is in the future', () => {
+    const result = beanFormSchema.safeParse({
+      name: 'Test',
+      bean_type: 'blend',
+      weight_g: 200,
+      cup_notes: [],
+      opened_date: '2099-01-01',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const openedDateError = result.error.issues.find(
+        (issue) => issue.path.includes('opened_date')
+      );
+      expect(openedDateError).toBeDefined();
+    }
+  });
+
+  it('should reject when opened_date is earlier than roast_date', () => {
+    const result = beanFormSchema.safeParse({
+      name: 'Test',
+      bean_type: 'blend',
+      weight_g: 200,
+      cup_notes: [],
+      roast_date: '2026-02-10',
+      opened_date: '2026-02-09',
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const openedDateError = result.error.issues.find(
+        (issue) => issue.path.includes('opened_date')
+      );
+      expect(openedDateError).toBeDefined();
+    }
+  });
+
+  it('should accept when opened_date is today', () => {
+    const now = new Date();
+    const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate()
+    ).padStart(2, '0')}`;
+
+    const result = beanFormSchema.safeParse({
+      name: 'Test',
+      bean_type: 'blend',
+      weight_g: 200,
+      cup_notes: [],
+      opened_date: today,
+    });
+
+    expect(result.success).toBe(true);
+  });
 });
 
 describe('beanToFormData', () => {
@@ -81,6 +143,7 @@ describe('beanToFormData', () => {
       name: 'Test Bean',
       roastery_name: null,
       roast_date: null,
+      opened_date: null,
       roast_level: null,
       bean_type: 'blend',
       weight_g: 200,
@@ -100,6 +163,7 @@ describe('beanToFormData', () => {
     const result = beanToFormData(bean);
     expect(result.roastery_name).toBe('');
     expect(result.roast_date).toBe('');
+    expect(result.opened_date).toBe('');
     expect(result.variety).toBe('');
     expect(result.notes).toBe('');
     expect(result.remaining_g).toBe(150);

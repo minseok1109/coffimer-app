@@ -18,7 +18,7 @@ describe('analyzeBeanImages', () => {
     jest.clearAllMocks();
   });
 
-  it('sends images array to edge function once', async () => {
+  it('sends images array and currentDate to edge function once', async () => {
     const images = Array.from({ length: 3 }, () => singleImage[0]);
 
     mockInvoke.mockResolvedValueOnce({
@@ -26,12 +26,24 @@ describe('analyzeBeanImages', () => {
       error: null,
     });
 
-    await analyzeBeanImages(images);
+    await analyzeBeanImages(images, '2026-02-22');
 
     expect(mockInvoke).toHaveBeenCalledTimes(1);
     expect(mockInvoke).toHaveBeenCalledWith('extract-bean-info', {
-      body: { images },
+      body: { images, currentDate: '2026-02-22' },
     });
+  });
+
+  it('omits currentDate from body when not provided', async () => {
+    mockInvoke.mockResolvedValueOnce({
+      data: { success: true, data: { name: 'Bean', confidence: {} } },
+      error: null,
+    });
+
+    await analyzeBeanImages(singleImage);
+
+    const invokedBody = mockInvoke.mock.calls[0][1].body;
+    expect(invokedBody).not.toHaveProperty('currentDate');
   });
 
   it('throws when images is empty', async () => {

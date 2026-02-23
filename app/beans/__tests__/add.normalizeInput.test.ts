@@ -6,6 +6,7 @@ describe('normalizeInput', () => {
       name: ' Ethiopia Sidamo ',
       roastery_name: '  Test Roastery  ',
       roast_date: ' 2026-02-18 ',
+      opened_date: ' 2026-02-20 ',
       roast_level: 'medium',
       bean_type: 'blend',
       weight_g: 200,
@@ -21,6 +22,7 @@ describe('normalizeInput', () => {
     expect(normalized.name).toBe('Ethiopia Sidamo');
     expect(normalized.roastery_name).toBe('Test Roastery');
     expect(normalized.roast_date).toBe('2026-02-18');
+    expect(normalized.opened_date).toBe('2026-02-20');
     expect(normalized.remaining_g).toBe(120);
     expect(normalized.degassing_days).toBeNull();
     expect(normalized.variety).toBeNull();
@@ -34,6 +36,7 @@ describe('normalizeInput', () => {
       name: 'Bean',
       roastery_name: '',
       roast_date: '',
+      opened_date: '',
       roast_level: null,
       bean_type: 'single_origin',
       weight_g: 250,
@@ -47,5 +50,6 @@ describe('normalizeInput', () => {
     });
 
     expect(normalized.degassing_days).toBe(0);
+    expect(normalized.opened_date).toBeNull();
   });
 });

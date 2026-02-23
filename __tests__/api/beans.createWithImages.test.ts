@@ -32,6 +32,7 @@ describe('BeanAPI.createBeanWithImages', () => {
           name: 'Test Bean',
           roastery_name: null,
           roast_date: null,
+          opened_date: '2026-02-20',
           roast_level: null,
           bean_type: 'single_origin',
           weight_g: 200,
@@ -69,6 +70,7 @@ describe('BeanAPI.createBeanWithImages', () => {
         name: 'Test Bean',
         bean_type: 'single_origin',
         weight_g: 200,
+        opened_date: '2026-02-20',
       },
       [
         {
@@ -91,6 +93,7 @@ describe('BeanAPI.createBeanWithImages', () => {
 
     expect(bean.id).toBe('bean-id');
     expect(bean.images).toHaveLength(1);
+    expect(bean.opened_date).toBe('2026-02-20');
   });
 
   it('throws when RPC fails', async () => {

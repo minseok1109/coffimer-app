@@ -23,6 +23,7 @@ jest.mock('@/components/beans', () => ({
               bean_type: 'single_origin',
               weight_g: 200,
               cup_notes: [],
+              opened_date: '2026-02-20',
             },
             {
               encodedImages: [{ base64: 'base64-1', mimeType: 'image/jpeg' }],
@@ -89,6 +90,14 @@ describe('AddBeanScreen multi image flow', () => {
     await waitFor(() => {
       expect(mockCreateBeanWithImages).toHaveBeenCalledTimes(1);
     });
+
+    expect(mockCreateBeanWithImages).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          opened_date: '2026-02-20',
+        }),
+      }),
+    );
 
     expect(mockCreateBean).not.toHaveBeenCalled();
   });

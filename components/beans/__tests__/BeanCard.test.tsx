@@ -8,6 +8,7 @@ function createBean(overrides: Partial<Bean> = {}): Bean {
     name: 'Test Bean',
     roastery_name: 'Test Roastery',
     roast_date: '2026-02-20',
+    opened_date: null,
     roast_level: 'medium',
     bean_type: 'single_origin',
     weight_g: 200,
