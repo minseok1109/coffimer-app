@@ -1,10 +1,11 @@
 import { analyzeBeanImages } from '@/lib/api/beanAnalysis';
+import { toLocalIsoDate } from '@/lib/date';
 import type { EncodedImageData } from '@/lib/validation/beanSchema';
 import type { AIExtractionResult, BeanFieldConfidence } from '@/types/bean';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { useCallback, useRef, useState } from 'react';
 
-const MAX_IMAGE_WIDTH = 1024;
+const MAX_IMAGE_WIDTH = 768;
 const COMPRESS_QUALITY = 0.6;
 
 const INITIAL_CONFIDENCE: BeanFieldConfidence = {
@@ -27,6 +28,7 @@ interface UseBeanAnalysisReturn {
   extractedData: AIExtractionResult | null;
   error: string | null;
   analyze: (uris: string[]) => Promise<AIExtractionResult>;
+  preEncode: (uris: string[]) => void;
   resetConfidence: () => void;
 }
 
@@ -53,6 +55,16 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
   const [extractedData, setExtractedData] = useState<AIExtractionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const encodedImagesRef = useRef<EncodedImageData[]>([]);
+  const encodingCacheRef = useRef<Map<string, Promise<EncodedImageData>>>(new Map());
+
+  const preEncode = useCallback((uris: string[]) => {
+    const cache = encodingCacheRef.current;
+    for (const uri of uris) {
+      if (!cache.has(uri)) {
+        cache.set(uri, encodeImage(uri));
+      }
+    }
+  }, []);
 
   const analyze = useCallback(async (uris: string[]): Promise<AIExtractionResult> => {
     if (!uris.length) {
@@ -65,14 +77,23 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
     setError(null);
 
     try {
-      const encodedImages: EncodedImageData[] = [];
-      for (const uri of uris) {
-        encodedImages.push(await encodeImage(uri));
-      }
+      const cache = encodingCacheRef.current;
+
+      const encodedImages = await Promise.all(
+        uris.map((uri) => {
+          const cached = cache.get(uri);
+          if (cached) return cached;
+          const promise = encodeImage(uri);
+          cache.set(uri, promise);
+          return promise;
+        }),
+      );
 
       encodedImagesRef.current = encodedImages;
 
-      const result = await analyzeBeanImages(encodedImages);
+      const currentDate = toLocalIsoDate(new Date());
+
+      const result = await analyzeBeanImages(encodedImages, currentDate);
       setConfidence(result.confidence);
       setExtractedData(result);
       return result;
@@ -80,7 +101,6 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
       const message =
         analysisError instanceof Error ? analysisError.message : '이미지 분석에 실패했습니다.';
       setError(message);
-      console.error('[useBeanAnalysis] analyze failed', analysisError);
       throw analysisError instanceof Error ? analysisError : new Error(message);
     } finally {
       setIsAnalyzing(false);
@@ -91,6 +111,7 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
     setConfidence(INITIAL_CONFIDENCE);
     setExtractedData(null);
     setError(null);
+    encodingCacheRef.current.clear();
   }, []);
 
   return {
@@ -100,6 +121,7 @@ export function useBeanAnalysis(): UseBeanAnalysisReturn {
     extractedData,
     error,
     analyze,
+    preEncode,
     resetConfidence,
   };
 }

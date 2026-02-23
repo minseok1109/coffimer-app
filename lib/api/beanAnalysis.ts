@@ -1,3 +1,4 @@
+import { NotCoffeeImageError } from '@/lib/errors';
 import type { EncodedImageData } from '@/lib/validation/beanSchema';
 import type { AIExtractionResult } from '@/types/bean';
 import { supabase } from '@/lib/supabaseClient';
@@ -51,17 +52,38 @@ async function extractInvokeErrorMessage(error: unknown): Promise<string> {
 
 export async function analyzeBeanImages(
   images: EncodedImageData[],
+  currentDate?: string,
 ): Promise<AIExtractionResult> {
   if (!images.length) {
     throw new Error('최소 1장의 이미지가 필요합니다.');
   }
 
   const { data, error } = await supabase.functions.invoke('extract-bean-info', {
-    body: { images },
+    body: { images, ...(currentDate ? { currentDate } : {}) },
   });
 
   if (error) {
-    throw new Error(await extractInvokeErrorMessage(error));
+    // 에러 body를 한 번만 파싱하여 stream 소비 문제를 방지한다.
+    let body: { error?: string; message?: string; details?: string } | undefined;
+    try {
+      body = await (error as { context?: { json?: () => Promise<unknown> } })
+        .context?.json?.() as typeof body;
+    } catch {
+      // JSON 파싱 실패 — 일반 에러로 처리
+    }
+
+    if (body?.error === 'not_coffee_image') {
+      throw new NotCoffeeImageError(
+        body?.message ?? '커피 원두 이미지를 인식할 수 없습니다.',
+      );
+    }
+
+    // 이미 파싱된 body가 있으면 그로부터 메시지를 추출, 없으면 fallback
+    const message = body
+      ? buildErrorMessage(body.error, body.details ?? body.message)
+      : await extractInvokeErrorMessage(error);
+
+    throw new Error(message ?? '이미지 분석 요청에 실패했습니다.');
   }
 
   if (!data?.success) {
