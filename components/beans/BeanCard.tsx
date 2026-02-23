@@ -3,9 +3,13 @@ import { useRouter } from 'expo-router';
 import { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
-import { calculateDegassingStatus } from '@/utils/degassingUtils';
+import { calculateDegassingStatus, type DegassingStatus } from '@/utils/degassingUtils';
 import { getPrimaryBeanImage } from '@/utils/beanImages';
-import { DegassingTimeline } from './DegassingTimeline';
+
+const DEGASSING_CHIP_CONFIG: Record<DegassingStatus, { color: string; bg: string }> = {
+  degassing: { color: '#FF6B35', bg: 'rgba(255,107,53,0.12)' },
+  completed: { color: '#10B981', bg: 'rgba(16,185,129,0.12)' },
+};
 
 interface BeanCardProps {
   bean: Bean;
@@ -29,8 +33,8 @@ export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
     : null;
 
   const degassingInfo = useMemo(
-    () => calculateDegassingStatus(bean.roast_date, bean.degassing_days, bean.roast_level),
-    [bean.roast_date, bean.degassing_days, bean.roast_level],
+    () => calculateDegassingStatus(bean.roast_date, bean.degassing_days),
+    [bean.roast_date, bean.degassing_days],
   );
 
   return (
@@ -81,8 +85,13 @@ export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
         </View>
 
         {degassingInfo && (
-          <View style={styles.timelineContainer}>
-            <DegassingTimeline degassingInfo={degassingInfo} />
+          <View style={[styles.degassingChip, { backgroundColor: DEGASSING_CHIP_CONFIG[degassingInfo.status].bg }]}>
+            <View style={[styles.chipDot, { backgroundColor: DEGASSING_CHIP_CONFIG[degassingInfo.status].color }]} />
+            <Text style={[styles.chipText, { color: DEGASSING_CHIP_CONFIG[degassingInfo.status].color }]}>
+              {degassingInfo.status === 'degassing'
+                ? `디게싱 중 · ${degassingInfo.remainingDays}일 남음`
+                : '디게싱 완료'}
+            </Text>
           </View>
         )}
 
@@ -175,8 +184,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#999',
   },
-  timelineContainer: {
-    marginTop: 6,
+  degassingChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 10,
+    gap: 5,
+    marginTop: 4,
+  },
+  chipDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  chipText: {
+    fontSize: 11,
+    fontWeight: '600',
   },
   remainingText: {
     fontSize: 12,

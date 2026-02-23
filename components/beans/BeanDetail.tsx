@@ -1,3 +1,6 @@
+import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
+import { sortBeanImages } from '@/utils/beanImages';
+import { calculateDegassingStatus } from '@/utils/degassingUtils';
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useMemo, useState } from 'react';
@@ -9,16 +12,68 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
-import { sortBeanImages } from '@/utils/beanImages';
-import { calculateDegassingStatus } from '@/utils/degassingUtils';
 import { CupNoteTag } from './CupNoteTag';
-import { DegassingTimeline } from './DegassingTimeline';
 import { RemainingBar } from './RemainingBar';
 
+interface InfoItem {
+  label: string;
+  value: string;
+}
 
 interface BeanDetailProps {
   bean: Bean;
+}
+
+const formatKoreanDate = (dateString: string | null): string | null => {
+  if (!dateString) return null;
+  return new Date(dateString).toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+};
+
+const buildInfoItems = (bean: Bean): InfoItem[] => {
+  const roastConfig = bean.roast_level
+    ? ROAST_LEVEL_CONFIG[bean.roast_level]
+    : null;
+  const variety = bean.variety?.trim() ?? '';
+  const processMethod = bean.process_method?.trim() ?? '';
+  const formattedPrice = bean.price
+    ? bean.price.toLocaleString('ko-KR')
+    : null;
+
+  return [
+    { label: '용량', value: `${bean.weight_g}g` },
+    formatKoreanDate(bean.roast_date)
+      ? { label: '로스팅 날짜', value: formatKoreanDate(bean.roast_date) as string }
+      : undefined,
+    formatKoreanDate(bean.opened_date)
+      ? { label: '개봉일', value: formatKoreanDate(bean.opened_date) as string }
+      : undefined,
+    { label: '원두 유형', value: bean.bean_type === 'single_origin' ? '싱글 오리진' : '블렌드' },
+    roastConfig ? { label: '배전도', value: `${roastConfig.label} 로스팅` } : undefined,
+    variety.length > 0 ? { label: '품종', value: variety } : undefined,
+    processMethod.length > 0 ? { label: '가공 방식', value: processMethod } : undefined,
+    formattedPrice ? { label: '가격', value: `${formattedPrice}원` } : undefined,
+  ].filter((item): item is InfoItem => item !== undefined);
+};
+
+interface DegassingMessageProps {
+  icon: string;
+  message: string;
+}
+
+function DegassingMessage({ icon, message }: DegassingMessageProps) {
+  return (
+    <>
+      <View style={styles.separator} />
+      <View style={styles.messageRow}>
+        <Ionicons color="#A56A49" name={icon as 'cafe-outline'} size={18} />
+        <Text style={styles.messageText}>{message}</Text>
+      </View>
+    </>
+  );
 }
 
 export function BeanDetail({ bean }: BeanDetailProps) {
@@ -28,77 +83,18 @@ export function BeanDetail({ bean }: BeanDetailProps) {
     ? ROAST_LEVEL_CONFIG[bean.roast_level]
     : null;
   const orderedImages = useMemo(() => sortBeanImages(bean.images), [bean.images]);
-  const variety = bean.variety?.trim() ?? '';
-  const processMethod = bean.process_method?.trim() ?? '';
   const notes = bean.notes?.trim() ?? '';
+  const infoItems = buildInfoItems(bean);
   const hasDegassingSetting = bean.degassing_days !== null;
   const isImmediateDrink = bean.degassing_days === 0;
 
-  const formattedDate = bean.roast_date
-    ? new Date(bean.roast_date).toLocaleDateString('ko-KR', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-      })
-    : null;
-
-  const formattedPrice = bean.price
-    ? bean.price.toLocaleString('ko-KR')
-    : null;
-
   const degassingInfo = useMemo(
-    () => calculateDegassingStatus(bean.roast_date, bean.degassing_days, bean.roast_level),
-    [bean.roast_date, bean.degassing_days, bean.roast_level],
+    () => calculateDegassingStatus(bean.roast_date, bean.degassing_days),
+    [bean.roast_date, bean.degassing_days],
   );
 
-  const degassingDetail = useMemo(() => {
-    if (!degassingInfo) return null;
-
-    const { status, daysFromRoast, degassingEnd, optimalEnd } = degassingInfo;
-
-    const phases = [
-      {
-        icon: 'flame-outline' as const,
-        label: '디게싱',
-        range: `1~${degassingEnd}일`,
-        active: status === 'degassing',
-        color: '#FF6B35',
-      },
-      {
-        icon: 'checkmark-circle-outline' as const,
-        label: '최적기',
-        range: `${degassingEnd}~${optimalEnd}일`,
-        active: status === 'optimal',
-        color: '#10B981',
-      },
-      {
-        icon: 'trending-down-outline' as const,
-        label: '신선도 저하',
-        range: `${optimalEnd}일+`,
-        active: status === 'past_prime',
-        color: '#6B7280',
-      },
-    ];
-
-    let message: string;
-    if (status === 'degassing') {
-      const remaining = degassingEnd - daysFromRoast;
-      message = `최적의 맛까지 ${remaining}일 남았습니다`;
-    } else if (status === 'optimal') {
-      const remaining = optimalEnd - daysFromRoast;
-      message = `지금이 최적기입니다! ${remaining}일 남았습니다`;
-    } else {
-      const pastDays = daysFromRoast - optimalEnd;
-      message = `최적기가 ${pastDays}일 전에 지났습니다`;
-    }
-
-    return { phases, message };
-  }, [degassingInfo]);
-
-  const hasTimelineData = Boolean(degassingInfo && degassingDetail);
-  const showDegassingSection = hasDegassingSetting || hasTimelineData;
   const showMissingRoastDateMessage =
-    hasDegassingSetting && !isImmediateDrink && !hasTimelineData;
+    hasDegassingSetting && !isImmediateDrink && !degassingInfo;
 
   return (
     <ScrollView
@@ -118,9 +114,9 @@ export function BeanDetail({ bean }: BeanDetailProps) {
               pagingEnabled
               keyExtractor={(item) => item.id}
               onMomentumScrollEnd={(event) => {
-                const width = event.nativeEvent.layoutMeasurement.width;
-                if (width <= 0) return;
-                const index = Math.round(event.nativeEvent.contentOffset.x / width);
+                const layoutWidth = event.nativeEvent.layoutMeasurement.width;
+                if (layoutWidth <= 0) return;
+                const index = Math.round(event.nativeEvent.contentOffset.x / layoutWidth);
                 setActiveImageIndex(index);
               }}
               renderItem={({ item, index }) => (
@@ -162,125 +158,54 @@ export function BeanDetail({ bean }: BeanDetailProps) {
           <Text style={styles.roasteryName}>{bean.roastery_name}</Text>
         ) : null}
 
-        <View style={styles.detailRows}>
-          {formattedPrice ? (
-            <View style={styles.detailRow}>
-              <Ionicons color="#A56A49" name="pricetag-outline" size={18} />
-              <Text style={styles.detailText}>{formattedPrice}원</Text>
+        <View style={styles.infoTable}>
+          {infoItems.map((item, index) => (
+            <View key={item.label}>
+              {index > 0 ? <View style={styles.rowDivider} /> : null}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>{item.label}</Text>
+                <Text style={styles.infoValue}>{item.value}</Text>
+              </View>
             </View>
-          ) : null}
-          <View style={styles.detailRow}>
-            <Ionicons color="#A56A49" name="scale-outline" size={18} />
-            <Text style={styles.detailText}>{bean.weight_g}g</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Ionicons color="#A56A49" name="leaf-outline" size={18} />
-            <Text style={styles.detailText}>
-              {bean.bean_type === 'single_origin' ? '싱글 오리진' : '블렌드'}
-            </Text>
-          </View>
-          {formattedDate ? (
-            <View style={styles.detailRow}>
-              <Ionicons color="#A56A49" name="calendar-outline" size={18} />
-              <Text style={styles.detailText}>{formattedDate}</Text>
-            </View>
-          ) : null}
-          {roastConfig ? (
-            <View style={styles.detailRow}>
-              <Ionicons color="#A56A49" name="flame-outline" size={18} />
-              <Text style={styles.detailText}>{roastConfig.label} 로스팅</Text>
-            </View>
-          ) : null}
-          {variety.length > 0 ? (
-            <View style={styles.detailRow}>
-              <Ionicons color="#A56A49" name="flower-outline" size={18} />
-              <Text style={styles.detailText}>{variety}</Text>
-            </View>
-          ) : null}
-          {processMethod.length > 0 ? (
-            <View style={styles.detailRow}>
-              <Ionicons color="#A56A49" name="water-outline" size={18} />
-              <Text style={styles.detailText}>{processMethod}</Text>
-            </View>
-          ) : null}
+          ))}
         </View>
       </View>
 
       {/* Degassing Info */}
-      {showDegassingSection ? (
+      {hasDegassingSetting ? (
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>디게싱</Text>
 
-          {hasDegassingSetting ? (
-            <View style={[styles.detailRow, styles.degassingSettingRow]}>
-              <Ionicons color="#A56A49" name="timer-outline" size={18} />
-              <Text style={styles.detailText}>
-                디게싱 기간 설정: {bean.degassing_days}일
-              </Text>
-            </View>
-          ) : null}
+          <View style={styles.detailRow}>
+            <Ionicons color="#A56A49" name="timer-outline" size={18} />
+            <Text style={styles.detailText}>
+              디게싱 기간 설정: {bean.degassing_days}일
+            </Text>
+          </View>
 
-          {hasTimelineData && degassingInfo && degassingDetail ? (
-            <>
-              {hasDegassingSetting ? <View style={styles.separator} /> : null}
-              <DegassingTimeline degassingInfo={degassingInfo} />
-              <View style={styles.separator} />
-              <View style={styles.phaseRow}>
-                {degassingDetail.phases.map((phase) => (
-                  <View
-                    key={phase.label}
-                    style={[
-                      styles.phaseItem,
-                      phase.active && { backgroundColor: `${phase.color}10` },
-                    ]}
-                  >
-                    <Ionicons
-                      color={phase.active ? phase.color : '#9CA3AF'}
-                      name={phase.icon}
-                      size={20}
-                    />
-                    <Text
-                      style={[
-                        styles.phaseLabel,
-                        phase.active && { color: phase.color, fontWeight: '700' },
-                      ]}
-                    >
-                      {phase.label}
-                    </Text>
-                    <Text style={styles.phaseRange}>{phase.range}</Text>
-                  </View>
-                ))}
-              </View>
-              <View style={styles.separator} />
-              <View style={styles.messageRow}>
-                <Ionicons color="#A56A49" name="information-circle-outline" size={18} />
-                <Text style={styles.messageText}>{degassingDetail.message}</Text>
-              </View>
-            </>
+          {degassingInfo ? (
+            <DegassingMessage
+              icon={degassingInfo.status === 'degassing' ? 'information-circle-outline' : 'checkmark-circle-outline'}
+              message={
+                degassingInfo.status === 'degassing'
+                  ? `디게싱 완료까지 ${degassingInfo.remainingDays}일 남았습니다`
+                  : '디게싱이 완료되었습니다'
+              }
+            />
           ) : null}
 
           {isImmediateDrink ? (
-            <>
-              {hasDegassingSetting ? <View style={styles.separator} /> : null}
-              <View style={styles.messageRow}>
-                <Ionicons color="#A56A49" name="cafe-outline" size={18} />
-                <Text style={styles.messageText}>
-                  디게싱 0일 설정으로 즉시 음용 가능 상태입니다.
-                </Text>
-              </View>
-            </>
+            <DegassingMessage
+              icon="cafe-outline"
+              message="디게싱 0일 설정으로 즉시 음용 가능 상태입니다."
+            />
           ) : null}
 
           {showMissingRoastDateMessage ? (
-            <>
-              {hasDegassingSetting ? <View style={styles.separator} /> : null}
-              <View style={styles.messageRow}>
-                <Ionicons color="#A56A49" name="information-circle-outline" size={18} />
-                <Text style={styles.messageText}>
-                  로스팅 날짜를 입력하면 디게싱 타임라인이 표시됩니다.
-                </Text>
-              </View>
-            </>
+            <DegassingMessage
+              icon="information-circle-outline"
+              message="로스팅 날짜를 입력하면 디게싱 타임라인이 표시됩니다."
+            />
           ) : null}
         </View>
       ) : null}
@@ -405,9 +330,35 @@ const styles = StyleSheet.create({
     color: '#1C1C1E',
     marginBottom: 12,
   },
-  detailRows: {
+  infoTable: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
     marginTop: 16,
-    gap: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 14,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#6B7280',
+    fontWeight: '500',
+  },
+  infoValue: {
+    fontSize: 15,
+    color: '#333',
+    fontWeight: '500',
+    textAlign: 'right',
+    flexShrink: 1,
+    marginLeft: 16,
+  },
+  rowDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: '#E5E7EB',
   },
   detailRow: {
     flexDirection: 'row',
@@ -417,9 +368,6 @@ const styles = StyleSheet.create({
   detailText: {
     fontSize: 15,
     color: '#4B5563',
-  },
-  degassingSettingRow: {
-    marginBottom: 12,
   },
   cupNotesWrap: {
     flexDirection: 'row',
@@ -435,27 +383,6 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: '#F3F4F6',
     marginVertical: 16,
-  },
-  phaseRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  phaseItem: {
-    flex: 1,
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 10,
-    borderRadius: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  phaseLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#6B7280',
-  },
-  phaseRange: {
-    fontSize: 11,
-    color: '#9CA3AF',
   },
   messageRow: {
     flexDirection: 'row',
