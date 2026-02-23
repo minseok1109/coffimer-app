@@ -199,7 +199,8 @@ export function useAuth() {
   const signUpWithEmail = async (
     email: string,
     password: string,
-    displayName?: string
+    displayName?: string,
+    referralSource?: string | null
   ) => {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -219,6 +220,7 @@ export function useAuth() {
           email: data.user.email!,
           display_name: displayName || data.user.email?.split('@')[0] || 'User',
           profile_image: null,
+          referral_source: referralSource ?? null,
         });
       } catch (insertError) {
         console.error('Error creating user profile:', insertError);
