@@ -258,7 +258,7 @@ describe('SignUpScreen', () => {
       fireEvent.press(submitButton);
       
       await waitFor(() => {
-        expect(mockSignUpWithEmail).toHaveBeenCalledWith('test@example.com', 'abc123');
+        expect(mockSignUpWithEmail).toHaveBeenCalledWith('test@example.com', 'abc123', '테스트유저', null);
         expect(mockRouterPush).toHaveBeenCalledWith('/auth/login');
       });
     });

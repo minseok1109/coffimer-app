@@ -739,6 +739,7 @@ export type Database = {
           email: string;
           id: string;
           profile_image: string | null;
+          referral_source: string | null;
           updated_at: string;
         };
         Insert: {
@@ -747,6 +748,7 @@ export type Database = {
           email: string;
           id: string;
           profile_image?: string | null;
+          referral_source?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -755,6 +757,7 @@ export type Database = {
           email?: string;
           id?: string;
           profile_image?: string | null;
+          referral_source?: string | null;
           updated_at?: string;
         };
         Relationships: [];
