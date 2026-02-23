@@ -28,7 +28,10 @@ export type UserSearchResult = Pick<
 >;
 
 // 사용자 프로필 업데이트용 타입 (email과 id는 제외)
-export type UserProfileUpdate = Omit<UserUpdate, 'id' | 'email' | 'created_at'>;
+export type UserProfileUpdate = Omit<
+  UserUpdate,
+  'id' | 'email' | 'created_at' | 'terms_agreed_at' | 'terms_version'
+>;
 
 // 사용자 생성 시 필수 정보
 export type UserCreateRequired = Pick<

@@ -16,6 +16,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useRef, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
@@ -25,6 +26,7 @@ import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -34,6 +36,8 @@ import {
 } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
+
+const TERMS_VERSION = '2026-02-23-v1';
 
 export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
@@ -49,13 +53,14 @@ export default function SignUpScreen() {
     formState: { errors, isValid },
   } = useForm<SignUpFormData>({
     resolver: zodResolver(signUpSchema),
-    mode: 'onChange',
+    mode: 'onTouched',
     defaultValues: {
       nickname: '',
       email: '',
       password: '',
       confirmPassword: '',
       referralSource: null,
+      termsAgreed: false,
     },
   });
 
@@ -68,7 +73,9 @@ export default function SignUpScreen() {
         data.email,
         data.password,
         data.nickname,
-        data.referralSource
+        data.referralSource,
+        new Date().toISOString(),
+        TERMS_VERSION
       );
       if (!error) {
         router.push('/auth/login');
@@ -311,6 +318,55 @@ export default function SignUpScreen() {
                   <Ionicons color="#999" name="chevron-down" size={20} />
                 </TouchableOpacity>
 
+                {/* 약관 동의 체크박스 */}
+                <Controller
+                  control={control}
+                  name="termsAgreed"
+                  render={({ field: { onChange, value }, fieldState: { error } }) => (
+                    <View style={styles.termsCheckboxContainer}>
+                      <View style={styles.checkboxRow}>
+                        <Pressable
+                          accessibilityLabel="서비스 이용약관 및 개인정보 처리방침 동의"
+                          accessibilityRole="checkbox"
+                          accessibilityState={{ checked: value }}
+                          hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                          onPress={() => onChange(!value)}
+                          style={styles.checkboxTouchArea}
+                        >
+                          <Ionicons
+                            color={value ? '#8B4513' : error ? '#dc3545' : '#999'}
+                            name={value ? 'checkbox' : 'square-outline'}
+                            size={22}
+                          />
+                        </Pressable>
+                        <Text style={styles.termsCheckboxText}>
+                          <Text
+                            accessibilityRole="link"
+                            onPress={() => WebBrowser.openBrowserAsync('https://coffimer.com/terms')}
+                            style={styles.termsLinkText}
+                          >
+                            이용약관
+                          </Text>
+                          <Text onPress={() => onChange(!value)}>
+                            {' 및 '}
+                          </Text>
+                          <Text
+                            accessibilityRole="link"
+                            onPress={() => WebBrowser.openBrowserAsync('https://coffimer.com/privacy')}
+                            style={styles.termsLinkText}
+                          >
+                            개인정보 수집·이용
+                          </Text>
+                          <Text onPress={() => onChange(!value)}>
+                            에 동의합니다
+                          </Text>
+                        </Text>
+                      </View>
+                      <ErrorMessage message={error?.message ?? ''} />
+                    </View>
+                  )}
+                />
+
                 <View style={styles.signUpButtonContainer}>
                   <TouchableOpacity
                     onPress={handleSubmit(onSubmit)}
@@ -352,15 +408,6 @@ export default function SignUpScreen() {
               </View>
             </View>
 
-            {/* 약관 동의 */}
-            <View style={styles.termsContainer}>
-              <Text style={styles.termsText}>
-                계정을 만들면{' '}
-                <Text style={styles.linkText}>서비스 이용약관</Text>과{' '}
-                <Text style={styles.linkText}>개인정보 보호정책</Text>에
-                동의하는 것으로 간주됩니다.
-              </Text>
-            </View>
           </ScrollView>
         </KeyboardAvoidingView>
 
@@ -540,18 +587,28 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
   },
-  termsContainer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+  termsCheckboxContainer: {
+    marginBottom: 8,
   },
-  termsText: {
-    fontSize: 12,
-    color: '#999',
-    textAlign: 'center',
-    lineHeight: 18,
+  checkboxRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
   },
-  linkText: {
-    fontSize: 12,
+  checkboxTouchArea: {
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  termsCheckboxText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    paddingTop: 12,
+  },
+  termsLinkText: {
     color: '#8B4513',
     fontWeight: '500',
     textDecorationLine: 'underline',
