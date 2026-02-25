@@ -121,6 +121,13 @@ Timer logic is centralized in `useRecipeTimer` hook with states:
 - Follow camelCase naming for component files
 - Group related components in subdirectories
 
+### Spacing (간격) Rules
+
+- 요소 간 간격은 반드시 부모 컨테이너의 `flex` + `gap`으로 처리한다.
+- 개별 요소에 `marginRight`, `marginBottom` 등을 사용하여 간격을 조절하지 않는다.
+- ScrollView의 경우 `contentContainerStyle`에 `gap`을 지정한다.
+- 패딩도 ScrollView 프레임(`className`)이 아닌 `contentContainerStyle`에 지정하여 콘텐츠 클리핑을 방지한다.
+
 ### Timer Implementation
 
 - Notifications scheduled at step transitions using `expo-notifications`
