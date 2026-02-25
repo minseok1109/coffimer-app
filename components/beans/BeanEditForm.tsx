@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import type { Bean, RoastLevel, UpdateBeanInput } from '@/types/bean';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanForm } from '@/hooks/useBeanForm';
 import type { BeanFormData } from '@/lib/validation/beanSchema';
 import { beanToFormData, normalizeEditInput } from '@/lib/beans/normalizeBeanInput';
@@ -54,6 +55,9 @@ export function BeanEditForm({
   const roastLevelRef = useRef<RoastLevelSelectorRef>(null);
   const roastDateRef = useRef<RoastDateSelectorRef>(null);
   const openedDateRef = useRef<RoastDateSelectorRef>(null);
+  const { track } = useAnalytics();
+
+  const originalFormData = beanToFormData(bean);
 
   const {
     control,
@@ -71,9 +75,18 @@ export function BeanEditForm({
     onSubmit: async (data: BeanFormData) => {
       const normalized = normalizeEditInput(data as unknown as Record<string, unknown>);
       await onSubmit(normalized);
+
+      const changedFields = Object.keys(data).filter((key) => {
+        const k = key as keyof BeanFormData;
+        return JSON.stringify(data[k]) !== JSON.stringify(originalFormData[k]);
+      });
+      track('bean_edited', {
+        bean_id: bean.id,
+        changed_fields: changedFields,
+      });
     },
     encodedImages: [],
-    defaultValues: beanToFormData(bean),
+    defaultValues: originalFormData,
     submitErrorMessage: '원두 수정 중 오류가 발생했습니다.',
   });
 

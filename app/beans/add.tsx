@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanForm } from '@/components/beans';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useCreateBeanMutation, useCreateBeanWithImagesMutation } from '@/hooks/useBeans';
 import { normalizeInput } from '@/lib/beans/normalizeBeanInput';
 import {
@@ -25,8 +26,27 @@ interface BeanFormSubmitPayload {
   primaryIndex: number | null;
 }
 
+function countFilledFields(data: BeanFormData): number {
+  let count = 0;
+  if (data.name.trim()) count++;
+  if (data.roastery_name?.trim()) count++;
+  if (data.roast_date?.trim()) count++;
+  if (data.opened_date?.trim()) count++;
+  if (data.roast_level) count++;
+  if (data.bean_type) count++;
+  if (data.weight_g > 0) count++;
+  if (data.price !== null && data.price !== undefined && data.price > 0) count++;
+  if (data.cup_notes.length > 0) count++;
+  if (data.degassing_days !== null && data.degassing_days !== undefined) count++;
+  if (data.variety?.trim()) count++;
+  if (data.process_method) count++;
+  if (data.notes?.trim()) count++;
+  return count;
+}
+
 export default function AddBeanScreen() {
   const router = useRouter();
+  const { track } = useAnalytics();
 
   const createBeanMutation = useCreateBeanMutation({
     onSuccess: () => {
@@ -52,9 +72,17 @@ export default function AddBeanScreen() {
 
   const handleSubmit = async (data: BeanFormData, payload: BeanFormSubmitPayload) => {
     const normalized = normalizeInput(data as unknown as Record<string, unknown>);
+    const fieldCount = countFilledFields(data);
+    const usedAiAnalysis = payload.encodedImages.length > 0;
 
     if (!payload.imageUris.length) {
-      await createBeanMutation.mutateAsync(normalized);
+      const bean = await createBeanMutation.mutateAsync(normalized);
+      track('bean_added', {
+        bean_id: bean.id,
+        has_images: false,
+        used_ai_analysis: usedAiAnalysis,
+        field_count: fieldCount,
+      });
       return;
     }
 
@@ -75,7 +103,7 @@ export default function AddBeanScreen() {
     try {
       const primaryIndex = payload.primaryIndex ?? 0;
 
-      await createBeanWithImagesMutation.mutateAsync({
+      const bean = await createBeanWithImagesMutation.mutateAsync({
         beanId,
         input: normalized,
         images: uploadedImages.map((uploadedImage, index) => ({
@@ -84,6 +112,12 @@ export default function AddBeanScreen() {
           sort_order: index,
           is_primary: index === primaryIndex,
         })),
+      });
+      track('bean_added', {
+        bean_id: bean.id,
+        has_images: true,
+        used_ai_analysis: usedAiAnalysis,
+        field_count: fieldCount,
       });
     } catch (error) {
       await deleteBeanImagesByPaths(uploadedImages.map((image) => image.storagePath));

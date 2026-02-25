@@ -50,6 +50,35 @@ export interface AnalyticsEvents {
     setting_name: string;
     new_value: string | number | boolean;
   };
+
+  // Bean Events
+  bean_add_started: Record<string, never>;
+  bean_image_captured: {
+    image_count: number;
+    source: 'camera' | 'gallery';
+  };
+  bean_ai_analyzed: {
+    success: boolean;
+    image_count: number;
+    error_type?: 'not_coffee_image' | 'network' | 'unknown';
+    duration_ms: number;
+  };
+  bean_added: {
+    bean_id: string;
+    has_images: boolean;
+    used_ai_analysis: boolean;
+    field_count: number;
+  };
+  bean_viewed: {
+    bean_id: string;
+  };
+  bean_edited: {
+    bean_id: string;
+    changed_fields: string[];
+  };
+  bean_deleted: {
+    bean_id: string;
+  };
 }
 
 export const useAnalytics = () => {

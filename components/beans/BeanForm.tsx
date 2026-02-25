@@ -1,3 +1,4 @@
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanAnalysis } from '@/hooks/useBeanAnalysis';
 import { useBeanForm } from '@/hooks/useBeanForm';
 import { useBeanMultiImageFlow } from '@/hooks/useBeanMultiImageFlow';
@@ -25,6 +26,7 @@ interface BeanFormProps {
 }
 
 export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProps) {
+  const { track } = useAnalytics();
   const [phase, setPhase] = useState<Phase>('capture');
   const {
     imageUris,
@@ -64,14 +66,31 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
     }
 
     setPhase('analyzing');
+    const startTime = Date.now();
 
     try {
       const result = await analyze(imageUris);
+
+      track('bean_ai_analyzed', {
+        success: true,
+        image_count: imageUris.length,
+        duration_ms: Date.now() - startTime,
+      });
+
       applyAnalysisResult(result);
       setPhase('form');
       return;
     } catch (analysisError) {
+      const durationMs = Date.now() - startTime;
+
       if (analysisError instanceof NotCoffeeImageError) {
+        track('bean_ai_analyzed', {
+          success: false,
+          image_count: imageUris.length,
+          error_type: 'not_coffee_image',
+          duration_ms: durationMs,
+        });
+
         Alert.alert(
           '커피 원두가 아닙니다',
           '커피 원두 봉투 사진을 다시 촬영해주세요.',
@@ -81,6 +100,13 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
         );
         return;
       }
+
+      track('bean_ai_analyzed', {
+        success: false,
+        image_count: imageUris.length,
+        error_type: 'unknown',
+        duration_ms: durationMs,
+      });
 
       const detail =
         analysisError instanceof Error && analysisError.message
@@ -105,10 +131,22 @@ export function BeanForm({ onSubmit, onCancel, isLoading = false }: BeanFormProp
         isDisabled={isAnalyzing || isLoading}
         onAnalyze={analyzeSelectedImages}
         onCapture={async () => {
-          await handleCapture();
+          const selected = await handleCapture();
+          if (selected?.length) {
+            track('bean_image_captured', {
+              image_count: selected.length,
+              source: 'camera',
+            });
+          }
         }}
         onGallery={async () => {
-          await handleGallery();
+          const selected = await handleGallery();
+          if (selected?.length) {
+            track('bean_image_captured', {
+              image_count: selected.length,
+              source: 'gallery',
+            });
+          }
         }}
         onRemoveImage={removeImage}
         onSetPrimary={setPrimaryIndex}

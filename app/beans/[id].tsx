@@ -14,11 +14,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanDetail } from '@/components/beans';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanDetail, useDeleteBeanMutation } from '@/hooks/useBeans';
 
 export default function BeanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { track } = useAnalytics();
 
   const { data: bean, isLoading } = useBeanDetail(id ?? '');
 
@@ -78,7 +80,10 @@ export default function BeanDetailScreen() {
         text: '삭제',
         style: 'destructive',
         onPress: () => {
-          if (id) deleteMutation.mutate(id);
+          if (id) {
+            track('bean_deleted', { bean_id: id });
+            deleteMutation.mutate(id);
+          }
         },
       },
     ]);

@@ -1,5 +1,6 @@
 import { BeanCard } from '@/components/beans';
 import FilterChip from '@/components/filter/FilterChip';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import {
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
@@ -16,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BeansScreen() {
   const router = useRouter();
+  const { track } = useAnalytics();
   const { data: beans = [], isLoading } = useUserBeans();
   const {
     sortBy,
@@ -41,7 +43,10 @@ export default function BeansScreen() {
         ) : (
           <Pressable
             className="w-10 h-10 rounded-full bg-[#8B4513] items-center justify-center"
-            onPress={() => router.push('/beans/add')}
+            onPress={() => {
+              track('bean_add_started', {});
+              router.push('/beans/add');
+            }}
           >
             <Ionicons color="#FFFFFF" name="add" size={24} />
           </Pressable>

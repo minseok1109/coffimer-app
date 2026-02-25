@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { memo, useMemo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAnalytics } from '@/hooks/useAnalytics';
 import { ROAST_LEVEL_CONFIG, type Bean } from '@/types/bean';
 import { calculateDegassingStatus, type DegassingStatus } from '@/utils/degassingUtils';
 import { getPrimaryBeanImage } from '@/utils/beanImages';
@@ -17,6 +18,7 @@ interface BeanCardProps {
 
 export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
   const router = useRouter();
+  const { track } = useAnalytics();
   const isExhausted = bean.remaining_g <= 0;
   const primaryImage = useMemo(() => getPrimaryBeanImage(bean.images), [bean.images]);
 
@@ -39,7 +41,10 @@ export const BeanCard = memo(function BeanCard({ bean }: BeanCardProps) {
 
   return (
     <Pressable
-      onPress={() => router.push(`/beans/${bean.id}`)}
+      onPress={() => {
+        track('bean_viewed', { bean_id: bean.id });
+        router.push(`/beans/${bean.id}`);
+      }}
       style={({ pressed }) => [
         styles.card,
         isExhausted && styles.exhaustedCard,
