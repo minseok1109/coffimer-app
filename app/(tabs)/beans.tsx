@@ -1,3 +1,16 @@
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useCallback } from 'react';
+import {
+  ActivityIndicator,
+  FlatList,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanCard } from '@/components/beans';
 import FilterChip from '@/components/filter/FilterChip';
 import { useAnalytics } from '@/hooks/useAnalytics';
@@ -7,13 +20,7 @@ import {
   useBeanListFilter,
 } from '@/hooks/useBeanListFilter';
 import { useUserBeans } from '@/hooks/useBeans';
-import { Pressable, ScrollView, Text, View } from '@/src/tw';
 import type { Bean } from '@/types/bean';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
-import { ActivityIndicator, FlatList } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function BeansScreen() {
   const router = useRouter();
@@ -34,38 +41,39 @@ export default function BeansScreen() {
   );
 
   return (
-    <SafeAreaView className="flex-1 bg-[#F7F8FA]">
+    <SafeAreaView style={styles.container}>
       {/* Header */}
-      <View className="flex-row items-center justify-between px-5 pt-3 pb-1">
-        <Text className="text-2xl font-bold text-[#1C1C1E]">내 원두</Text>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>내 원두</Text>
         {isLoading ? (
-          <View className="w-10 h-10" />
+          <View style={styles.addButtonPlaceholder} />
         ) : (
-          <Pressable
-            className="w-10 h-10 rounded-full bg-[#8B4513] items-center justify-center"
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.addButton}
             onPress={() => {
               track('bean_add_started', {});
               router.push('/beans/add');
             }}
           >
             <Ionicons color="#FFFFFF" name="add" size={24} />
-          </Pressable>
+          </TouchableOpacity>
         )}
       </View>
 
       {isLoading ? (
-        <View className="flex-1 items-center justify-center gap-3">
+        <View style={styles.loadingContainer}>
           <ActivityIndicator color="#8B4513" size="large" />
-          <Text className="text-sm text-gray-500">원두를 불러오는 중...</Text>
+          <Text style={styles.loadingText}>원두를 불러오는 중...</Text>
         </View>
       ) : (
         <>
           {/* Sort & Filter Bar */}
           <ScrollView
-            contentContainerStyle={{ alignItems: 'center' }}
+            style={styles.filterScroll}
+            contentContainerStyle={styles.filterScrollContent}
             horizontal
             showsHorizontalScrollIndicator={false}
-            className="p-4"
           >
             {SORT_OPTIONS.map((option) => (
               <FilterChip
@@ -75,7 +83,7 @@ export default function BeansScreen() {
                 onPress={() => setSortBy(option.value)}
               />
             ))}
-            <View className="w-px h-6 bg-[#ddd] mx-2" />
+            <View style={styles.divider} />
             {STATUS_FILTER_OPTIONS.map((option) => (
               <FilterChip
                 isSelected={statusFilter === option.value}
@@ -91,7 +99,7 @@ export default function BeansScreen() {
             ListEmptyComponent={
               <BeanListEmpty isFiltered={isFiltered} />
             }
-            contentContainerStyle={{ padding: 16, paddingBottom: 100 }}
+            contentContainerStyle={styles.listContent}
             data={sortedBeans}
             keyExtractor={(item) => item.id}
             renderItem={renderBeanItem}
@@ -103,24 +111,103 @@ export default function BeansScreen() {
   );
 }
 
-const BeanListSeparator = () => <View className="h-3" />;
+const BeanListSeparator = () => <View style={styles.separator} />;
 
 const BeanListEmpty = ({ isFiltered }: { isFiltered: boolean }) => (
-  <View className="items-center pt-[60px] gap-2">
+  <View style={styles.emptyContainer}>
     <Ionicons
       color="#ccc"
       name={isFiltered ? 'search-outline' : 'bag-outline'}
       size={64}
     />
-    <Text className="text-lg text-[#999] mt-2">
+    <Text style={styles.emptyTitle}>
       {isFiltered
         ? '조건에 맞는 원두가 없습니다'
         : '아직 등록된 원두가 없습니다'}
     </Text>
     {!isFiltered && (
-      <Text className="text-sm text-[#ccc]">
+      <Text style={styles.emptySubtitle}>
         원두를 등록하고 관리해보세요!
       </Text>
     )}
   </View>
 );
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F7F8FA',
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    paddingBottom: 4,
+  },
+  headerTitle: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#1C1C1E',
+  },
+  addButtonPlaceholder: {
+    width: 40,
+    height: 40,
+  },
+  addButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#8B4513',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  filterScroll: {
+    flexGrow: 0,
+  },
+  filterScrollContent: {
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 8,
+  },
+  divider: {
+    width: 1,
+    height: 24,
+    backgroundColor: '#ddd',
+  },
+  listContent: {
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 100,
+  },
+  separator: {
+    height: 12,
+  },
+  emptyContainer: {
+    alignItems: 'center',
+    paddingTop: 60,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    color: '#999',
+    marginTop: 16,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#ccc',
+    marginTop: 8,
+  },
+});
