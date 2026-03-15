@@ -2,7 +2,7 @@
   "expo": {
     "name": "Coffimer",
     "slug": "coffimer-app",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "description": "완벽한 커피 추출을 위한 레시피와 타이머 앱",
     "platforms": ["ios", "android"],
     "orientation": "portrait",
@@ -35,7 +35,8 @@
         "android.permission.MODIFY_AUDIO_SETTINGS",
         "android.permission.VIBRATE",
         "android.permission.INTERNET",
-        "android.permission.ACCESS_NETWORK_STATE"
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.SCHEDULE_EXACT_ALARM"
       ],
       "intentFilters": [
         {
@@ -83,6 +84,10 @@
           ]
         }
       ],
+      ["expo-notifications", {
+        "color": "#8B4513",
+        "defaultChannel": "degassing"
+      }],
       "expo-web-browser",
       "expo-secure-store",
       "expo-asset",
@@ -105,7 +110,7 @@
         "projectId": "fd761fa1-092e-4338-b2e7-d8f56e757844"
       }
     },
-    "runtimeVersion": "1.0.11",
+    "runtimeVersion": "1.0.12",
     "updates": {
       "enabled": true,
       "checkAutomatically": "ON_LOAD",
