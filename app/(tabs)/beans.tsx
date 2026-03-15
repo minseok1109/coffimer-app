@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -20,12 +20,27 @@ import {
   useBeanListFilter,
 } from '@/hooks/useBeanListFilter';
 import { useUserBeans } from '@/hooks/useBeans';
+import { reconcileDegassing } from '@/lib/notifications/degassing';
+import { setupNotificationChannel } from '@/lib/notifications/permissions';
 import type { Bean } from '@/types/bean';
 
 export default function BeansScreen() {
   const router = useRouter();
   const { track } = useAnalytics();
   const { data: beans = [], isLoading } = useUserBeans();
+  const hasReconciled = useRef(false);
+
+  useEffect(() => {
+    setupNotificationChannel();
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading && beans.length > 0 && !hasReconciled.current) {
+      hasReconciled.current = true;
+      reconcileDegassing(beans);
+    }
+  }, [isLoading, beans]);
+
   const {
     sortBy,
     setSortBy,
