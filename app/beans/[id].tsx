@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanDetail } from '@/components/beans';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanDetail, useDeleteBeanMutation } from '@/hooks/useBeans';
+import { cancelDegassing } from '@/lib/notifications/degassing';
 
 export default function BeanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -82,6 +83,7 @@ export default function BeanDetailScreen() {
         onPress: () => {
           if (id) {
             track('bean_deleted', { bean_id: id });
+            cancelDegassing(id);
             deleteMutation.mutate(id);
           }
         },

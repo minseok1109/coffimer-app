@@ -17,6 +17,7 @@ import {
   deleteBeanImagesByPaths,
   uploadBeanImages,
 } from '@/lib/storage/beanImage';
+import { scheduleDegassing } from '@/lib/notifications/degassing';
 import { supabase } from '@/lib/supabaseClient';
 import type { BeanFormData, EncodedImageData } from '@/lib/validation/beanSchema';
 
@@ -49,7 +50,8 @@ export default function AddBeanScreen() {
   const { track } = useAnalytics();
 
   const createBeanMutation = useCreateBeanMutation({
-    onSuccess: () => {
+    onSuccess: (bean) => {
+      scheduleDegassing(bean);
       Alert.alert('등록 완료', '원두가 등록되었습니다.', [
         { text: '확인', onPress: () => router.back() },
       ]);
@@ -60,7 +62,8 @@ export default function AddBeanScreen() {
   });
 
   const createBeanWithImagesMutation = useCreateBeanWithImagesMutation({
-    onSuccess: () => {
+    onSuccess: (bean) => {
+      scheduleDegassing(bean);
       Alert.alert('등록 완료', '원두가 등록되었습니다.', [
         { text: '확인', onPress: () => router.back() },
       ]);

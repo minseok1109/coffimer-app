@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanEditForm } from '@/components/beans';
 import { useBeanDetail, useUpdateBeanMutation } from '@/hooks/useBeans';
+import { rescheduleDegassing } from '@/lib/notifications/degassing';
 import type { UpdateBeanInput } from '@/types/bean';
 
 export default function BeanEditPage() {
@@ -20,7 +21,10 @@ export default function BeanEditPage() {
   // IMPORTANT: Do NOT pass onError to useUpdateBeanMutation
   // Error handling is single-path through useBeanForm's submitErrorMessage
   const updateMutation = useUpdateBeanMutation({
-    onSuccess: () => router.replace(`/beans/${id}`),
+    onSuccess: (bean) => {
+      rescheduleDegassing(bean);
+      router.replace(`/beans/${id}`);
+    },
   });
 
   if (isLoading) {
