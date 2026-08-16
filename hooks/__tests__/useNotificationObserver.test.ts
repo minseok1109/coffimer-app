@@ -17,9 +17,16 @@ type ResponseListener = Parameters<
 >[0];
 
 /**
- * A notification response shaped exactly like the OS delivers one. `data` is
- * `Record<string, unknown>` in expo-notifications 55, so an arbitrary payload
- * needs no cast — which is the whole point of the URL guard under test.
+ * A notification response shaped exactly like the OS delivers one.
+ *
+ * expo-notifications 0.32.x (the SDK 54 build) declares
+ * `NotificationContent.data` as a REQUIRED `{ [key: string]: unknown }`, so
+ * `undefined` is not expressible through the public type. The `data is absent
+ * entirely` case below still has to be exercised: a malformed payload crossing
+ * the native bridge is exactly what the URL guard exists to survive. The cast
+ * is therefore scoped to that one field and only widens it back to the
+ * out-of-contract value the runtime can still see — every other field stays
+ * type-checked against the real shape.
  */
 function responseWithData(
   data: Record<string, unknown> | undefined
@@ -34,7 +41,7 @@ function responseWithData(
           title: '디게싱 완료',
           subtitle: null,
           body: '에티오피아 예가체프 디게싱 기간이 끝났습니다. 맛있게 원두를 즐기세요!',
-          data,
+          data: data as Notifications.NotificationContent['data'],
           categoryIdentifier: null,
           sound: null,
         },
@@ -225,7 +232,7 @@ describe('hooks/useNotificationObserver teardown', () => {
     });
 
     /**
-     * `getLastNotificationResponse()` is synchronous in expo-notifications 55
+     * `getLastNotificationResponse()` is synchronous in expo-notifications 0.32.17
      * (`NotificationsEmitter.d.ts:83` returns `NotificationResponse | null`,
      * with the promise-returning `getLastNotificationResponseAsync` deprecated
      * in its favour), and the hook holds no component state. There is therefore

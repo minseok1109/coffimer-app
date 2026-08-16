@@ -44,7 +44,7 @@ jest.mock('expo-notifications', () => ({
     remove: jest.fn(),
   })),
   getLastNotificationResponse: jest.fn(() => null),
-  // Mirrors the shipped enum in expo-notifications 55.0.12
+  // Mirrors the shipped enum in expo-notifications 0.32.17
   // (build/NotificationChannelManager.types.d.ts). LOW and DEFAULT are present
   // so a regression that downgrades the degassing channel fails with the real
   // value it would ship, instead of `undefined` masking the difference.

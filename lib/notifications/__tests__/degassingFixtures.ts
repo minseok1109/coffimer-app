@@ -101,6 +101,10 @@ export function scheduledRequest(
       title: null,
       subtitle: null,
       body: null,
+      // Required (non-optional) on NotificationContent in expo-notifications
+      // 0.32.x; the OS always reports an object here, empty when the
+      // notification carries no payload.
+      data: {},
       categoryIdentifier: null,
       sound: null,
     },

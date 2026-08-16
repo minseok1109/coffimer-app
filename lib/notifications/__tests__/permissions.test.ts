@@ -6,7 +6,7 @@ import {
 } from '../permissions';
 
 /**
- * The real `AndroidImportance.HIGH` from expo-notifications 55.0.12
+ * The real `AndroidImportance.HIGH` from expo-notifications 0.32.17
  * (`build/NotificationChannelManager.types.d.ts`: UNKNOWN=0, UNSPECIFIED=1,
  * NONE=2, MIN=3, LOW=4, DEFAULT=5, HIGH=6, MAX=7).
  *
