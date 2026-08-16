@@ -44,7 +44,13 @@ jest.mock('expo-notifications', () => ({
     remove: jest.fn(),
   })),
   getLastNotificationResponse: jest.fn(() => null),
+  // Mirrors the shipped enum in expo-notifications 55.0.12
+  // (build/NotificationChannelManager.types.d.ts). LOW and DEFAULT are present
+  // so a regression that downgrades the degassing channel fails with the real
+  // value it would ship, instead of `undefined` masking the difference.
   AndroidImportance: {
+    LOW: 4,
+    DEFAULT: 5,
     HIGH: 6,
   },
   SchedulableTriggerInputTypes: {
