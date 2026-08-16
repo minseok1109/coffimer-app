@@ -1,10 +1,15 @@
-import { getDegassingCompletionAt, parseLocalDate, DEGASSING_NOTIFICATION_HOUR } from '../degassingUtils';
+import {
+  calculateDegassingStatus,
+  getDegassingCompletionAt,
+  parseLocalDate,
+  DEGASSING_NOTIFICATION_HOUR,
+} from '../degassingUtils';
 
 describe('degassingUtils', () => {
   describe('parseLocalDate', () => {
     describe('Given invalid inputs', () => {
       it('When input is null, Then return null', () => {
-        const result = parseLocalDate(null as any);
+        const result = parseLocalDate(null);
         expect(result).toBeNull();
       });
 
@@ -42,6 +47,9 @@ describe('degassingUtils', () => {
         expect(result!.getFullYear()).toBe(2026);
         expect(result!.getMonth()).toBe(11); // December = 11
         expect(result!.getDate()).toBe(31);
+        // Load-bearing in UTC+ zones: UTC parsing lands on 2026-12-31T00:00Z,
+        // which reads back as 09:00 local in KST.
+        expect(result!.getHours()).toBe(0);
       });
 
       it('When parsing leap year date 2024-02-29, Then return valid Date', () => {
@@ -50,6 +58,7 @@ describe('degassingUtils', () => {
         expect(result!.getFullYear()).toBe(2024);
         expect(result!.getMonth()).toBe(1);
         expect(result!.getDate()).toBe(29);
+        expect(result!.getHours()).toBe(0);
       });
     });
   });
@@ -154,6 +163,102 @@ describe('degassingUtils', () => {
         const result = getDegassingCompletionAt('2026-01-01', 1);
         expect(result).not.toBeNull();
         expect(result!.getDate()).toBe(2);
+      });
+    });
+  });
+
+  describe('calculateDegassingStatus', () => {
+    // Local wall-clock pin, built from local date components so it means
+    // "local calendar 2026-01-02, 00:30" in whatever timezone the suite runs under.
+    // Under TZ=Asia/Seoul this instant is exactly 2026-01-02T00:30:00+09:00 — the
+    // boundary where UTC-midnight parsing reports the wrong elapsed day count.
+    const PINNED_LOCAL_NOW = new Date(2026, 0, 2, 0, 30, 0, 0);
+
+    beforeEach(() => {
+      jest.useFakeTimers({ now: PINNED_LOCAL_NOW });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    describe('Given null or invalid inputs', () => {
+      it('When roastDate is null, Then return null', () => {
+        expect(calculateDegassingStatus(null, 5)).toBeNull();
+      });
+
+      it('When degassingDays is null, Then return null', () => {
+        expect(calculateDegassingStatus('2026-01-01', null)).toBeNull();
+      });
+
+      it('When degassingDays is 0, Then return null', () => {
+        expect(calculateDegassingStatus('2026-01-01', 0)).toBeNull();
+      });
+
+      it('When degassingDays is negative, Then return null', () => {
+        expect(calculateDegassingStatus('2026-01-01', -1)).toBeNull();
+      });
+
+      it('When roastDate is an impossible date, Then return null instead of NaN', () => {
+        expect(calculateDegassingStatus('2026-02-30', 5)).toBeNull();
+      });
+
+      it('When roastDate is malformed, Then return null instead of NaN', () => {
+        expect(calculateDegassingStatus('2026/01/01', 5)).toBeNull();
+      });
+    });
+
+    describe('Given the local calendar day just rolled over', () => {
+      it('When roasted 2026-01-01 with 5 degassing days, Then 1 day elapsed and 4 remaining', () => {
+        const result = calculateDegassingStatus('2026-01-01', 5);
+        expect(result).not.toBeNull();
+        expect(result!.daysFromRoast).toBe(1);
+        expect(result!.remainingDays).toBe(4);
+        expect(result!.status).toBe('degassing');
+      });
+
+      it('When roasted today, Then 0 days elapsed and the full period remains', () => {
+        const result = calculateDegassingStatus('2026-01-02', 7);
+        expect(result).not.toBeNull();
+        expect(result!.daysFromRoast).toBe(0);
+        expect(result!.remainingDays).toBe(7);
+        expect(result!.status).toBe('degassing');
+      });
+
+      it('When today is the completion day, Then 0 remaining and status completed', () => {
+        // 2025-12-28 + 5 days = 2026-01-02 (today)
+        const result = calculateDegassingStatus('2025-12-28', 5);
+        expect(result).not.toBeNull();
+        expect(result!.daysFromRoast).toBe(5);
+        expect(result!.remainingDays).toBe(0);
+        expect(result!.status).toBe('completed');
+      });
+
+      it('When the completion day has passed, Then remaining clamps to 0 and status completed', () => {
+        // 2025-12-01 -> 2026-01-02 is 32 calendar days
+        const result = calculateDegassingStatus('2025-12-01', 5);
+        expect(result).not.toBeNull();
+        expect(result!.daysFromRoast).toBe(32);
+        expect(result!.remainingDays).toBe(0);
+        expect(result!.status).toBe('completed');
+      });
+    });
+
+    describe('Given the period spans a DST spring-forward', () => {
+      // 2026-03-08 is the US spring-forward date. Millisecond-floor math over local
+      // midnights loses an hour there and under-counts by a day; calendar math must not.
+      const DST_LOCAL_NOW = new Date(2026, 2, 10, 0, 30, 0, 0);
+
+      beforeEach(() => {
+        jest.useFakeTimers({ now: DST_LOCAL_NOW });
+      });
+
+      it('When roasted 2026-03-05 with 10 degassing days, Then 5 days elapsed and 5 remaining', () => {
+        const result = calculateDegassingStatus('2026-03-05', 10);
+        expect(result).not.toBeNull();
+        expect(result!.daysFromRoast).toBe(5);
+        expect(result!.remainingDays).toBe(5);
+        expect(result!.status).toBe('degassing');
       });
     });
   });

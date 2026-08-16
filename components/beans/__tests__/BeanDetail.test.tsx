@@ -60,6 +60,61 @@ describe('BeanDetail', () => {
     expect(screen.queryByText('최적기')).toBeNull();
   });
 
+  describe('디게싱 상태 표시 (로컬 캘린더 기준)', () => {
+    // 로컬 달력 2026-01-02 00:30. TZ=Asia/Seoul에서는 2026-01-02T00:30:00+09:00.
+    const PINNED_LOCAL_NOW = new Date(2026, 0, 2, 0, 30, 0, 0);
+
+    beforeEach(() => {
+      jest.useFakeTimers({ now: PINNED_LOCAL_NOW });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('전날 로스팅된 원두는 경과 1일을 반영한 잔여일수를 표시한다', () => {
+      render(
+        <BeanDetail
+          bean={createBean({
+            roast_date: '2026-01-01',
+            degassing_days: 5,
+          })}
+        />,
+      );
+
+      expect(screen.getByText('디게싱 완료까지 4일 남았습니다')).toBeTruthy();
+    });
+
+    it('완료일 당일에는 완료 문구를 표시한다', () => {
+      render(
+        <BeanDetail
+          bean={createBean({
+            roast_date: '2025-12-28',
+            degassing_days: 5,
+          })}
+        />,
+      );
+
+      expect(screen.getByText('디게싱이 완료되었습니다')).toBeTruthy();
+      expect(screen.queryByText('디게싱 완료까지 1일 남았습니다')).toBeNull();
+    });
+
+    it('존재하지 않는 로스팅 날짜는 타임라인 대신 안내 문구로 떨어진다', () => {
+      render(
+        <BeanDetail
+          bean={createBean({
+            roast_date: '2026-02-30',
+            degassing_days: 5,
+          })}
+        />,
+      );
+
+      expect(
+        screen.getByText('로스팅 날짜를 입력하면 디게싱 타임라인이 표시됩니다.'),
+      ).toBeTruthy();
+    });
+  });
+
   it('원두 정보를 레이블-값 테이블 형태로 표시한다', () => {
     const openedDate = '2026-02-03';
     const formattedOpenedDate = new Date(openedDate).toLocaleDateString('ko-KR', {

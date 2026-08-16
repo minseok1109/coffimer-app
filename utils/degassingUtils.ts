@@ -88,11 +88,24 @@ export function getDegassingCompletionAt(
   return completionDate;
 }
 
-function getDaysFromRoast(roastDate: string): number {
-  const roast = new Date(roastDate);
-  const now = new Date();
-  const diffMs = now.getTime() - roast.getTime();
-  return Math.floor(diffMs / (1000 * 60 * 60 * 24));
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/**
+ * Map a Date to its local calendar day index.
+ * Uses Date.UTC on the *local* Y/M/D components so the result is a whole number of
+ * days regardless of DST — unlike flooring an elapsed-millisecond difference.
+ */
+function toLocalDayIndex(date: Date): number {
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / MS_PER_DAY;
+}
+
+function getDaysFromRoast(roastDate: string): number | null {
+  const roast = parseLocalDate(roastDate);
+  if (!roast) {
+    return null;
+  }
+
+  return toLocalDayIndex(new Date()) - toLocalDayIndex(roast);
 }
 
 export function calculateDegassingStatus(
@@ -102,6 +115,8 @@ export function calculateDegassingStatus(
   if (!roastDate || degassingDays === null || degassingDays <= 0) return null;
 
   const daysFromRoast = getDaysFromRoast(roastDate);
+  if (daysFromRoast === null) return null;
+
   const remainingDays = degassingDays - daysFromRoast;
 
   return {

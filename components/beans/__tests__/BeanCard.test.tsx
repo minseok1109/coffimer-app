@@ -69,4 +69,43 @@ describe('BeanCard', () => {
 
     expect(screen.getByTestId('bean-card-placeholder')).toBeTruthy();
   });
+
+  describe('디게싱 칩 (로컬 캘린더 기준)', () => {
+    // 로컬 달력 2026-01-02 00:30. TZ=Asia/Seoul에서는 2026-01-02T00:30:00+09:00.
+    const PINNED_LOCAL_NOW = new Date(2026, 0, 2, 0, 30, 0, 0);
+
+    beforeEach(() => {
+      jest.useFakeTimers({ now: PINNED_LOCAL_NOW });
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('전날 로스팅된 원두는 경과 1일을 반영한 잔여일수를 칩에 표시한다', () => {
+      render(
+        <BeanCard bean={createBean({ roast_date: '2026-01-01', degassing_days: 5 })} />,
+      );
+
+      expect(screen.getByText('디게싱 중 · 4일 남음')).toBeTruthy();
+    });
+
+    it('완료일 당일에는 완료 칩을 표시한다', () => {
+      render(
+        <BeanCard bean={createBean({ roast_date: '2025-12-28', degassing_days: 5 })} />,
+      );
+
+      expect(screen.getByText('디게싱 완료')).toBeTruthy();
+      expect(screen.queryByText('디게싱 중 · 1일 남음')).toBeNull();
+    });
+
+    it('존재하지 않는 로스팅 날짜는 칩을 렌더하지 않는다', () => {
+      render(
+        <BeanCard bean={createBean({ roast_date: '2026-02-30', degassing_days: 5 })} />,
+      );
+
+      expect(screen.queryByText('디게싱 완료')).toBeNull();
+      expect(screen.queryByText(/디게싱 중/)).toBeNull();
+    });
+  });
 });
