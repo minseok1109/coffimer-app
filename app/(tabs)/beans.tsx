@@ -29,7 +29,7 @@ export default function BeansScreen() {
   const router = useRouter();
   const { track } = useAnalytics();
   const { user } = useAuth();
-  const { data: beans = [], isLoading } = useUserBeans();
+  const { data: beans = [], isLoading, isSuccess } = useUserBeans();
   const hasReconciled = useRef(false);
 
   useEffect(() => {
@@ -38,13 +38,14 @@ export default function BeansScreen() {
 
   useEffect(() => {
     // 목록이 비어도 고아 알림을 정리해야 하므로 길이 조건은 두지 않는다.
-    // 다만 미인증 상태에서는 쿼리가 비활성이라 beans가 빈 배열로 보이므로,
-    // user 가드가 없으면 정상 예약된 알림을 전부 취소해 버린다.
-    if (!isLoading && !!user && !hasReconciled.current) {
+    // 대신 반드시 쿼리 "성공"만 신뢰한다: 비활성·실패 상태에서도 isLoading은
+    // false이고 data는 undefined라 `= []` 기본값이 "원두 0개"와 구분되지 않는다.
+    // user 가드까지 없으면 정상 예약된 알림을 전부 취소해 버린다.
+    if (isSuccess && !!user && !hasReconciled.current) {
       hasReconciled.current = true;
       reconcileDegassing(beans);
     }
-  }, [isLoading, user, beans]);
+  }, [isSuccess, user, beans]);
 
   const {
     sortBy,
