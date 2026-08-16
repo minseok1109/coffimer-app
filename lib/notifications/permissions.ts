@@ -4,7 +4,7 @@ import { Platform } from 'react-native';
 export async function setupNotificationChannel(): Promise<void> {
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('degassing', {
-      name: '디개싱 알림',
+      name: '디게싱 알림',
       importance: Notifications.AndroidImportance.HIGH,
       sound: 'default',
     });

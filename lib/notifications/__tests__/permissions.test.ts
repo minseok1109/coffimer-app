@@ -102,7 +102,7 @@ describe('lib/notifications/permissions setupNotificationChannel', () => {
       expect(setChannelMock).toHaveBeenCalledTimes(1);
       expect(setChannelMock).toHaveBeenCalledWith(
         'degassing',
-        expect.objectContaining({ name: '디개싱 알림', sound: 'default' })
+        expect.objectContaining({ name: '디게싱 알림', sound: 'default' })
       );
     });
 
