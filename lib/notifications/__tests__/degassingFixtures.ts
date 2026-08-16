@@ -28,6 +28,9 @@ export const getPermissionsMock = jest.mocked(Notifications.getPermissionsAsync)
 export const requestPermissionsMock = jest.mocked(
   Notifications.requestPermissionsAsync
 );
+export const getAllScheduledMock = jest.mocked(
+  Notifications.getAllScheduledNotificationsAsync
+);
 
 /**
  * The OS permission adapter is the only thing mocked in this suite: the real
@@ -81,6 +84,41 @@ export function readScheduledRequest(): ScheduleRequest {
     throw new Error('scheduleNotificationAsync was never called');
   }
   return call[0];
+}
+
+/**
+ * A fully-typed stand-in for an entry the OS reports as already scheduled.
+ * Only `identifier` carries meaning for reconcile; the rest is the smallest
+ * content/trigger pair that satisfies the public NotificationRequest shape, so
+ * no cast is needed to fake the OS response.
+ */
+export function scheduledRequest(
+  identifier: string
+): Notifications.NotificationRequest {
+  return {
+    identifier,
+    content: {
+      title: null,
+      subtitle: null,
+      body: null,
+      categoryIdentifier: null,
+      sound: null,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: EXPECTED_COMPLETION_AT,
+    },
+  };
+}
+
+/** Every identifier handed to `cancelScheduledNotificationAsync`, in order. */
+export function cancelledIdentifiers(): string[] {
+  return cancelMock.mock.calls.map(([identifier]) => identifier);
+}
+
+/** Every identifier handed to `scheduleNotificationAsync`, in order. */
+export function scheduledIdentifiers(): string[] {
+  return scheduleMock.mock.calls.map(([request]) => request.identifier ?? '');
 }
 
 export function readTriggerDate(request: ScheduleRequest): Date {

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanCard } from '@/components/beans';
 import FilterChip from '@/components/filter/FilterChip';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 import {
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
@@ -27,6 +28,7 @@ import type { Bean } from '@/types/bean';
 export default function BeansScreen() {
   const router = useRouter();
   const { track } = useAnalytics();
+  const { user } = useAuth();
   const { data: beans = [], isLoading } = useUserBeans();
   const hasReconciled = useRef(false);
 
@@ -35,11 +37,14 @@ export default function BeansScreen() {
   }, []);
 
   useEffect(() => {
-    if (!isLoading && beans.length > 0 && !hasReconciled.current) {
+    // 목록이 비어도 고아 알림을 정리해야 하므로 길이 조건은 두지 않는다.
+    // 다만 미인증 상태에서는 쿼리가 비활성이라 beans가 빈 배열로 보이므로,
+    // user 가드가 없으면 정상 예약된 알림을 전부 취소해 버린다.
+    if (!isLoading && !!user && !hasReconciled.current) {
       hasReconciled.current = true;
       reconcileDegassing(beans);
     }
-  }, [isLoading, beans]);
+  }, [isLoading, user, beans]);
 
   const {
     sortBy,
