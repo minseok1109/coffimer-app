@@ -1,8 +1,8 @@
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from 'expo-notifications';
 import { Platform } from 'react-native';
-import dayjs from 'dayjs';
 import type { Bean } from '@/types/bean';
+import { getDegassingCompletionAt } from '@/utils/degassingUtils';
 import { ensureNotificationPermission } from './permissions';
 
 const IDENTIFIER_PREFIX = 'degassing-';
@@ -11,19 +11,22 @@ function getDegassingIdentifier(beanId: string): string {
   return `${IDENTIFIER_PREFIX}${beanId}`;
 }
 
-function getCompletionDate(bean: Bean): Date | null {
-  if (bean.roast_date === null || bean.degassing_days === null) return null;
+/**
+ * Completion time for a bean that still deserves a notification, or null when it
+ * is unschedulable. Invalid roast dates and out-of-range degassing periods are
+ * rejected by the shared local-calendar calculation; an already-elapsed
+ * completion time is rejected here.
+ */
+function getPendingCompletionAt(bean: Bean): Date | null {
+  const completionAt = getDegassingCompletionAt(
+    bean.roast_date,
+    bean.degassing_days,
+  );
+  if (!completionAt) return null;
 
-  const completionDate = dayjs(bean.roast_date)
-    .add(bean.degassing_days, 'day')
-    .hour(9)
-    .minute(0)
-    .second(0)
-    .toDate();
+  if (completionAt <= new Date()) return null;
 
-  if (completionDate <= new Date()) return null;
-
-  return completionDate;
+  return completionAt;
 }
 
 export async function scheduleDegassing(
@@ -31,8 +34,8 @@ export async function scheduleDegassing(
 ): Promise<string | null> {
   if (Platform.OS === 'web') return null;
 
-  const completionDate = getCompletionDate(bean);
-  if (!completionDate) return null;
+  const completionAt = getPendingCompletionAt(bean);
+  if (!completionAt) return null;
 
   const hasPermission = await ensureNotificationPermission();
   if (!hasPermission) return null;
@@ -41,17 +44,23 @@ export async function scheduleDegassing(
     return await Notifications.scheduleNotificationAsync({
       identifier: getDegassingIdentifier(bean.id),
       content: {
-        title: '☕ 디개싱 완료!',
-        body: `'${bean.name}'의 디개싱이 완료되었어요. 최적의 맛을 즐겨보세요!`,
-        data: { url: `/beans/${bean.id}` },
+        title: '디게싱 완료',
+        body: `${bean.name.trim()} 디게싱 기간이 끝났습니다. 맛있게 원두를 즐기세요!`,
+        data: {
+          url: `/beans/${bean.id}`,
+          beanId: bean.id,
+          type: 'degassing-complete',
+        },
         sound: 'default',
       },
       trigger: {
         type: SchedulableTriggerInputTypes.DATE,
-        date: completionDate,
+        date: completionAt,
       },
     });
-  } catch {
+  } catch (error) {
+    // 알림은 best-effort 부수효과다: 원두 저장을 막지 않도록 삼키되 원인은 남긴다.
+    console.warn('[degassing] 알림 예약 실패', error);
     return null;
   }
 }
@@ -63,8 +72,9 @@ export async function cancelDegassing(beanId: string): Promise<void> {
     await Notifications.cancelScheduledNotificationAsync(
       getDegassingIdentifier(beanId),
     );
-  } catch {
-    // 존재하지 않는 identifier로 cancel해도 안전
+  } catch (error) {
+    // 존재하지 않는 identifier로 cancel해도 안전하지만 원인은 남긴다.
+    console.warn('[degassing] 알림 취소 실패', error);
   }
 }
 
@@ -87,7 +97,9 @@ export async function reconcileDegassing(beans: Bean[]): Promise<void> {
       .map((id) => id.slice(IDENTIFIER_PREFIX.length)),
   );
 
-  const activeBeans = beans.filter((bean) => getCompletionDate(bean) !== null);
+  const activeBeans = beans.filter(
+    (bean) => getPendingCompletionAt(bean) !== null,
+  );
   const activeBeanIds = new Set(activeBeans.map((b) => b.id));
 
   const missingBeans = activeBeans.filter((b) => !scheduledBeanIds.has(b.id));
