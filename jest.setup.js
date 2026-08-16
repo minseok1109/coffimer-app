@@ -45,7 +45,7 @@ jest.mock('expo-notifications', () => ({
   })),
   getLastNotificationResponse: jest.fn(() => null),
   AndroidImportance: {
-    HIGH: 4,
+    HIGH: 6,
   },
   SchedulableTriggerInputTypes: {
     DATE: 'date',
