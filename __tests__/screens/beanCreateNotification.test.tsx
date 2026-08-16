@@ -44,7 +44,7 @@ jest.mock('@/components/beans', () => ({
   }: {
     onSubmit: (...args: unknown[]) => Promise<void>;
   }) => {
-    const { Pressable, Text } = require('react-native');
+    const { Pressable, Text } = jest.requireActual('react-native');
     const submit = (imageUris: string[]) => {
       void onSubmit(
         {
