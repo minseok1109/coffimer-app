@@ -49,10 +49,9 @@ describe('app/_layout foreground notification handler', () => {
     jest.isolateModules(() => {
       // A static `import` is hoisted and evaluated once for the whole file, so
       // the module-scope registration could not be re-observed after
-      // `clearAllMocks`. Re-requiring inside `isolateModules` is what proves
+      // `clearAllMocks`. Re-loading inside `isolateModules` is what proves
       // the handler is registered on every fresh module load.
-      // eslint-disable-next-line @typescript-eslint/no-require-imports -- deferred, per-test module evaluation is the behaviour under test
-      require('@/app/_layout');
+      jest.requireActual('@/app/_layout');
     });
   });
 
