@@ -7,6 +7,7 @@ import { PostHogProvider } from 'posthog-react-native';
 import { useState } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { UpdateManager } from '@/components/UpdateManager';
+import { NotificationDebugToolbar } from '@/components/NotificationDebugToolbar';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useNotificationObserver } from '@/hooks/useNotificationObserver';
 
@@ -40,6 +41,7 @@ export default function RootLayout() {
               }}
             />
             <UpdateManager />
+            {__DEV__ && <NotificationDebugToolbar />}
           </QueryClientProvider>
         </AuthProvider>
       </PostHogProvider>

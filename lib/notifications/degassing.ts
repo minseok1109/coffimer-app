@@ -4,6 +4,7 @@ import { Platform } from 'react-native';
 import type { Bean } from '@/types/bean';
 import { getDegassingCompletionAt } from '@/utils/degassingUtils';
 import { ensureNotificationPermission } from './permissions';
+import { getDegassingNotificationContent } from './content';
 
 const IDENTIFIER_PREFIX = 'degassing-';
 
@@ -43,12 +44,7 @@ export async function scheduleDegassing(
   try {
     return await Notifications.scheduleNotificationAsync({
       identifier: getDegassingIdentifier(bean.id),
-      content: {
-        title: '디게싱 완료',
-        body: `${bean.name.trim()} 디게싱 기간이 끝났습니다. 맛있게 원두를 즐기세요!`,
-        data: { url: `/beans/${bean.id}` },
-        sound: 'default',
-      },
+      content: getDegassingNotificationContent(bean),
       trigger: {
         type: SchedulableTriggerInputTypes.DATE,
         date: completionAt,
