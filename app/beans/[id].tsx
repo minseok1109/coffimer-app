@@ -16,6 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanDetail } from '@/components/beans';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanDetail, useDeleteBeanMutation } from '@/hooks/useBeans';
+import { cancelDegassing } from '@/lib/notifications/degassing';
 
 export default function BeanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -25,7 +26,12 @@ export default function BeanDetailScreen() {
   const { data: bean, isLoading } = useBeanDetail(id ?? '');
 
   const deleteMutation = useDeleteBeanMutation({
-    onSuccess: () => router.back(),
+    onSuccess: () => {
+      // 삭제가 실제로 성공한 뒤에만 취소한다: 낙관적으로 먼저 취소하면
+      // 삭제 실패 시 원두는 남고 알림만 사라진다.
+      if (id) cancelDegassing(id);
+      router.back();
+    },
     onError: (error) =>
       Alert.alert('삭제 실패', error.message ?? '원두 삭제 중 오류가 발생했습니다.'),
   });

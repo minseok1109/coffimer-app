@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -14,18 +14,39 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { BeanCard } from '@/components/beans';
 import FilterChip from '@/components/filter/FilterChip';
 import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAuth } from '@/hooks/useAuth';
 import {
   SORT_OPTIONS,
   STATUS_FILTER_OPTIONS,
   useBeanListFilter,
 } from '@/hooks/useBeanListFilter';
 import { useUserBeans } from '@/hooks/useBeans';
+import { reconcileDegassing } from '@/lib/notifications/degassing';
+import { setupNotificationChannel } from '@/lib/notifications/permissions';
 import type { Bean } from '@/types/bean';
 
 export default function BeansScreen() {
   const router = useRouter();
   const { track } = useAnalytics();
-  const { data: beans = [], isLoading } = useUserBeans();
+  const { user } = useAuth();
+  const { data: beans = [], isLoading, isSuccess } = useUserBeans();
+  const hasReconciled = useRef(false);
+
+  useEffect(() => {
+    setupNotificationChannel();
+  }, []);
+
+  useEffect(() => {
+    // 목록이 비어도 고아 알림을 정리해야 하므로 길이 조건은 두지 않는다.
+    // 대신 반드시 쿼리 "성공"만 신뢰한다: 비활성·실패 상태에서도 isLoading은
+    // false이고 data는 undefined라 `= []` 기본값이 "원두 0개"와 구분되지 않는다.
+    // user 가드까지 없으면 정상 예약된 알림을 전부 취소해 버린다.
+    if (isSuccess && !!user && !hasReconciled.current) {
+      hasReconciled.current = true;
+      reconcileDegassing(beans);
+    }
+  }, [isSuccess, user, beans]);
+
   const {
     sortBy,
     setSortBy,
