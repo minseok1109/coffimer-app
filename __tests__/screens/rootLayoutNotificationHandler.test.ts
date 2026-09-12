@@ -19,6 +19,9 @@ jest.mock('posthog-react-native', () => ({
   PostHogProvider: 'PostHogProvider',
 }));
 jest.mock('@/components/UpdateManager', () => ({ UpdateManager: () => null }));
+jest.mock('@/components/NotificationDebugToolbar', () => ({
+  NotificationDebugToolbar: () => null,
+}));
 jest.mock('@/hooks/useNotificationObserver', () => ({
   useNotificationObserver: jest.fn(),
 }));
