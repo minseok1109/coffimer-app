@@ -3,7 +3,6 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import {
-  Linking,
   ScrollView,
   StyleSheet,
   Switch,
@@ -14,6 +13,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useCurrentUserProfile } from '@/hooks/useUser';
+import { openSupportEmail } from '@/lib/support';
 
 interface ProfileSetting {
   id: string;
@@ -39,7 +39,7 @@ export default function ProfileScreen() {
 
   const handleSettingPress = (item: ProfileSetting) => {
     if (item.id === 'contact') {
-      Linking.openURL('mailto:minseok32@gmail.com');
+      openSupportEmail();
     } else if (item.id === 'version') {
       router.push('/info');
     }

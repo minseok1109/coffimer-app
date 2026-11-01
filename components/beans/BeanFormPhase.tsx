@@ -11,6 +11,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import type { ScrollViewInstance } from 'react-native';
 import type { BeanFieldConfidence, BeanType, RoastLevel } from '@/types/bean';
 import type { BeanFormData } from '@/lib/validation/beanSchema';
 import {
@@ -69,7 +70,7 @@ export function BeanFormPhase({
   onCancel,
   onSubmit,
 }: BeanFormPhaseProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const roastLevelRef = useRef<RoastLevelSelectorRef>(null);
   const roastDateRef = useRef<RoastDateSelectorRef>(null);
   const openedDateRef = useRef<RoastDateSelectorRef>(null);

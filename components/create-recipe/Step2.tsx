@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import React, { useMemo } from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { createRecipeStyles } from '@/styles/create-recipe.styles';
 import type { RecipeFormData } from '@/types/recipe-form';
@@ -26,15 +26,16 @@ export const Step2: React.FC<Step2Props> = ({
 }) => {
   const {
     control,
-    watch,
     setValue,
     formState: { errors },
   } = useFormContext<RecipeFormData>();
 
-  const coffeeAmount = watch('coffeeAmount');
-  const waterAmount = watch('waterAmount');
-  const dripper = watch('dripper');
-  const filter = watch('filter');
+  // useWatch subscribes this component itself; `watch()` from useFormContext
+  // returns stale values once React Compiler memoizes the component.
+  const [coffeeAmount, waterAmount, dripper, filter] = useWatch({
+    control,
+    name: ['coffeeAmount', 'waterAmount', 'dripper', 'filter'],
+  });
 
   // 비율 자동 계산 메모이제이션
   const calculatedRatio = useMemo(() => {

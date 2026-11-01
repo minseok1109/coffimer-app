@@ -113,14 +113,8 @@ export default function RecipeDetail() {
     );
   }
 
+  // recipe_started is tracked in useRecipeTimer.toggleTimer.
   const handleStartRecipe = () => {
-    if (recipe) {
-      track("recipe_started", {
-        recipe_id: recipe.id,
-        recipe_name: recipe.name,
-        total_time: calculateActualTotalTime(recipe.recipe_steps || []),
-      });
-    }
     router.push(`/recipes/timer/${recipe.id}`);
   };
 

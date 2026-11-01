@@ -1,5 +1,5 @@
 import type React from 'react';
-import { Controller, useFormContext } from 'react-hook-form';
+import { Controller, useFormContext, useWatch } from 'react-hook-form';
 import { Switch, Text, TextInput, View } from 'react-native';
 import { isValidYouTubeUrl } from '@/lib/youtube';
 import { createRecipeStyles } from '@/styles/create-recipe.styles';
@@ -14,10 +14,9 @@ export const Step1: React.FC<Step1Props> = ({ hasAttemptedNext = false }) => {
   const {
     control,
     formState: { errors },
-    watch,
   } = useFormContext<RecipeFormData>();
 
-  const youtubeUrl = watch('youtubeUrl');
+  const youtubeUrl = useWatch({ control, name: 'youtubeUrl' });
 
   return (
     <View style={createRecipeStyles.stepContent}>

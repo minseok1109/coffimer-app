@@ -23,7 +23,10 @@ export default function BeanEditPage() {
   const updateMutation = useUpdateBeanMutation({
     onSuccess: (bean) => {
       rescheduleDegassing(bean);
-      router.replace(`/beans/${id}`);
+      // Edit is always pushed from the detail screen; going back (instead of
+      // replacing) avoids stacking a second detail screen for the same bean.
+      // The mutation already wrote the updated bean into the detail cache.
+      router.back();
     },
   });
 

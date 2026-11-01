@@ -91,3 +91,29 @@ jest.mock('@/contexts/AuthContext', () => ({
 global.Alert = {
   alert: jest.fn(),
 };
+
+// react-native-worklets 0.7+ throws at import time when its native part is absent (jest).
+jest.mock('react-native-worklets', () =>
+  require('react-native-worklets/lib/module/mock'),
+);
+
+// Reanimated 4.7.1 runs its native initializer under jest, which calls
+// setCSSEventHandler on the JS fallback module (unsupported there) and throws.
+// The official react-native-reanimated/mock hits the same path, so patch the
+// fallback module itself (literal paths: jest.mock calls are hoisted).
+jest.mock(
+  'react-native-reanimated/lib/module/ReanimatedModule/js-reanimated/JSReanimated',
+  () => {
+    const actual = jest.requireActual(
+      'react-native-reanimated/lib/module/ReanimatedModule/js-reanimated/JSReanimated',
+    );
+    return {
+      ...actual,
+      createJSReanimatedModule: () => {
+        const reanimatedModule = actual.createJSReanimatedModule();
+        reanimatedModule.setCSSEventHandler = () => undefined;
+        return reanimatedModule;
+      },
+    };
+  },
+);

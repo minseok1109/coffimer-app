@@ -1,11 +1,11 @@
 import { Ionicons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as WebBrowser from 'expo-web-browser';
 import React, { useState } from 'react';
 import {
   Alert,
-  Linking,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthContext } from '@/contexts/AuthContext';
+import { openSupportEmail, SUPPORT_EMAIL } from '@/lib/support';
 
 interface InfoItem {
   id: string;
@@ -39,7 +40,7 @@ export default function InfoScreen() {
     {
       id: 'version',
       title: '버전',
-      subtitle: '1.0.0',
+      subtitle: Constants.expoConfig?.version ?? '',
       icon: 'information-circle-outline',
     },
     {
@@ -51,10 +52,10 @@ export default function InfoScreen() {
     {
       id: 'contact',
       title: '문의하기',
-      subtitle: 'minseok32@gmail.com',
+      subtitle: SUPPORT_EMAIL,
       icon: 'mail-outline',
       hasArrow: true,
-      onPress: () => Linking.openURL('mailto:minseok32@gmail.com'),
+      onPress: openSupportEmail,
     },
   ];
 

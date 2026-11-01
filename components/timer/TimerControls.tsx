@@ -4,17 +4,37 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface TimerControlsProps {
   isRunning: boolean;
+  isCompleted: boolean;
   onToggleTimer: () => void;
   onReset: () => void;
 }
 
+const getToggleContent = (isRunning: boolean, isCompleted: boolean) => {
+  if (isRunning) {
+    return { icon: 'pause', label: '일시정지' } as const;
+  }
+  if (isCompleted) {
+    return { icon: 'reload', label: '다시 시작' } as const;
+  }
+  return { icon: 'play', label: '시작' } as const;
+};
+
 export const TimerControls: React.FC<TimerControlsProps> = ({
   isRunning,
+  isCompleted,
   onToggleTimer,
   onReset,
 }) => {
+  const toggleContent = getToggleContent(isRunning, isCompleted);
+
   return (
     <View style={styles.controlsContainer}>
+      {isCompleted && (
+        <View style={styles.completedBanner}>
+          <Ionicons color="#2E7D32" name="checkmark-circle" size={20} />
+          <Text style={styles.completedText}>추출 완료! 맛있게 즐기세요</Text>
+        </View>
+      )}
       <View style={styles.mainControls}>
         <TouchableOpacity
           onPress={onToggleTimer}
@@ -23,14 +43,8 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
             isRunning ? styles.timerButtonRunning : styles.timerButtonPaused,
           ]}
         >
-          <Ionicons
-            color="white"
-            name={isRunning ? 'pause' : 'play'}
-            size={32}
-          />
-          <Text style={styles.timerButtonText}>
-            {isRunning ? '일시정지' : '시작'}
-          </Text>
+          <Ionicons color="white" name={toggleContent.icon} size={32} />
+          <Text style={styles.timerButtonText}>{toggleContent.label}</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={onReset} style={styles.resetButton}>
           <Ionicons color="#666" name="refresh" size={24} />
@@ -45,6 +59,22 @@ const styles = StyleSheet.create({
   controlsContainer: {
     paddingHorizontal: 20,
     marginBottom: 32,
+    gap: 12,
+  },
+  completedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#E8F5E9',
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  completedText: {
+    fontSize: 16,
+    color: '#2E7D32',
+    fontWeight: '600',
   },
   mainControls: {
     flexDirection: 'row',

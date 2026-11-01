@@ -2,6 +2,7 @@ import { renderHook, waitFor } from '@testing-library/react-native';
 import type { EventSubscription } from 'expo-modules-core';
 import * as Notifications from 'expo-notifications';
 import { router } from 'expo-router';
+import { notificationContent } from '@/lib/notifications/__tests__/degassingFixtures';
 import { useNotificationObserver } from '../useNotificationObserver';
 
 const getLastResponseMock = jest.mocked(
@@ -37,14 +38,11 @@ function responseWithData(
       date: Date.now(),
       request: {
         identifier: 'degassing-bean-1',
-        content: {
+        content: notificationContent({
           title: '디게싱 완료',
-          subtitle: null,
           body: '에티오피아 예가체프 디게싱 기간이 끝났습니다. 맛있게 원두를 즐기세요!',
           data: data as Notifications.NotificationContent['data'],
-          categoryIdentifier: null,
-          sound: null,
-        },
+        }),
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.DATE,
           date: Date.now(),

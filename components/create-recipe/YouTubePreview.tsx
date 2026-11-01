@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
 import {
   Image,
   Linking,
@@ -8,67 +7,27 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { extractYouTubeVideoId, getYouTubeVideoInfo } from '@/lib/youtube';
+import { useYouTubeVideoInfo } from '@/hooks/useYouTubeVideoInfo';
+import { extractYouTubeVideoId } from '@/lib/youtube';
 
 interface YouTubePreviewProps {
   url: string;
 }
 
-interface VideoInfo {
-  title: string;
-  thumbnail: string;
-  author: string;
-}
-
 export const YouTubePreview: React.FC<YouTubePreviewProps> = ({ url }) => {
-  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    const fetchVideoInfo = async () => {
-      if (!url) {
-        setVideoInfo(null);
-        return;
-      }
-
-      const videoId = extractYouTubeVideoId(url);
-      if (!videoId) {
-        setError(true);
-        return;
-      }
-
-      setLoading(true);
-      setError(false);
-
-      try {
-        const info = await getYouTubeVideoInfo(videoId);
-        if (info) {
-          setVideoInfo(info);
-        } else {
-          setError(true);
-        }
-      } catch (err) {
-        setError(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchVideoInfo();
-  }, [url]);
+  const { data: videoInfo, isLoading } = useYouTubeVideoInfo(
+    extractYouTubeVideoId(url)
+  );
 
   const handlePress = () => {
-    if (url) {
-      Linking.openURL(url);
-    }
+    Linking.openURL(url);
   };
 
-  if (!(url && (loading || videoInfo || error))) {
+  if (!url) {
     return null;
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -78,7 +37,7 @@ export const YouTubePreview: React.FC<YouTubePreviewProps> = ({ url }) => {
     );
   }
 
-  if (error || !videoInfo) {
+  if (!videoInfo) {
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>

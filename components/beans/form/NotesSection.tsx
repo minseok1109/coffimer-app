@@ -1,13 +1,13 @@
 import type { RefObject } from 'react';
 import { useRef } from 'react';
 import { Controller } from 'react-hook-form';
-import type { ScrollView } from 'react-native';
+import type { ScrollViewInstance } from 'react-native';
 import { Text, TextInput, View } from 'react-native';
 import type { BeanFormContext } from './types';
 import { formStyles as styles } from './styles';
 
 interface NotesSectionProps extends Pick<BeanFormContext, 'control'> {
-  scrollViewRef: RefObject<ScrollView | null>;
+  scrollViewRef: RefObject<ScrollViewInstance | null>;
 }
 
 export function NotesSection({ control, scrollViewRef }: NotesSectionProps) {

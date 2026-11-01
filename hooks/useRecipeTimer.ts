@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import { calculateActualTotalTime } from '@/lib/timer/formatters';
 import type { RecipeWithSteps } from '@/types/recipe';
 import { INITIAL_STEP, INITIAL_TIME, TIMER_INTERVAL_MS } from '../constants';
 import { useAnalytics } from './useAnalytics';
@@ -8,6 +9,8 @@ import { useNotification } from './useNotification';
 interface UseRecipeTimerReturn {
   currentTime: number;
   isRunning: boolean;
+  isCompleted: boolean;
+  totalTime: number;
   currentStep: number;
   toggleTimer: () => void;
   resetTimer: () => void;
@@ -27,96 +30,61 @@ export const useRecipeTimer = (
     trackTimerPause,
     trackTimerResume,
     trackStepComplete,
+    trackRecipeComplete,
   } = useAnalytics();
   const [hasStartedRecipe, setHasStartedRecipe] = useState(false);
-
-  // 레시피 변경 시 초기화
-  useEffect(() => {
-    setCurrentTime(INITIAL_TIME);
-    setCurrentStep(INITIAL_STEP);
-    setIsRunning(false);
-    setHasStartedRecipe(false);
-  }, [recipe.id]);
+  const steps = recipe.recipe_steps;
+  const totalTime = calculateActualTotalTime(steps);
+  const isCompleted = totalTime > 0 && currentTime >= totalTime;
 
   // 타이머 로직
   useEffect(() => {
-    if (!(isRunning && recipe.recipe_steps)) {
+    if (!isRunning) {
       return;
     }
 
-    const interval = setInterval(() => {
-      setCurrentTime((prevTime) => {
-        const newTime = prevTime + 1;
+    // One tick per render: side effects read the latest state directly.
+    const timeout = setTimeout(() => {
+      const newTime = currentTime + 1;
 
-        // 현재 단계 업데이트 (시간 구간 기반)
-        let newCurrentStep = 0;
-        if (recipe.recipe_steps) {
-          // 현재 시간이 넘어간 단계들의 개수를 계산
-          const passedSteps = recipe.recipe_steps.filter(
-            (step) => newTime > step.time
-          ).length;
-          // 마지막 단계를 넘지 않도록 제한
-          newCurrentStep = Math.min(
-            passedSteps,
-            recipe.recipe_steps.length - 1
-          );
-        }
+      // 현재 시간이 넘어간 단계 수 (마지막 단계를 넘지 않도록 제한)
+      const passedSteps = steps.filter((step) => newTime > step.time).length;
+      const newCurrentStep = Math.min(passedSteps, steps.length - 1);
 
-        // 단계가 변경될 때 알림 발송 및 analytics 추적
-        if (newCurrentStep !== currentStep && recipe.recipe_steps) {
-          const completedStepIndex =
-            newCurrentStep > 0 ? newCurrentStep - 1 : 0;
-          const completedStep = recipe.recipe_steps[completedStepIndex];
+      // 단계가 넘어갈 때 알림 발송 및 analytics 추적
+      if (newCurrentStep > currentStep) {
+        const completedStepIndex = newCurrentStep - 1;
+        const completedStep = steps[completedStepIndex];
+        sendNotification(
+          `${completedStep.title} 완료`,
+          `다음 단계를 진행하세요: ${completedStep.description}`
+        );
+        trackStepComplete(recipe.id, completedStepIndex, completedStep.time);
+      }
+      setCurrentStep(newCurrentStep);
 
-          if (completedStep && newCurrentStep > currentStep) {
-            sendNotification(
-              `${completedStep.title} 완료`,
-              `다음 단계를 진행하세요: ${completedStep.description}`
-            );
+      setCurrentTime(newTime);
 
-            // Track step completion - use time as step duration
-            const stepDuration = completedStep.time || 0;
-            trackStepComplete(recipe.id, completedStepIndex, stepDuration);
-          }
-
-          setCurrentStep(newCurrentStep);
-        }
-
-        return newTime;
-      });
+      // 전체 시간에 도달하면 타이머를 멈추고 완료 처리
+      if (totalTime > 0 && newTime >= totalTime) {
+        setIsRunning(false);
+        sendNotification('추출 완료', '모든 단계가 끝났습니다. 맛있게 즐기세요!');
+        trackRecipeComplete(recipe.id, recipe.name, totalTime, 100);
+      }
     }, TIMER_INTERVAL_MS);
 
-    return () => clearInterval(interval);
-  }, [isRunning, currentTime, recipe, currentStep, sendNotification]);
-
-  const toggleTimer = useCallback(() => {
-    // 타이머 시작 시 오디오 초기화
-    if (isRunning) {
-      // Track pause
-      trackTimerPause(recipe.id, currentTime, currentStep);
-    } else {
-      initializeAudio();
-
-      // Track recipe start (only on first start)
-      if (hasStartedRecipe) {
-        // Track resume
-        trackTimerResume(recipe.id, currentTime, currentStep);
-      } else {
-        trackRecipeStart(recipe.id, recipe.name, recipe.total_time || 0);
-        setHasStartedRecipe(true);
-      }
-    }
-    setIsRunning((prev) => !prev);
+    return () => clearTimeout(timeout);
   }, [
     isRunning,
-    initializeAudio,
-    hasStartedRecipe,
-    recipe,
     currentTime,
+    recipe.id,
+    recipe.name,
+    steps,
     currentStep,
-    trackRecipeStart,
-    trackTimerPause,
-    trackTimerResume,
+    totalTime,
+    sendNotification,
+    trackStepComplete,
+    trackRecipeComplete,
   ]);
 
   const resetTimer = useCallback(() => {
@@ -125,28 +93,65 @@ export const useRecipeTimer = (
     setCurrentStep(INITIAL_STEP);
   }, []);
 
+  const toggleTimer = useCallback(() => {
+    if (isRunning) {
+      trackTimerPause(recipe.id, currentTime, currentStep);
+      setIsRunning(false);
+      return;
+    }
+
+    // 타이머 시작 시 오디오 초기화
+    initializeAudio();
+    if (isCompleted) {
+      // 완료 후 다시 시작하면 처음부터 새로 추출한다.
+      resetTimer();
+    }
+    if (isCompleted || !hasStartedRecipe) {
+      trackRecipeStart(recipe.id, recipe.name, totalTime);
+      setHasStartedRecipe(true);
+    } else {
+      trackTimerResume(recipe.id, currentTime, currentStep);
+    }
+    setIsRunning(true);
+  }, [
+    isRunning,
+    isCompleted,
+    initializeAudio,
+    hasStartedRecipe,
+    recipe,
+    resetTimer,
+    totalTime,
+    currentTime,
+    currentStep,
+    trackRecipeStart,
+    trackTimerPause,
+    trackTimerResume,
+  ]);
+
   const goToPreviousStep = useCallback(() => {
-    if (currentStep > 0 && recipe.recipe_steps) {
+    if (currentStep > 0) {
       const previousStep = currentStep - 1;
       const previousStepTime =
-        previousStep === 0 ? 0 : recipe.recipe_steps[previousStep - 1].time;
+        previousStep === 0 ? 0 : steps[previousStep - 1].time;
       setCurrentStep(previousStep);
       setCurrentTime(previousStepTime);
     }
-  }, [currentStep, recipe.recipe_steps]);
+  }, [currentStep, steps]);
 
   const goToNextStep = useCallback(() => {
-    if (recipe.recipe_steps && currentStep < recipe.recipe_steps.length - 1) {
+    if (currentStep < steps.length - 1) {
       const nextStep = currentStep + 1;
-      const nextStepTime = recipe.recipe_steps[nextStep - 1].time;
+      const nextStepTime = steps[nextStep - 1].time;
       setCurrentStep(nextStep);
       setCurrentTime(nextStepTime);
     }
-  }, [currentStep, recipe.recipe_steps]);
+  }, [currentStep, steps]);
 
   return {
     currentTime,
     isRunning,
+    isCompleted,
+    totalTime,
     currentStep,
     toggleTimer,
     resetTimer,
