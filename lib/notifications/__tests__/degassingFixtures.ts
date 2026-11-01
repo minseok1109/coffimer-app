@@ -87,6 +87,29 @@ export function readScheduledRequest(): ScheduleRequest {
 }
 
 /**
+ * The smallest NotificationContent that satisfies the public type, so tests can
+ * fake OS-reported notifications without casts. Override only what matters.
+ */
+export function notificationContent(
+  overrides: Partial<
+    Pick<Notifications.NotificationContent, 'title' | 'body' | 'data'>
+  > = {}
+): Notifications.NotificationContent {
+  return {
+    title: null,
+    subtitle: null,
+    body: null,
+    // Required on NotificationContent; the OS always reports an object here,
+    // empty when the notification carries no payload.
+    data: {},
+    categoryIdentifier: null,
+    sound: null,
+    threadIdentifier: null,
+    ...overrides,
+  };
+}
+
+/**
  * A fully-typed stand-in for an entry the OS reports as already scheduled.
  * Only `identifier` carries meaning for reconcile; the rest is the smallest
  * content/trigger pair that satisfies the public NotificationRequest shape, so
@@ -97,17 +120,7 @@ export function scheduledRequest(
 ): Notifications.NotificationRequest {
   return {
     identifier,
-    content: {
-      title: null,
-      subtitle: null,
-      body: null,
-      // Required (non-optional) on NotificationContent in expo-notifications
-      // 0.32.x; the OS always reports an object here, empty when the
-      // notification carries no payload.
-      data: {},
-      categoryIdentifier: null,
-      sound: null,
-    },
+    content: notificationContent(),
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: EXPECTED_COMPLETION_AT,

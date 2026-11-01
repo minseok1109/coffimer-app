@@ -494,7 +494,7 @@ export function EditForm({
 
         <TouchableOpacity
           disabled={isLoading}
-          onPress={handleSubmit(handleSavePress)}
+          onPress={() => handleSubmit(handleSavePress)()}
           style={[styles.saveButton, isLoading && styles.disabledButton]}
         >
           {isLoading ? (

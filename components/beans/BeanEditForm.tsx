@@ -9,6 +9,7 @@ import {
   UIManager,
   View,
 } from 'react-native';
+import type { ScrollViewInstance } from 'react-native';
 import type { Bean, RoastLevel, UpdateBeanInput } from '@/types/bean';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { useBeanForm } from '@/hooks/useBeanForm';
@@ -51,7 +52,7 @@ export function BeanEditForm({
   onCancel,
   isLoading = false,
 }: BeanEditFormProps) {
-  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollViewRef = useRef<ScrollViewInstance>(null);
   const roastLevelRef = useRef<RoastLevelSelectorRef>(null);
   const roastDateRef = useRef<RoastDateSelectorRef>(null);
   const openedDateRef = useRef<RoastDateSelectorRef>(null);

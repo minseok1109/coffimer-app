@@ -37,6 +37,7 @@ export type ViewProps = React.ComponentProps<typeof RNView> & {
 };
 
 export const View = (props: ViewProps) => {
+  // @ts-expect-error: Deep type instantiation with RN 0.88 View types
   return useCssElement(RNView, props, { className: "style" });
 };
 View.displayName = "CSS(View)";

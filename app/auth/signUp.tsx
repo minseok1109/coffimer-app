@@ -369,7 +369,7 @@ export default function SignUpScreen() {
 
                 <View style={styles.signUpButtonContainer}>
                   <TouchableOpacity
-                    onPress={handleSubmit(onSubmit)}
+                    onPress={() => handleSubmit(onSubmit)()}
                     style={[
                       styles.primaryButton,
                       (loading || !isValid) && styles.disabledButton,

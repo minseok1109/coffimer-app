@@ -1,14 +1,14 @@
 import { Ionicons } from '@expo/vector-icons';
 import type React from 'react';
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getFilterLabel } from '@/constants/filterOptions';
 import { createRecipeStyles } from '@/styles/create-recipe.styles';
 import type { RecipeFormData } from '@/types/recipe-form';
 
 export const Step4: React.FC = () => {
-  const { watch } = useFormContext<RecipeFormData>();
-  const formData = watch();
+  const { control } = useFormContext<RecipeFormData>();
+  const formData = useWatch({ control });
 
   const totalWater =
     formData.steps?.reduce(

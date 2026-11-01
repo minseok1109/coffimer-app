@@ -56,13 +56,13 @@ describe('BeanEditPage degassing rescheduling', () => {
       expect(rescheduleMock).toHaveBeenCalledWith(UPDATED_BEAN);
     });
 
-    it('When the update succeeds, Then navigation still replaces to the route bean detail', () => {
+    it('When the update succeeds, Then it returns to the detail screen it came from without stacking another', () => {
       render(<BeanEditPage />);
 
       capturedUpdateOptions?.onSuccess?.(UPDATED_BEAN);
 
-      expect(mockReplace).toHaveBeenCalledTimes(1);
-      expect(mockReplace).toHaveBeenCalledWith(`/beans/${ROUTE_ID}`);
+      expect(mockBack).toHaveBeenCalledTimes(1);
+      expect(mockReplace).not.toHaveBeenCalled();
     });
 
     it('When the update succeeds, Then rescheduling happens before navigation', () => {
@@ -71,15 +71,15 @@ describe('BeanEditPage degassing rescheduling', () => {
         order.push('reschedule');
         return null;
       });
-      mockReplace.mockImplementation(() => {
-        order.push('replace');
+      mockBack.mockImplementation(() => {
+        order.push('back');
       });
 
       render(<BeanEditPage />);
 
       capturedUpdateOptions?.onSuccess?.(UPDATED_BEAN);
 
-      expect(order).toEqual(['reschedule', 'replace']);
+      expect(order).toEqual(['reschedule', 'back']);
     });
   });
 
@@ -101,7 +101,7 @@ describe('BeanEditPage degassing rescheduling', () => {
       render(<BeanEditPage />);
 
       expect(() => capturedUpdateOptions?.onSuccess?.(UPDATED_BEAN)).not.toThrow();
-      expect(mockReplace).toHaveBeenCalledWith(`/beans/${ROUTE_ID}`);
+      expect(mockBack).toHaveBeenCalledTimes(1);
       await expect(settled).resolves.toBeNull();
     });
   });

@@ -11,6 +11,16 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import packageJson from '@/package.json';
+
+// Read from package.json so the screen stays in sync with dependency upgrades.
+const dependencyVersions: Record<string, string> = {
+  ...packageJson.devDependencies,
+  ...packageJson.dependencies,
+};
+
+const getDependencyVersion = (packageName: string) =>
+  dependencyVersions[packageName] ?? '';
 
 interface License {
   name: string;
@@ -26,63 +36,63 @@ export default function LicensesScreen() {
   const licenses: License[] = [
     {
       name: 'React Native',
-      version: '0.79.3',
+      version: getDependencyVersion('react-native'),
       license: 'MIT License',
       repository: 'https://github.com/facebook/react-native',
       description: '크로스 플랫폼 모바일 앱 개발 프레임워크',
     },
     {
       name: 'Expo',
-      version: '~53.0.11',
+      version: getDependencyVersion('expo'),
       license: 'MIT License',
       repository: 'https://github.com/expo/expo',
       description: 'React Native 개발 플랫폼 및 도구',
     },
     {
       name: 'React',
-      version: '19.0.0',
+      version: getDependencyVersion('react'),
       license: 'MIT License',
       repository: 'https://github.com/facebook/react',
       description: '사용자 인터페이스 구축을 위한 JavaScript 라이브러리',
     },
     {
       name: 'Supabase',
-      version: '^2.50.0',
+      version: getDependencyVersion('@supabase/supabase-js'),
       license: 'Apache-2.0 License',
       repository: 'https://github.com/supabase/supabase-js',
       description: '오픈소스 Firebase 대안 - 백엔드 서비스',
     },
     {
       name: 'React Query (TanStack Query)',
-      version: '^5.80.10',
+      version: getDependencyVersion('@tanstack/react-query'),
       license: 'MIT License',
       repository: 'https://github.com/TanStack/query',
       description: '데이터 fetching 및 상태 관리 라이브러리',
     },
     {
       name: 'Expo Router',
-      version: '~5.1.0',
+      version: getDependencyVersion('expo-router'),
       license: 'MIT License',
       repository: 'https://github.com/expo/router',
       description: '파일 기반 라우팅 시스템',
     },
     {
       name: 'Expo Audio',
-      version: '~0.4.6',
+      version: getDependencyVersion('expo-audio'),
       license: 'MIT License',
       repository: 'https://github.com/expo/expo',
       description: '오디오 재생 및 녹음 기능',
     },
     {
       name: 'Expo Notifications',
-      version: '^0.31.3',
+      version: getDependencyVersion('expo-notifications'),
       license: 'MIT License',
       repository: 'https://github.com/expo/expo',
       description: '푸시 알림 및 로컬 알림 기능',
     },
     {
       name: 'React Native Gesture Handler',
-      version: '~2.24.0',
+      version: getDependencyVersion('react-native-gesture-handler'),
       license: 'MIT License',
       repository:
         'https://github.com/software-mansion/react-native-gesture-handler',
@@ -90,35 +100,35 @@ export default function LicensesScreen() {
     },
     {
       name: 'React Native Reanimated',
-      version: '~3.17.5',
+      version: getDependencyVersion('react-native-reanimated'),
       license: 'MIT License',
       repository: 'https://github.com/software-mansion/react-native-reanimated',
       description: '고성능 애니메이션 라이브러리',
     },
     {
       name: 'Day.js',
-      version: '^1.11.13',
+      version: getDependencyVersion('dayjs'),
       license: 'MIT License',
       repository: 'https://github.com/iamkun/dayjs',
       description: '경량 날짜 처리 라이브러리',
     },
     {
       name: 'React Hook Form',
-      version: '^7.57.0',
+      version: getDependencyVersion('react-hook-form'),
       license: 'MIT License',
       repository: 'https://github.com/react-hook-form/react-hook-form',
       description: 'React를 위한 고성능 폼 라이브러리',
     },
     {
       name: 'Zod',
-      version: '^3.25.64',
+      version: getDependencyVersion('zod'),
       license: 'MIT License',
       repository: 'https://github.com/colinhacks/zod',
       description: 'TypeScript 우선 스키마 검증 라이브러리',
     },
     {
       name: 'TypeScript',
-      version: '~5.8.3',
+      version: getDependencyVersion('typescript'),
       license: 'Apache-2.0 License',
       repository: 'https://github.com/microsoft/TypeScript',
       description: 'JavaScript에 정적 타입을 추가하는 언어',

@@ -2,6 +2,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useRecipe } from '@/hooks/useRecipes';
+import type { RecipeWithSteps } from '@/types/recipe';
 import {
   ErrorState,
   ProgressBars,
@@ -11,29 +12,11 @@ import {
 } from '../../../components/timer';
 import { useStepInfo, useWaterCalculation } from '../../../hooks/timer';
 import { useRecipeTimer } from '../../../hooks/useRecipeTimer';
-import { calculateActualTotalTime } from '../../../lib/timer/formatters';
 
 export default function RecipeTimer() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { data: recipe } = useRecipe(id as string);
-
-  const {
-    currentTime,
-    isRunning,
-    currentStep,
-    toggleTimer,
-    resetTimer,
-    goToPreviousStep,
-    goToNextStep,
-  } = useRecipeTimer(recipe!);
-
-  const waterInfo = useWaterCalculation(recipe!, currentStep);
-  const { currentStepInfo, nextStepInfo } = useStepInfo(
-    recipe!,
-    currentStep,
-    currentTime
-  );
 
   if (!recipe) {
     return (
@@ -44,6 +27,31 @@ export default function RecipeTimer() {
     );
   }
 
+  // Keyed so switching recipes remounts the timer with fresh state.
+  return <RecipeTimerContent key={recipe.id} recipe={recipe} />;
+}
+
+const RecipeTimerContent = ({ recipe }: { recipe: RecipeWithSteps }) => {
+  const router = useRouter();
+  const {
+    currentTime,
+    isRunning,
+    isCompleted,
+    totalTime,
+    currentStep,
+    toggleTimer,
+    resetTimer,
+    goToPreviousStep,
+    goToNextStep,
+  } = useRecipeTimer(recipe);
+
+  const waterInfo = useWaterCalculation(recipe, currentStep);
+  const { currentStepInfo, nextStepInfo } = useStepInfo(
+    recipe,
+    currentStep,
+    currentTime
+  );
+
   return (
     <View style={styles.container}>
       <TimerHeader onBack={() => router.back()} title={recipe.name} />
@@ -52,7 +60,7 @@ export default function RecipeTimer() {
         showsVerticalScrollIndicator={false}
         style={styles.scrollContainer}
       >
-        {currentStepInfo && recipe.recipe_steps && (
+        {currentStepInfo && (
           <ProgressBars
             canGoToNext={currentStep < recipe.recipe_steps.length - 1}
             canGoToPrevious={currentStep > 0}
@@ -60,7 +68,7 @@ export default function RecipeTimer() {
             currentTime={currentTime}
             onNextStep={goToNextStep}
             onPreviousStep={goToPreviousStep}
-            totalTime={calculateActualTotalTime(recipe.recipe_steps)}
+            totalTime={totalTime}
           />
         )}
         {currentStepInfo && (
@@ -71,16 +79,15 @@ export default function RecipeTimer() {
           />
         )}
       </ScrollView>
-      {recipe.recipe_steps && (
-        <TimerControls
-          isRunning={isRunning}
-          onReset={resetTimer}
-          onToggleTimer={toggleTimer}
-        />
-      )}
+      <TimerControls
+        isCompleted={isCompleted}
+        isRunning={isRunning}
+        onReset={resetTimer}
+        onToggleTimer={toggleTimer}
+      />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {

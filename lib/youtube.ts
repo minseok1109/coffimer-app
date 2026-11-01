@@ -13,6 +13,8 @@ export const isValidYouTubeUrl = (url: string): boolean => {
   return youtubeRegex.test(url);
 };
 
+const VIDEO_ID_PATTERN = /^[\w-]{11}$/;
+
 /**
  * Extracts YouTube video ID from various YouTube URL formats
  */
@@ -25,9 +27,10 @@ export const extractYouTubeVideoId = (url: string): string | null => {
   ];
 
   for (const pattern of patterns) {
-    const match = url.match(pattern);
-    if (match && match[1]) {
-      return match[1];
+    const id = url.match(pattern)?.[1];
+    // Video ids are always 11 characters; anything else is partial or invalid.
+    if (id && VIDEO_ID_PATTERN.test(id)) {
+      return id;
     }
   }
 
@@ -45,25 +48,21 @@ export const getYouTubeThumbnail = (videoId: string): string => {
  * Gets YouTube video title and thumbnail info
  */
 export const getYouTubeVideoInfo = async (videoId: string) => {
-  try {
-    // Using YouTube oEmbed API for basic video info
-    const response = await fetch(
-      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
-    );
+  // Using YouTube oEmbed API for basic video info. Throws so the query layer
+  // owns error state and failed lookups are not cached as results.
+  const response = await fetch(
+    `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+  );
 
-    if (!response.ok) {
-      throw new Error('Video not found');
-    }
-
-    const data = await response.json();
-
-    return {
-      title: data.title,
-      thumbnail: data.thumbnail_url,
-      author: data.author_name,
-    };
-  } catch (error) {
-    console.error('Error fetching YouTube video info:', error);
-    return null;
+  if (!response.ok) {
+    throw new Error('Video not found');
   }
+
+  const data = await response.json();
+
+  return {
+    title: data.title,
+    thumbnail: data.thumbnail_url,
+    author: data.author_name,
+  };
 };

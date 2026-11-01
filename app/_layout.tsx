@@ -10,6 +10,7 @@ import { UpdateManager } from '@/components/UpdateManager';
 import { NotificationDebugToolbar } from '@/components/NotificationDebugToolbar';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { useNotificationObserver } from '@/hooks/useNotificationObserver';
+import { useScreenTracking } from '@/hooks/useScreenTracking';
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -19,6 +20,12 @@ Notifications.setNotificationHandler({
     shouldShowList: true,
   }),
 });
+
+// Rendered inside PostHogProvider so usePostHog() resolves the client.
+const ScreenTracker = () => {
+  useScreenTracking();
+  return null;
+};
 
 export default function RootLayout() {
   useNotificationObserver();
@@ -32,7 +39,10 @@ export default function RootLayout() {
           host:
             process.env.EXPO_PUBLIC_POSTHOG_HOST || 'https://us.i.posthog.com',
         }}
+        // captureScreens needs react-navigation, which expo-router 58 dropped.
+        autocapture={{ captureScreens: false }}
       >
+        <ScreenTracker />
         <AuthProvider>
           <QueryClientProvider client={queryClient}>
             <Stack
